@@ -70,7 +70,7 @@ flash_ca35_ddrstress_dcd: $(MKIMG) $(DCD_CFG) scfw_tcm.bin mx8qx_ddr_stress_test
 	./$(MKIMG) -soc QX -c -flags 0x00800000 -dcd $(DCD_CFG) -scfw scfw_tcm.bin -c -ap mx8qx_ddr_stress_test.bin a35 0x00112000 -out flash.bin	
 	
 flash_cm4ddr: $(MKIMG) $(DCD_CFG) scfw_tcm.bin m4_image.bin
-	./$(MKIMG) -soc QX -c -dcd $(DCD_CFG) -scfw scfw_tcm.bin -m4 m4_image.bin 0 0x88200000 -out flash.bin
+	./$(MKIMG) -soc QX -c -dcd $(DCD_CFG) -scfw scfw_tcm.bin -m4 m4_image.bin 0 0x88000000 -out flash.bin
 
 flash_fastboot: $(MKIMG) $(DCD_CFG) scfw_tcm.bin u-boot-atf.bin m4_image.bin
 	./$(MKIMG) -soc QX -dev emmc_fast -c -dcd $(DCD_CFG) -scfw scfw_tcm.bin -ap u-boot-atf.bin a35 0x80000000 -out flash.bin

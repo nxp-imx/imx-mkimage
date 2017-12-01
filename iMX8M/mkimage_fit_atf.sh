@@ -8,8 +8,8 @@
 [ -z "$BL31" ] && BL31="bl31.bin"
 
 if [ ! -f $BL31 ]; then
-	echo "WARNING: BL31 file $BL31 NOT found, resulting binary is non-functional" >&2
-	BL31=/dev/null
+	echo "ERROR: BL31 file $BL31 NOT found" >&2
+	exit 0
 else
 	echo "bl31.bin size: " >&2
 	ls -lct bl31.bin | awk '{print $5}' >&2
@@ -28,7 +28,7 @@ fi
 BL33="u-boot-nodtb.bin"
 
 if [ ! -f $BL33 ]; then
-	echo "WARNING: $BL33 file NOT found" >&2
+	echo "ERROR: $BL33 file NOT found" >&2
 	exit 0
 else
 	

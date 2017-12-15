@@ -5,8 +5,8 @@ DCD_CFG = imx8qx_dcd.cfg.tmp
 DCD_CFG_16BIT_SRC = imx8qx_dcd_16bit_1.2GHz.cfg
 DCD_16BIT_CFG = imx8qx_16bit_dcd.cfg.tmp
 
-DCD_CFG_DDR3_SRC = imx8qx_ddr3_dcd_800MHz.cfg
-DCD_DDR3_CFG = imx8qx_ddr3_dcd_800MHz.cfg.tmp
+DCD_CFG_DDR3_SRC = imx8qx_ddr3_dcd_933MHz.cfg
+DCD_DDR3_CFG = imx8qx_ddr3_dcd_933MHz.cfg.tmp
 
 CC ?= gcc
 CFLAGS ?= -O2 -Wall -std=c99 -static
@@ -22,7 +22,7 @@ SERVER=http://yb2.am.freescale.net
 DIR = build-output/Linux_IMX_MX8/$(N)/common_bsp
 
 ifeq ($(DDR3_DCD), 1)
-	DCD_CFG_SRC = imx8qx_ddr3_dcd_800MHz.cfg
+	DCD_CFG_SRC = imx8qx_ddr3_dcd_933MHz.cfg
 endif
 
 ifneq ($(wildcard /usr/bin/rename.ul),)

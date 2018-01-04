@@ -34,6 +34,12 @@ u-boot-atf.bin: u-boot.bin bl31.bin
 	./$(MKIMG) -commit > head.hash
 	@cat u-boot.bin head.hash > u-boot-hash.bin
 	@dd if=u-boot-hash.bin of=u-boot-atf.bin bs=1K seek=128
+	@if [ ! -d "hdmitxfw.bin" ]; then \
+	cp u-boot-atf.bin u-boot-atf-b.bin; \
+	objcopy -I binary -O binary --pad-to 0x20000 --gap-fill=0x0 hdmitxfw.bin hdmitxfw-pad.bin; \
+	cat u-boot-atf.bin hdmitxfw-pad.bin > u-boot-atf-hdmi.bin; \
+	cp u-boot-atf-hdmi.bin u-boot-atf.bin; \
+	fi
 
 .PHONY: clean
 clean:

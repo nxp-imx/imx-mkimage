@@ -4,7 +4,7 @@ CC = gcc
 CFLAGS ?= -g -O2 -Wall -std=c99 -static
 INCLUDE += $(CURR_DIR)/src
 
-SRCS = src/imx8qm.c  src/imx8qx.c  src/mkimage_imx8.c
+SRCS = src/imx8qm.c  src/imx8qx.c src/imx8qxb0.c src/mkimage_imx8.c
 
 
 vpath $(INCLUDE)
@@ -28,7 +28,7 @@ clean:
 
 $(MKIMG): buildinfo $(SRCS)
 	@echo "Compiling mkimage_imx8"
-	$(CC) $(CFLAGS) $(SRCS) -o $(MKIMG) -I src
+	$(CC) $(CFLAGS) $(SRCS) -o $(MKIMG) -I src -lcrypto
 
 bin: $(MKIMG)
 

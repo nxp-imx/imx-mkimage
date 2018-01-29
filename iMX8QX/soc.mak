@@ -9,6 +9,7 @@ DCD_CFG_DDR3_SRC = imx8qx_ddr3_dcd_1066MHz_ecc.cfg
 DCD_DDR3_CFG = imx8qx_ddr3_dcd_1066MHz_ecc.cfg.tmp
 
 CC ?= gcc
+REVISION ?= A0
 CFLAGS ?= -O2 -Wall -std=c99 -static
 INCLUDE = ./lib
 
@@ -77,6 +78,9 @@ flash_nand: $(MKIMG) $(DCD_CFG) scfw_tcm.bin u-boot-atf.bin
 
 flash_cm4_0: $(MKIMG) $(DCD_CFG) scfw_tcm.bin m4_image.bin
 	./$(MKIMG) -soc QX -c -dcd $(DCD_CFG) -scfw scfw_tcm.bin -m4 m4_image.bin 0 0x34FE0000 -out flash.bin
+
+flash_b0: $(MKIMG) $(DCD_CFG) ahab-container.img scfw_tcm-pad.bin dummy_ddr.bin u-boot-atf-pad.bin
+	./$(MKIMG) -soc QX -rev B0 -append ahab-container.img -c -scfw scfw_tcm-pad.bin -ap u-boot-atf-pad.bin a35 0x80000000 -out flash.bin
 
 flash_all: $(MKIMG) $(DCD_CFG) scfw_tcm.bin m4_image.bin u-boot-atf.bin scd.bin csf.bin csf_ap.bin
 	./$(MKIMG) -soc QX -c -dcd $(DCD_CFG) -scfw scfw_tcm.bin -m4 m4_image.bin 0 0x34FE0000 -scd scd.bin -csf csf.bin -c -ap u-boot-atf.bin a35 0x80000000 -csf csf_ap.bin -out flash.bin

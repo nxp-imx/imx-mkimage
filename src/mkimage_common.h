@@ -34,6 +34,7 @@ typedef enum option_type {
     NO_IMG = 0,
     DCD,
     SCFW,
+    SECO,
     M4,
     AP,
     OUTPUT,
@@ -42,6 +43,7 @@ typedef enum option_type {
     FLAG,
     DEVICE,
     NEW_CONTAINER,
+    APPEND,
     PARTITION
 } option_type_t;
 
@@ -54,6 +56,12 @@ typedef struct {
       uint64_t entry;/* image entry address or general purpose num */
       uint64_t ext;
 } image_t;
+
+typedef enum REVISION_TYPE {
+    NO_REV = 0,
+    A0,
+    B0
+} rev_type_t;
 
 typedef enum SOC_TYPE {
     NONE = 0,
@@ -102,12 +110,17 @@ typedef struct {
 #define IMG_TYPE_SCD     0x02   /* SCD image type */
 #define IMG_TYPE_EXEC    0x03   /* Executable image type */
 #define IMG_TYPE_DATA    0x04   /* Data image type */
+#define IMG_TYPE_DCD_DDR 0x05   /* DCD/DDR image type */
+#define IMG_TYPE_SECO    0x06   /* SECO image type */
+#define IMG_TYPE_PROV    0x07   /* Provisioning image type */
+#define IMG_TYPE_DEK     0x08   /* DEK validation type */
 
 #define IMG_TYPE_SHIFT   0
 #define IMG_TYPE_MASK    0x1f
 #define IMG_TYPE(x)      (((x) & IMG_TYPE_MASK) >> IMG_TYPE_SHIFT)
 
 #define BOOT_IMG_FLAGS_CORE_MASK        0xF
+#define BOOT_IMG_FLAGS_CORE_SHIFT       0x04
 #define BOOT_IMG_FLAGS_CPU_RID_MASK     0x3FF0
 #define BOOT_IMG_FLAGS_CPU_RID_SHIFT    4
 #define BOOT_IMG_FLAGS_MU_RID_MASK      0xFFC000
@@ -296,5 +309,7 @@ int build_container_qm(uint32_t sector_size, uint32_t ivt_offset, char * out_fil
 int build_container_qx(uint32_t sector_size, uint32_t ivt_offset, char * out_file,
                 bool emmc_fastboot, image_t* image_stack);
 
+int build_container_qx_b0(uint32_t sector_size, uint32_t ivt_offset, char * out_file,
+                bool emmc_fastboot, image_t* image_stack);
 
 

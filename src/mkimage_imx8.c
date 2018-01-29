@@ -14,6 +14,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <stddef.h>
+#include <stdarg.h>
 #include <sys/stat.h>
 #include <getopt.h>
 #include <errno.h>
@@ -125,6 +126,9 @@ copy_file (int ifd, const char *datafile, int pad, int offset)
 		exit (EXIT_FAILURE);
 	}
 
+	if(sbuf.st_size == 0)
+		goto close;
+
 	ptr = mmap(0, sbuf.st_size, PROT_READ, MAP_SHARED, dfd, 0);
 	if (ptr == MAP_FAILED) {
 		fprintf (stderr, "Can't read %s: %s\n",
@@ -165,6 +169,7 @@ copy_file (int ifd, const char *datafile, int pad, int offset)
 	}
 
 	(void) munmap((void *)ptr, sbuf.st_size);
+close:
 	(void) close (dfd);
 }
 
@@ -503,10 +508,12 @@ int main(int argc, char **argv)
 	uint32_t ivt_offset = IVT_OFFSET_SD;
 	uint32_t sector_size = 0x200; /* default sector size */
         soc_type_t soc = NONE; /* Initially No SOC defined */
+        rev_type_t rev = NO_REV; /* Initially No REV defined */
 
 	static struct option long_options[] =
 	{
 		{"scfw", required_argument, NULL, 'f'},
+		{"seco", required_argument, NULL, 'O'},
 		{"m4", required_argument, NULL, 'm'},
 		{"ap", required_argument, NULL, 'a'},
 		{"dcd", required_argument, NULL, 'd'},
@@ -516,9 +523,11 @@ int main(int argc, char **argv)
 		{"csf", required_argument, NULL, 'z'},
 		{"dev", required_argument, NULL, 'e'},
 		{"soc", required_argument, NULL, 's'},
+		{"rev", required_argument, NULL, 'r'},
 		{"container", no_argument, NULL, 'c'},
 		{"partition", required_argument, NULL, 'p'},
 		{"commit", no_argument, NULL, 't'},
+		{"append", no_argument, NULL, 'A'},
 		{NULL, 0, NULL, 0}
 	};
 
@@ -544,6 +553,10 @@ int main(int argc, char **argv)
 					fprintf(stderr, " with arg %s", optarg);
 				fprintf(stderr, "\n");
 				break;
+			case 'A':
+                                param_stack[p_idx].option = APPEND;
+                                param_stack[p_idx++].filename = argv[optind++];
+				break;
                         case 'p':
                                 fprintf(stdout, "PARTITION:\t%s\n", optarg);
                                 param_stack[p_idx].option = PARTITION;
@@ -560,16 +573,42 @@ int main(int argc, char **argv)
                                 }
                                 fprintf(stdout, "SOC: %s \n",optarg);
                                 break;
+                        case 'r':
+				if(soc == QX) {
+				  if(strcmp(optarg, "A0") == 0)
+				    rev = A0;
+				  else if(strcmp(optarg, "B0") == 0)
+				    rev = B0;
+				  else {
+				    fprintf(stdout, "unrecognized REVISION: %s \n",optarg);
+				    exit(EXIT_FAILURE);
+				  }
+				  fprintf(stdout, "REVISION: %s \n",optarg);
+				}
+                                break;
 			case 'f':
 				fprintf(stdout, "SCFW:\t%s\n", optarg);
                                 param_stack[p_idx].option = SCFW;
                                 param_stack[p_idx++].filename = optarg;
                                 scfw = true;
 				break;
+			case 'O':
+				fprintf(stdout, "SECO:\t%s\n", optarg);
+                                param_stack[p_idx].option = SECO;
+                                param_stack[p_idx++].filename = optarg;
+				break;
 			case 'd':
 				fprintf(stdout, "DCD:\t%s\n", optarg);
                                 param_stack[p_idx].option = DCD;
-                                param_stack[p_idx++].filename = optarg;
+                                param_stack[p_idx].filename = optarg;
+				if (rev == B0)
+					if (optind < argc && *argv[optind] != '-')
+						param_stack[p_idx].entry = (uint32_t) strtoll(argv[optind++], NULL, 0);
+					else {
+						fprintf(stderr, "\n-dcd option require TWO arguments: filename, load address in hex\n\n");
+						exit(EXIT_FAILURE);
+					}
+				p_idx++;
 				break;
 			case 'm':
 				fprintf(stdout, "CM4:\t%s", optarg);
@@ -584,6 +623,7 @@ int main(int argc, char **argv)
 					fprintf(stderr, "\n-m4 option require THREE arguments: filename, core: 0/1, start address in hex\n\n");
 					exit(EXIT_FAILURE);
 				}
+				p_idx++;
 				break;
 			case 'a':
 				fprintf(stdout, "AP:\t%s", optarg);
@@ -691,8 +731,19 @@ int main(int argc, char **argv)
         switch(soc)
         {
           case QX:
-              build_container_qx(sector_size, ivt_offset, ofname, emmc_fastboot, (image_t *) param_stack);
-              break;
+		if (rev == NO_REV) {
+			fprintf(stdout, "No REVISION defined, using A0 by default\n");
+			rev = A0;
+		}
+
+		fprintf(stdout, "ivt_offset:\t%d\n", ivt_offset);
+		fprintf(stdout, "rev:\t%d\n", rev);
+		if (rev == B0)
+			build_container_qx_b0(sector_size, ivt_offset, ofname, emmc_fastboot, (image_t *) param_stack);
+		else
+			build_container_qx(sector_size, ivt_offset, ofname, emmc_fastboot, (image_t *) param_stack);
+
+		break;
           case QM:
               build_container_qm(sector_size, ivt_offset, ofname, emmc_fastboot, (image_t *) param_stack);
               break;

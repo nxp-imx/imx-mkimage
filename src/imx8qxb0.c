@@ -217,13 +217,12 @@ uint8_t *flatten_container_header(imx_header_v3_t *imx_header,
 	return flat;
 }
 
-uint64_t read_dcd_offset(uint8_t *filename)
+uint64_t read_dcd_offset(char *filename)
 {
 	int dfd;
 	struct stat sbuf;
 	uint8_t *ptr;
 	uint64_t offset = 0;
-	int size;
 
 	dfd = open(filename, O_RDONLY|O_BINARY);
 	if (dfd < 0) {
@@ -251,10 +250,9 @@ uint64_t read_dcd_offset(uint8_t *filename)
 }
 
 void set_image_array_entry(flash_header_v3_t *container, option_type_t type, uint32_t offset,
-		uint32_t size, uint64_t dst, uint64_t entry, uint8_t *tmp_filename, uint32_t image_padding)
+		uint32_t size, uint64_t dst, uint64_t entry, char *tmp_filename, uint32_t image_padding)
 {
 	boot_img_t *img = &container->img[container->num_images];
-	uint32_t flags = 0;
 	img->offset = offset;  /* Is re-adjusted later */
 	img->size = size;
 	char *tmp_name = "";
@@ -314,6 +312,9 @@ void set_image_array_entry(flash_header_v3_t *container, option_type_t type, uin
 		img->entry = read_dcd_offset(tmp_filename);
 		img->dst = img->entry - 1;
 		break;
+	default:
+		fprintf(stderr, "unrecognized image type (%d)\n", type);
+		exit(EXIT_FAILURE);
 	}
 
 	fprintf(stdout, "%s size = %d\n", tmp_name, size);
@@ -338,8 +339,6 @@ int build_container_qx_b0(uint32_t sector_size, uint32_t ivt_offset, char *out_f
 	struct stat sbuf;
 	uint32_t image_padding = 0;
 	char *tmp_filename = NULL;
-	uint32_t tmp_flags = 0;
-	uint32_t tmp_size = 0;
 	uint32_t size = 0;
 	uint32_t file_padding = 0x400;
 

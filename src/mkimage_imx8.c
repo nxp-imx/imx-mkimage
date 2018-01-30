@@ -601,13 +601,14 @@ int main(int argc, char **argv)
 				fprintf(stdout, "DCD:\t%s\n", optarg);
                                 param_stack[p_idx].option = DCD;
                                 param_stack[p_idx].filename = optarg;
-				if (rev == B0)
+				if (rev == B0) {
 					if (optind < argc && *argv[optind] != '-')
 						param_stack[p_idx].entry = (uint32_t) strtoll(argv[optind++], NULL, 0);
 					else {
 						fprintf(stderr, "\n-dcd option require TWO arguments: filename, load address in hex\n\n");
 						exit(EXIT_FAILURE);
 					}
+				}
 				p_idx++;
 				break;
 			case 'm':

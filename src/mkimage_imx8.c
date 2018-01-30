@@ -624,7 +624,6 @@ int main(int argc, char **argv)
 					fprintf(stderr, "\n-m4 option require THREE arguments: filename, core: 0/1, start address in hex\n\n");
 					exit(EXIT_FAILURE);
 				}
-				p_idx++;
 				break;
 			case 'a':
 				fprintf(stdout, "AP:\t%s", optarg);

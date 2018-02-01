@@ -266,7 +266,7 @@ void set_image_array_entry(flash_header_v3_t *container, option_type_t type, uin
 		img->hab_flags |= CORE_CM4_0 << BOOT_IMG_FLAGS_CORE_SHIFT;
 		tmp_name = "M4";
 		img->dst = entry;
-		img->entry = entry;
+		img->entry = 0x1FFE0000;
 		break;
 	case SCFW:
 		img->hab_flags |= IMG_TYPE_EXEC;

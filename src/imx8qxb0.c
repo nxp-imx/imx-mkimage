@@ -245,15 +245,6 @@ void set_image_array_entry(flash_header_v3_t *container, option_type_t type, uin
 		/* Set default hash to 384 */
 		set_image_hash(img, tmp_filename, IMAGE_HASH_ALGO_DEFAULT);
 		break;
-	case DCD:
-		img->hab_flags |= IMG_TYPE_DCD_DDR;
-		img->hab_flags |= CORE_SC << BOOT_IMG_FLAGS_CORE_SHIFT;
-		tmp_name = "DCD";
-		img->entry = entry;
-		img->dst = entry - 1;
-		/* Set default hash to 384 */
-		set_image_hash(img, tmp_filename, IMAGE_HASH_ALGO_DEFAULT);
-		break;
 	case AP:
 		img->hab_flags |= IMG_TYPE_EXEC;
 		img->hab_flags |= CORE_CA35 << BOOT_IMG_FLAGS_CORE_SHIFT;

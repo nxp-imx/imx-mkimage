@@ -45,6 +45,8 @@
 
 #define MAX_NUM_OF_CONTAINER		2
 
+#define FILE_INITIAL_PADDING		0x0
+
 typedef struct {
 	uint32_t offset;
 	uint32_t size;
@@ -228,7 +230,7 @@ uint64_t read_dcd_offset(char *filename)
 }
 
 void set_image_array_entry(flash_header_v3_t *container, option_type_t type, uint32_t offset,
-		uint32_t size, uint64_t dst, uint64_t entry, char *tmp_filename, uint32_t image_padding)
+		uint32_t size, uint64_t dst, uint64_t entry, char *tmp_filename)
 {
 	boot_img_t *img = &container->img[container->num_images];
 	img->offset = offset;  /* Is re-adjusted later */
@@ -286,7 +288,7 @@ void set_image_array_entry(flash_header_v3_t *container, option_type_t type, uin
 		img->hab_flags |= IMG_TYPE_DCD_DDR;
 		img->hab_flags |= CORE_SC << BOOT_IMG_FLAGS_CORE_SHIFT;
 		set_image_hash(img, "/dev/null", IMAGE_HASH_ALGO_DEFAULT);
-		img->offset = ALIGN(offset + size, image_padding);
+		img->offset = ALIGN(offset + size, IMAGE_PADDING_DEFAULT);
 		img->entry = read_dcd_offset(tmp_filename);
 		img->dst = img->entry - 1;
 		break;
@@ -309,16 +311,15 @@ void set_container(flash_header_v3_t *container,  uint32_t sw_version, uint32_t 
 
 int build_container_qx_b0(uint32_t sector_size, uint32_t ivt_offset, char *out_file, bool emmc_fastboot, image_t *image_stack)
 {
-	int file_off = 0x6000,  ofd = -1;
+	int file_off = 0x7000 + FILE_INITIAL_PADDING,  ofd = -1;
 	unsigned int dcd_len = 0;
 
 	static imx_header_v3_t imx_header;
 	image_t *img_sp = image_stack;
 	struct stat sbuf;
-	uint32_t image_padding = 0;
 	char *tmp_filename = NULL;
 	uint32_t size = 0;
-	uint32_t file_padding = 0x400;
+	uint32_t file_padding = 0x400 + FILE_INITIAL_PADDING;
 
 	int container = -1;
 	int cont_img_count = 0; /* indexes to arrange the container */
@@ -348,17 +349,16 @@ int build_container_qx_b0(uint32_t sector_size, uint32_t ivt_offset, char *out_f
 		case AP:
 			check_file(&sbuf, img_sp->filename);
 			tmp_filename = img_sp->filename;
-			set_image_array_entry(&imx_header.fhdr[container], img_sp->option, file_off, sbuf.st_size, img_sp->dst, img_sp->entry, tmp_filename, image_padding);
+			set_image_array_entry(&imx_header.fhdr[container], img_sp->option, file_off, sbuf.st_size, img_sp->dst, img_sp->entry, tmp_filename);
 			img_sp->src = file_off;
 
-			file_off += ALIGN(sbuf.st_size, image_padding);
+			file_off += ALIGN(sbuf.st_size, IMAGE_PADDING_DEFAULT);
 			cont_img_count++;
 			break;
 
 		case NEW_CONTAINER:
 			container++;
 			set_container(&imx_header.fhdr[container], 0xCAFE, CONTAINER_ALIGNMENT, img_sp->src);
-			image_padding = IMAGE_PADDING_DEFAULT;
 			imx_header.fhdr[container].flags = 0x12;
 			printf("flags: 0x%x\n", imx_header.fhdr[container].flags);
 			cont_img_count = 0; /* reset img count when moving to new container */

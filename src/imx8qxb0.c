@@ -42,10 +42,17 @@
 #define DCD_ENTRY_ADDR_IN_SCFW		0x240
 
 #define CONTAINER_ALIGNMENT		0x400
+#define CONTAINER_FLAGS_DEFAULT		0x12
+#define CONTAINER_FUSE_DEFAULT		0x0
 
 #define MAX_NUM_OF_CONTAINER		2
 
 #define FILE_INITIAL_PADDING		0x0
+#define FIRST_CONTAINER_HEADER_LENGTH	0x400
+
+#define IMAGE_AP_DEFAULT_META		0x001355FC
+
+#define SECOND_CONTAINER_IMAGE_ARRAY_START_OFFEST	0x7000
 
 typedef struct {
 	uint32_t offset;
@@ -135,7 +142,8 @@ void set_image_hash(boot_img_t *img, char *filename, uint32_t hash_type)
 #define append(p, s, l) do {memcpy(p, (uint8_t *)s, l); p += l; } while (0)
 
 uint8_t *flatten_container_header(imx_header_v3_t *imx_header,
-				  uint8_t containers_count, uint32_t *size_out, uint32_t file_offset)
+					uint8_t containers_count,
+					uint32_t *size_out, uint32_t file_offset)
 {
 	uint8_t *flat = NULL;
 	uint8_t *ptr = NULL;
@@ -237,13 +245,13 @@ void set_image_array_entry(flash_header_v3_t *container, option_type_t type, uin
 	img->size = size;
 	char *tmp_name = "";
 
+	set_image_hash(img, tmp_filename, IMAGE_HASH_ALGO_DEFAULT);
+
 	switch(type) {
 	case SECO:
 		img->hab_flags |= IMG_TYPE_SECO;
 		img->hab_flags |= CORE_SC << BOOT_IMG_FLAGS_CORE_SHIFT;
 		tmp_name = "SECO";
-		/* Set default hash to 384 */
-		set_image_hash(img, tmp_filename, IMAGE_HASH_ALGO_DEFAULT);
 		break;
 	case AP:
 		img->hab_flags |= IMG_TYPE_EXEC;
@@ -251,9 +259,7 @@ void set_image_array_entry(flash_header_v3_t *container, option_type_t type, uin
 		tmp_name = "AP";
 		img->dst = entry;
 		img->entry = entry;
-		img->meta = 0x001355FC;
-		/* Set default hash to 384 */
-		set_image_hash(img, tmp_filename, IMAGE_HASH_ALGO_DEFAULT);
+		img->meta = IMAGE_AP_DEFAULT_META;
 		break;
 	case M4:
 		img->hab_flags |= IMG_TYPE_EXEC;
@@ -261,17 +267,13 @@ void set_image_array_entry(flash_header_v3_t *container, option_type_t type, uin
 		tmp_name = "M4";
 		img->dst = entry;
 		img->entry = entry;
-		/* Set default hash to 384 */
-		set_image_hash(img, tmp_filename, IMAGE_HASH_ALGO_DEFAULT);
 		break;
 	case SCFW:
 		img->hab_flags |= IMG_TYPE_EXEC;
 		img->hab_flags |= CORE_SC << BOOT_IMG_FLAGS_CORE_SHIFT;
 		tmp_name = "SCFW";
-		img->dst = 0x1ffe0000;
-		img->entry = 0x1ffe0000;
-		/* Set default hash to 384 */
-		set_image_hash(img, tmp_filename, IMAGE_HASH_ALGO_DEFAULT);
+		img->dst = 0x1FFE0000;
+		img->entry = 0x1FFE0000;
 
 		/* Lets add the DCD now */
 		container->num_images++;
@@ -293,16 +295,20 @@ void set_image_array_entry(flash_header_v3_t *container, option_type_t type, uin
 	container->num_images++;
 }
 
-void set_container(flash_header_v3_t *container,  uint32_t sw_version, uint32_t alignment, uint32_t fuse_version)
+void set_container(flash_header_v3_t *container,  uint16_t sw_version,
+			uint32_t alignment, uint32_t flags, uint16_t fuse_version)
 {
 	container->sw_version = sw_version;
 	container->padding = alignment;
 	container->fuse_version = fuse_version;
+	container->flags = flags;
+	printf("flags: 0x%x\n", container->flags);
 }
 
-int build_container_qx_b0(uint32_t sector_size, uint32_t ivt_offset, char *out_file, bool emmc_fastboot, image_t *image_stack)
+int build_container_qx_b0(uint32_t sector_size, uint32_t ivt_offset, char *out_file,
+				bool emmc_fastboot, image_t *image_stack)
 {
-	int file_off = 0x7000 + FILE_INITIAL_PADDING,  ofd = -1;
+	int file_off = SECOND_CONTAINER_IMAGE_ARRAY_START_OFFEST + FILE_INITIAL_PADDING,  ofd = -1;
 	unsigned int dcd_len = 0;
 
 	static imx_header_v3_t imx_header;
@@ -310,7 +316,7 @@ int build_container_qx_b0(uint32_t sector_size, uint32_t ivt_offset, char *out_f
 	struct stat sbuf;
 	char *tmp_filename = NULL;
 	uint32_t size = 0;
-	uint32_t file_padding = 0x400 + FILE_INITIAL_PADDING;
+	uint32_t file_padding = FIRST_CONTAINER_HEADER_LENGTH + FILE_INITIAL_PADDING;
 
 	int container = -1;
 	int cont_img_count = 0; /* indexes to arrange the container */
@@ -340,7 +346,13 @@ int build_container_qx_b0(uint32_t sector_size, uint32_t ivt_offset, char *out_f
 		case AP:
 			check_file(&sbuf, img_sp->filename);
 			tmp_filename = img_sp->filename;
-			set_image_array_entry(&imx_header.fhdr[container], img_sp->option, file_off, sbuf.st_size, img_sp->dst, img_sp->entry, tmp_filename);
+			set_image_array_entry(&imx_header.fhdr[container],
+						img_sp->option,
+						file_off,
+						sbuf.st_size,
+						img_sp->dst,
+						img_sp->entry,
+						tmp_filename);
 			img_sp->src = file_off;
 
 			file_off += ALIGN(sbuf.st_size, IMAGE_PADDING_DEFAULT);
@@ -349,9 +361,10 @@ int build_container_qx_b0(uint32_t sector_size, uint32_t ivt_offset, char *out_f
 
 		case NEW_CONTAINER:
 			container++;
-			set_container(&imx_header.fhdr[container], 0xCAFE, CONTAINER_ALIGNMENT, 0);
-			imx_header.fhdr[container].flags = 0x12;
-			printf("flags: 0x%x\n", imx_header.fhdr[container].flags);
+			set_container(&imx_header.fhdr[container], 0xCAFE,
+					CONTAINER_ALIGNMENT,
+					CONTAINER_FLAGS_DEFAULT,
+					CONTAINER_FUSE_DEFAULT);
 			cont_img_count = 0; /* reset img count when moving to new container */
 			break;
 

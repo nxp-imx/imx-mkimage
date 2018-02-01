@@ -6,15 +6,10 @@
  *
  */
 
-#include <inttypes.h>
-#include <openssl/sha.h>
-#include <openssl/x509v3.h>
-#include <openssl/objects.h>
-#include <openssl/pem.h>
-#include <openssl/evp.h>
-#include <openssl/bio.h>
-#include <openssl/bn.h>
 #include "mkimage_common.h"
+
+#include <inttypes.h>
+#include <stdio.h>
 
 #define IV_MAX_LEN			32
 #define HASH_MAX_LEN			64
@@ -94,62 +89,45 @@ static void set_imx_hdr_v3(imx_header_v3_t *imxhdr, uint32_t dcd_len,
 
 void set_image_hash(boot_img_t *img, char *filename, uint32_t hash_type)
 {
-	int dfd;
-	unsigned char *ptr = NULL;
-	struct stat sbuf;
+	FILE *fp = NULL;
+	char sha_command[128];
+	char hash[2 * HASH_MAX_LEN + 1];
+	sprintf(sha_command, "sha%dsum \"%s\"", hash_type, filename);
 
-	dfd = open(filename, O_RDONLY|O_BINARY);
-	if (dfd  < 0) {
-		fprintf(stderr, "Can't open %s: %s\n",
-				filename, strerror(errno));
+	switch(hash_type) {
+	case HASH_TYPE_SHA_256:
+		img->hab_flags |= IMG_FLAG_HASH_SHA256;
+		break;
+	case HASH_TYPE_SHA_384:
+		img->hab_flags |= IMG_FLAG_HASH_SHA384;
+		break;
+	case HASH_TYPE_SHA_512:
+		img->hab_flags |= IMG_FLAG_HASH_SHA512;
+		break;
+	default:
+		fprintf(stderr, "Wrong hash type selected (%d) !!!\n\n",
+				hash_type);
 		exit(EXIT_FAILURE);
+		break;
 	}
-
-	if (fstat(dfd, &sbuf) < 0) {
-		fprintf(stderr, "Can't stat %s: %s\n",
-				filename, strerror(errno));
-		exit(EXIT_FAILURE);
-	}
-
-	if (sbuf.st_size) {
-		ptr = mmap(0, sbuf.st_size, PROT_READ, MAP_SHARED, dfd, 0);
-		if (ptr == MAP_FAILED) {
-			fprintf(stderr, "Can't read %s: %s\n",
-				filename, strerror(errno));
-			exit(EXIT_FAILURE);
-		}
-	}
-
 	memset(img->hash, 0, HASH_MAX_LEN);
 
-	if (hash_type == HASH_TYPE_SHA_384) {
-		SHA512_CTX ctx;
-
-		SHA384_Init(&ctx);
-		SHA384_Update(&ctx, ptr, sbuf.st_size);
-		SHA384_Final(img->hash, &ctx);
-		img->hab_flags |= IMG_FLAG_HASH_SHA384;
-	} else if (hash_type == HASH_TYPE_SHA_512) {
-		SHA512_CTX ctx;
-
-		SHA512_Init(&ctx);
-		SHA512_Update(&ctx, ptr, sbuf.st_size);
-		SHA512_Final(img->hash, &ctx);
-		img->hab_flags |= IMG_FLAG_HASH_SHA512;
-	} else if (hash_type == HASH_TYPE_SHA_256) {
-		SHA256_CTX ctx;
-
-		SHA256_Init(&ctx);
-		SHA256_Update(&ctx, ptr, sbuf.st_size);
-		SHA256_Final(img->hash, &ctx);
-		img->hab_flags |= IMG_FLAG_HASH_SHA256;
-	} else {
-		printf("Wrong hash type selected (%d) !!!\n\n", hash_type);
+	fp = popen(sha_command, "r");
+	if (fp == NULL) {
+		fprintf(stderr, "Failed to run command hash\n" );
 		exit(EXIT_FAILURE);
 	}
 
-	(void) munmap((void *)ptr, sbuf.st_size);
-	(void) close(dfd);
+	if(fgets(hash, hash_type / 4 + 1, fp) == NULL) {
+		fprintf(stderr, "Failed to hash file: %s\n", filename);
+		exit(EXIT_FAILURE);
+	}
+
+	for(int i = 0; i < strlen(hash)/2; i++){
+		sscanf(hash + 2*i, "%02hhx", &img->hash[i]);
+	}
+
+	pclose(fp);
 }
 
 #define append(p, s, l) do {memcpy(p, (uint8_t *)s, l); p += l; } while (0)

@@ -28,7 +28,7 @@ clean:
 
 $(MKIMG): buildinfo $(SRCS)
 	@echo "Compiling mkimage_imx8"
-	$(CC) $(CFLAGS) $(SRCS) -o $(MKIMG) -I src -lcrypto
+	$(CC) $(CFLAGS) $(SRCS) -o $(MKIMG) -I src
 
 bin: $(MKIMG)
 

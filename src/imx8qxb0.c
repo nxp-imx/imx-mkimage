@@ -51,6 +51,7 @@
 #define FIRST_CONTAINER_HEADER_LENGTH	0x400
 
 #define IMAGE_AP_DEFAULT_META		0x001355FC
+#define IMAGE_M4_DEFAULT_META		0x0004A516
 
 #define SECOND_CONTAINER_IMAGE_ARRAY_START_OFFEST	0x7000
 
@@ -267,6 +268,7 @@ void set_image_array_entry(flash_header_v3_t *container, option_type_t type, uin
 		tmp_name = "M4";
 		img->dst = entry;
 		img->entry = 0x1FFE0000;
+		img->meta = IMAGE_M4_DEFAULT_META;
 		break;
 	case SCFW:
 		img->hab_flags |= IMG_TYPE_EXEC;

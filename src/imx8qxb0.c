@@ -349,7 +349,7 @@ int build_container_qx_b0(uint32_t sector_size, uint32_t ivt_offset, char *out_f
 
 		case NEW_CONTAINER:
 			container++;
-			set_container(&imx_header.fhdr[container], 0xCAFE, CONTAINER_ALIGNMENT, img_sp->src);
+			set_container(&imx_header.fhdr[container], 0xCAFE, CONTAINER_ALIGNMENT, 0);
 			imx_header.fhdr[container].flags = 0x12;
 			printf("flags: 0x%x\n", imx_header.fhdr[container].flags);
 			cont_img_count = 0; /* reset img count when moving to new container */

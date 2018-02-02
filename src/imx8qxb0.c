@@ -45,6 +45,8 @@
 #define CONTAINER_FLAGS_DEFAULT		0x12
 #define CONTAINER_FUSE_DEFAULT		0x0
 
+#define SIGNATURE_BLOCK_HEADER_LENGTH	0x10
+
 #define MAX_NUM_OF_CONTAINER		2
 
 #define FILE_INITIAL_PADDING		0x0
@@ -54,6 +56,17 @@
 #define IMAGE_M4_DEFAULT_META		0x0004A516
 
 #define SECOND_CONTAINER_IMAGE_ARRAY_START_OFFEST	0x7000
+
+typedef struct {
+	uint8_t version;
+	uint16_t length;
+	uint8_t tag;
+	uint16_t srk_table_offset;
+	uint16_t cert_offset;
+	uint16_t blob_offset;
+	uint16_t signature_offset;
+	uint32_t reserved;
+} __attribute__((packed)) sig_blk_hdr_t;
 
 typedef struct {
 	uint32_t offset;
@@ -77,7 +90,7 @@ typedef struct {
 	uint16_t sig_blk_offset;
 	uint16_t reserved;
 	boot_img_t img[MAX_NUM_IMGS];
-	uint8_t *sigblk;
+	sig_blk_hdr_t sig_blk_hdr;
 	uint32_t sigblk_size;
 	uint32_t padding;
 }  __attribute__((packed)) flash_header_v3_t;
@@ -159,14 +172,12 @@ uint8_t *flatten_container_header(imx_header_v3_t *imx_header,
 			container->num_images * IMG_ARRAY_ENTRY_SIZE;
 
 		container->length = HEADER_IMG_ARRAY_OFFSET +
-			(IMG_ARRAY_ENTRY_SIZE * container->num_images);
+			(IMG_ARRAY_ENTRY_SIZE * container->num_images) + sizeof(sig_blk_hdr_t);
 
 		/* Print info needed by CST to sign the container header */
 		fprintf(stderr, "CST: CONTAINER %d offset: 0x%x\n", i, file_offset + size);
 		fprintf(stderr, "CST: CONTAINER %d: Signature Block: offset is at 0x%x\n", i,
-						file_offset + size + container->length);
-
-		container->length += container->sigblk_size;
+						file_offset + size + container->length - SIGNATURE_BLOCK_HEADER_LENGTH);
 
 		size += ALIGN(container->length, container->padding);
 	}
@@ -197,7 +208,7 @@ uint8_t *flatten_container_header(imx_header_v3_t *imx_header,
 			append(ptr, &container->img[j], sizeof(boot_img_t));
 		}
 
-		append(ptr, container->sigblk, container->sigblk_size);
+		append(ptr, &container->sig_blk_hdr, sizeof(sig_blk_hdr_t));
 
 		/* Padding for container (if necessary) */
 		ptr += ALIGN(container->length, container->padding) - container->length;
@@ -300,6 +311,8 @@ void set_image_array_entry(flash_header_v3_t *container, option_type_t type, uin
 void set_container(flash_header_v3_t *container,  uint16_t sw_version,
 			uint32_t alignment, uint32_t flags, uint16_t fuse_version)
 {
+	container->sig_blk_hdr.tag = 0x90;
+	container->sig_blk_hdr.length = sizeof(sig_blk_hdr_t);
 	container->sw_version = sw_version;
 	container->padding = alignment;
 	container->fuse_version = fuse_version;

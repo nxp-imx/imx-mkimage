@@ -254,7 +254,7 @@ void set_image_array_entry(flash_header_v3_t *container, option_type_t type, uin
 {
 	boot_img_t *img = &container->img[container->num_images];
 	img->offset = offset;  /* Is re-adjusted later */
-	img->size = size;
+	img->size = ALIGN(size, IMAGE_PADDING_DEFAULT);
 	char *tmp_name = "";
 
 	set_image_hash(img, tmp_filename, IMAGE_HASH_ALGO_DEFAULT);
@@ -294,7 +294,7 @@ void set_image_array_entry(flash_header_v3_t *container, option_type_t type, uin
 		img->hab_flags |= IMG_TYPE_DCD_DDR;
 		img->hab_flags |= CORE_SC << BOOT_IMG_FLAGS_CORE_SHIFT;
 		set_image_hash(img, "/dev/null", IMAGE_HASH_ALGO_DEFAULT);
-		img->offset = ALIGN(offset + size, IMAGE_PADDING_DEFAULT);
+		img->offset = offset + img->size;
 		img->entry = read_dcd_offset(tmp_filename);
 		img->dst = img->entry - 1;
 		break;

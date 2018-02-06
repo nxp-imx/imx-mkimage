@@ -281,6 +281,11 @@ void set_image_array_entry(flash_header_v3_t *container, option_type_t type, uin
 		img->entry = 0x1FFE0000;
 		img->meta = IMAGE_M4_DEFAULT_META;
 		break;
+	case DATA:
+		img->hab_flags = IMG_TYPE_DATA;
+		tmp_name = "DATA";
+		img->dst = entry;
+		break;
 	case SCFW:
 		img->hab_flags |= IMG_TYPE_EXEC;
 		img->hab_flags |= CORE_SC << BOOT_IMG_FLAGS_CORE_SHIFT;
@@ -358,6 +363,7 @@ int build_container_qx_b0(uint32_t sector_size, uint32_t ivt_offset, char *out_f
 		case SECO:
 		case M4:
 		case SCFW:
+		case DATA:
 		case AP:
 			check_file(&sbuf, img_sp->filename);
 			tmp_filename = img_sp->filename;
@@ -430,7 +436,7 @@ int build_container_qx_b0(uint32_t sector_size, uint32_t ivt_offset, char *out_f
 	/* step through the image stack again this time copying images to final bin */
 	img_sp = image_stack;
 	while (img_sp->option != NO_IMG) { /* stop once we reach null terminator */
-		if (img_sp->option == M4 || img_sp->option == AP ||
+		if (img_sp->option == M4 || img_sp->option == AP || img_sp->option == DATA ||
 				img_sp->option == DCD || img_sp->option == SCD ||
 				img_sp->option == SCFW || img_sp->option == SECO) {
 			copy_file(ofd, img_sp->filename, 0, img_sp->src);

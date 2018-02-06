@@ -85,6 +85,9 @@ flash_b0: $(MKIMG) $(DCD_CFG) ahab-container.img scfw_tcm.bin dummy_ddr.bin u-bo
 flash_b0_test_build: $(MKIMG) $(DCD_CFG) ahab-container.img scfw_tcm.bin dummy_ddr.bin u-boot.bin CM4.bin
 	./$(MKIMG) -soc QX -rev B0 -append ahab-container.img -c -scfw scfw_tcm.bin -ap u-boot.bin a35 0x80000000 -m4 CM4.bin 0 0x34FE0000 -out flash.bin
 
+flash_b0_test_build_mfg: $(MKIMG) $(DCD_CFG) ahab-container.img scfw_tcm.bin dummy_ddr.bin u-boot.bin CM4.bin kernel.bin initramfs.bin board.dtb
+	./$(MKIMG) -soc QX -rev B0 -append ahab-container.img -c -scfw scfw_tcm.bin -ap u-boot.bin a35 0x80000000 -m4 CM4.bin 0 0x34FE0000 -data kernel.bin 0x80280000 -data initramfs.bin 0x83800000 -data board.dtb 0x83000000 -out flash.bin
+
 flash_all: $(MKIMG) $(DCD_CFG) scfw_tcm.bin m4_image.bin u-boot-atf.bin scd.bin csf.bin csf_ap.bin
 	./$(MKIMG) -soc QX -c -dcd $(DCD_CFG) -scfw scfw_tcm.bin -m4 m4_image.bin 0 0x34FE0000 -scd scd.bin -csf csf.bin -c -ap u-boot-atf.bin a35 0x80000000 -csf csf_ap.bin -out flash.bin
 

@@ -528,6 +528,7 @@ int main(int argc, char **argv)
 		{"partition", required_argument, NULL, 'p'},
 		{"commit", no_argument, NULL, 't'},
 		{"append", no_argument, NULL, 'A'},
+		{"data", required_argument, NULL, 'D'},
 		{NULL, 0, NULL, 0}
 	};
 
@@ -610,6 +611,23 @@ int main(int argc, char **argv)
 					}
 				}
 				p_idx++;
+				break;
+			case 'D':
+				if (rev == B0) {
+					fprintf(stdout, "Data:\t%s\n", optarg);
+					param_stack[p_idx].option = DATA;
+					param_stack[p_idx].filename = optarg;
+					if (optind < argc && *argv[optind] != '-')
+						param_stack[p_idx].entry = (uint32_t) strtoll(argv[optind++], NULL, 0);
+					else {
+						fprintf(stderr, "\n-data option require TWO arguments: filename, load address in hex\n\n");
+						exit(EXIT_FAILURE);
+					}
+					p_idx++;
+				} else {
+					fprintf(stderr, "\n-data option is only used with -rev B0.\n\n");
+					exit(EXIT_FAILURE);
+				}
 				break;
 			case 'm':
 				fprintf(stdout, "CM4:\t%s", optarg);

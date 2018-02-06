@@ -44,6 +44,7 @@ typedef enum option_type {
     DEVICE,
     NEW_CONTAINER,
     APPEND,
+    DATA,
     PARTITION
 } option_type_t;
 

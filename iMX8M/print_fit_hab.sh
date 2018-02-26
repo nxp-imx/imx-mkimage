@@ -31,6 +31,10 @@ uboot_size=`printf "0x%X" ${uboot_size}`
 uboot_sign_off=`printf "0x%X" ${uboot_sign_off}`
 uboot_load_addr=`printf "0x%X" ${uboot_load_addr}`
 
+tee_size=`printf "0x%X" ${tee_size}`
+tee_sign_off=`printf "0x%X" ${tee_sign_off}`
+tee_load_addr=`printf "0x%X" ${tee_load_addr}`
+
 atf_size=`printf "0x%X" ${atf_size}`
 atf_sign_off=`printf "0x%X" ${atf_sign_off}`
 atf_load_addr=`printf "0x%X" ${atf_load_addr}`

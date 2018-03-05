@@ -1,9 +1,10 @@
 MKIMG = ../mkimage_imx8
-#DCD_CFG_SRC = imx8qm_dcd_800MHz.cfg
+DCD_800_CFG_SRC = imx8qm_dcd_800MHz.cfg
 #DCD_CFG_SRC = imx8qm_dcd_1.2GHz.cfg
 DCD_CFG_SRC = imx8qm_dcd_1.6GHz.cfg
 
 DCD_CFG = imx8qm_dcd.cfg.tmp
+DCD_800_CFG = imx8qm_dcd_800.cfg.tmp
 
 CC ?= gcc
 INCLUDE = ./lib
@@ -27,6 +28,10 @@ $(DCD_CFG): FORCE
 	@echo "Converting iMX8 DCD file"
 	$(CC) -E -Wp,-MD,.imx8qm_dcd.cfg.cfgtmp.d  -nostdinc -Iinclude -I$(INCLUDE) -DDDR_TRAIN_IN_DCD=$(DDR_TRAIN) -x c -o $(DCD_CFG) $(DCD_CFG_SRC)
 
+$(DCD_800_CFG): FORCE
+	@echo "Converting iMX8 DCD 800MHz file"
+	$(CC) -E -Wp,-MD,.imx8qm_dcd_800.cfg.cfgtmp.d  -nostdinc -Iinclude -I$(INCLUDE) -DDDR_TRAIN_IN_DCD=$(DDR_TRAIN) -x c -o $(DCD_800_CFG) $(DCD_800_CFG_SRC)
+
 FORCE:
 
 u-boot-atf.bin: u-boot.bin bl31.bin
@@ -43,13 +48,16 @@ u-boot-atf.bin: u-boot.bin bl31.bin
 
 .PHONY: clean
 clean:
-	@rm -f $(DCD_CFG) .imx8_dcd.cfg.cfgtmp.d
+	@rm -f $(DCD_CFG) .imx8_dcd.cfg.cfgtmp.d $(DCD_800_CFG) .imx8qm_dcd_800.cfg.cfgtmp.d
 
 flash_scfw: $(MKIMG) scfw_tcm.bin
 	./$(MKIMG) -soc QM -c -scfw scfw_tcm.bin -out flash.bin
 
 flash_dcd: $(MKIMG) $(DCD_CFG) scfw_tcm.bin u-boot-atf.bin
 	./$(MKIMG) -soc QM -c -dcd $(DCD_CFG) -scfw scfw_tcm.bin -c -ap u-boot-atf.bin a53 0x80000000 -out flash.bin
+
+flash_dcd_800: $(MKIMG) $(DCD_800_CFG) scfw_tcm.bin u-boot-atf.bin
+	./$(MKIMG) -soc QM -c -dcd $(DCD_800_CFG) -scfw scfw_tcm.bin -c -ap u-boot-atf.bin a53 0x80000000 -out flash.bin
 
 flash: $(MKIMG) $(DCD_CFG) scfw_tcm.bin u-boot-atf.bin
 	./$(MKIMG) -soc QM -c -scfw scfw_tcm.bin -c -ap u-boot-atf.bin a53 0x80000000 -out flash.bin

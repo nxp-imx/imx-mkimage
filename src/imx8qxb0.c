@@ -113,10 +113,10 @@ static void set_imx_hdr_v3(imx_header_v3_t *imxhdr, uint32_t dcd_len,
 void set_image_hash(boot_img_t *img, char *filename, uint32_t hash_type)
 {
 	FILE *fp = NULL;
-	char sha_command[128];
+	char sha_command[512];
 	char hash[2 * HASH_MAX_LEN + 1];
 	sprintf(sha_command, "dd if=/dev/zero of=tmp_pad bs=1 count=%d;\
-			dd if=%s of=tmp_pad conv=notrunc; sha%dsum tmp_pad; rm -f tmp_pad",
+			dd if=\'%s\' of=tmp_pad conv=notrunc; sha%dsum tmp_pad; rm -f tmp_pad",
 			img->size, filename, hash_type);
 
 	switch(hash_type) {

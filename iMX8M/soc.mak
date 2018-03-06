@@ -85,7 +85,7 @@ FW_DIR = imx-boot/imx-boot-tools/$(PLAT)
 $(MKIMG): mkimage_imx8.c
 	@echo "PLAT="$(PLAT) "HDMI="$(HDMI)
 	@echo "Compiling mkimage_imx8"
-	$(CC) $(CFLAGS) mkimage_imx8.c -o $(MKIMG) -lz
+	$(CC) $(CFLAGS) mkimage_imx8.c -o $(MKIMG) $(BUILD_LDFLAGS) -lz
 
 lpddr4_imem_1d = lpddr4_pmu_train_1d_imem$(LPDDR_FW_VERSION).bin
 lpddr4_dmem_1d = lpddr4_pmu_train_1d_dmem$(LPDDR_FW_VERSION).bin

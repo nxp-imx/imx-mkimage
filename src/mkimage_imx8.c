@@ -698,6 +698,20 @@ int main(int argc, char **argv)
 					ivt_offset = IVT_OFFSET_SD;
 				} else if (!strcmp(optarg, "nand")) {
                                         sector_size = 0x8000;/* sector size for NAND */
+					if (rev == B0) {
+						if (optind < argc && *argv[optind] != '-') {
+							if (!strcmp(argv[optind], "4K")) {
+								sector_size = 0x1000;
+							} else if (!strcmp(argv[optind], "8K")) {
+								sector_size = 0x2000;
+							} else if (!strcmp(argv[optind], "16K")) {
+								sector_size = 0x4000;
+							} else
+								fprintf(stdout, "\nwrong nand page size:\r\n 4K\r\n8K\r\n16K\n\n");
+						} else {
+							fprintf(stdout, "\n-dev nand requires the page size:\r\n 4K\r\n8K\r\n16K\n\n");
+						}
+					}
 				} else if (!strcmp(optarg, "emmc_fast")) {
                                         ivt_offset = IVT_OFFSET_EMMC;
                                         emmc_fastboot = true;/* emmc boot */

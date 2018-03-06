@@ -578,9 +578,10 @@ int main(int argc, char **argv)
 				if(soc == QX) {
 				  if(strcmp(optarg, "A0") == 0)
 				    rev = A0;
-				  else if(strcmp(optarg, "B0") == 0)
+				  else if(strcmp(optarg, "B0") == 0) {
 				    rev = B0;
-				  else {
+				    sector_size = 0x400;
+				  } else {
 				    fprintf(stdout, "unrecognized REVISION: %s \n",optarg);
 				    exit(EXIT_FAILURE);
 				  }

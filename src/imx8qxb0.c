@@ -256,7 +256,7 @@ void set_image_array_entry(flash_header_v3_t *container, option_type_t type, uin
 {
 	boot_img_t *img = &container->img[container->num_images];
 	img->offset = offset;  /* Is re-adjusted later */
-	img->size = ALIGN(size, IMAGE_PADDING_DEFAULT);
+	img->size = size;
 	char *tmp_name = "";
 
 	set_image_hash(img, tmp_filename, IMAGE_HASH_ALGO_DEFAULT);
@@ -372,13 +372,13 @@ int build_container_qx_b0(uint32_t sector_size, uint32_t ivt_offset, char *out_f
 			set_image_array_entry(&imx_header.fhdr[container],
 						img_sp->option,
 						file_off,
-						sbuf.st_size,
+						ALIGN(sbuf.st_size, sector_size),
 						img_sp->dst,
 						img_sp->entry,
 						tmp_filename);
 			img_sp->src = file_off;
 
-			file_off += ALIGN(sbuf.st_size, IMAGE_PADDING_DEFAULT);
+			file_off += ALIGN(sbuf.st_size, sector_size);
 			cont_img_count++;
 			break;
 

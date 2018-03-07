@@ -11,6 +11,9 @@
 #include <inttypes.h>
 #include <stdio.h>
 
+#define OCRAM_START                     0x00100000
+#define OCRAM_END                       0x00400000
+
 #define IV_MAX_LEN			32
 #define HASH_MAX_LEN			64
 #define MAX_NUM_IMGS			6
@@ -365,7 +368,7 @@ int build_container_qx_b0(uint32_t sector_size, uint32_t ivt_offset, char *out_f
 		case AP:
                         /* additional processing for AP image */
                         img_sp->dst = img_sp->entry;
-                        if(img_sp->dst >= 0x10000 && img_sp->dst <= 0x40000){
+                        if(img_sp->dst >= OCRAM_START && img_sp->dst <= OCRAM_END){
                           img_sp->entry = 0; /* set OCRAM entry */
                         }
 	                check_file(&sbuf, img_sp->filename);

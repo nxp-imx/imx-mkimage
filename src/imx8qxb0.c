@@ -255,7 +255,7 @@ uint64_t read_dcd_offset(char *filename)
 }
 
 void set_image_array_entry(flash_header_v3_t *container, option_type_t type, uint32_t offset,
-		uint32_t size, uint64_t dst, uint64_t entry, char *tmp_filename)
+		uint32_t size, uint64_t dst, uint64_t entry, char *tmp_filename, bool dcd_skip)
 {
 	boot_img_t *img = &container->img[container->num_images];
 	img->offset = offset;  /* Is re-adjusted later */
@@ -299,14 +299,16 @@ void set_image_array_entry(flash_header_v3_t *container, option_type_t type, uin
 		img->entry = 0x1FFE0000;
 
 		/* Lets add the DCD now */
-		container->num_images++;
-		img = &container->img[container->num_images];
-		img->hab_flags |= IMG_TYPE_DCD_DDR;
-		img->hab_flags |= CORE_SC << BOOT_IMG_FLAGS_CORE_SHIFT;
-		set_image_hash(img, "/dev/null", IMAGE_HASH_ALGO_DEFAULT);
-		img->offset = offset + img->size;
-		img->entry = read_dcd_offset(tmp_filename);
-		img->dst = img->entry - 1;
+		if (!dcd_skip) {
+			container->num_images++;
+			img = &container->img[container->num_images];
+			img->hab_flags |= IMG_TYPE_DCD_DDR;
+			img->hab_flags |= CORE_SC << BOOT_IMG_FLAGS_CORE_SHIFT;
+			set_image_hash(img, "/dev/null", IMAGE_HASH_ALGO_DEFAULT);
+			img->offset = offset + img->size;
+			img->entry = read_dcd_offset(tmp_filename);
+			img->dst = img->entry - 1;
+		}
 		break;
 	default:
 		fprintf(stderr, "unrecognized image type (%d)\n", type);
@@ -331,7 +333,7 @@ void set_container(flash_header_v3_t *container,  uint16_t sw_version,
 }
 
 int build_container_qx_b0(uint32_t sector_size, uint32_t ivt_offset, char *out_file,
-				bool emmc_fastboot, image_t *image_stack)
+				bool emmc_fastboot, image_t *image_stack, bool dcd_skip)
 {
 	int file_off = SECOND_CONTAINER_IMAGE_ARRAY_START_OFFEST + FILE_INITIAL_PADDING,  ofd = -1;
 	unsigned int dcd_len = 0;
@@ -378,7 +380,8 @@ int build_container_qx_b0(uint32_t sector_size, uint32_t ivt_offset, char *out_f
 						ALIGN(sbuf.st_size, sector_size),
 						img_sp->dst,
 						img_sp->entry,
-						tmp_filename);
+						tmp_filename,
+						dcd_skip);
 			img_sp->src = file_off;
 
 			file_off += ALIGN(sbuf.st_size, sector_size);
@@ -445,8 +448,7 @@ int build_container_qx_b0(uint32_t sector_size, uint32_t ivt_offset, char *out_f
 	/* step through the image stack again this time copying images to final bin */
 	img_sp = image_stack;
 	while (img_sp->option != NO_IMG) { /* stop once we reach null terminator */
-		if (img_sp->option == M4 || img_sp->option == AP || img_sp->option == DATA ||
-				img_sp->option == DCD || img_sp->option == SCD ||
+		if (img_sp->option == M4 || img_sp->option == AP || img_sp->option == DATA || img_sp->option == SCD ||
 				img_sp->option == SCFW || img_sp->option == SECO) {
 			copy_file(ofd, img_sp->filename, 0, img_sp->src);
 		}

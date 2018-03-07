@@ -499,6 +499,7 @@ int main(int argc, char **argv)
 	char *ofname = NULL;
         bool scfw = false;
         bool output = false;
+        bool dcd_skip = false;
         bool emmc_fastboot = false;
 
         int container = -1;
@@ -601,17 +602,18 @@ int main(int argc, char **argv)
 				break;
 			case 'd':
 				fprintf(stdout, "DCD:\t%s\n", optarg);
-                                param_stack[p_idx].option = DCD;
-                                param_stack[p_idx].filename = optarg;
 				if (rev == B0) {
-					if (optind < argc && *argv[optind] != '-')
-						param_stack[p_idx].entry = (uint32_t) strtoll(argv[optind++], NULL, 0);
-					else {
-						fprintf(stderr, "\n-dcd option require TWO arguments: filename, load address in hex\n\n");
+					if (!strncmp(optarg, "skip", 4)) {
+						dcd_skip = true;
+					} else {
+						fprintf(stderr, "\n-dcd option requires argument skip\n\n");
 						exit(EXIT_FAILURE);
 					}
+				} else {
+	                                param_stack[p_idx].option = DCD;
+					param_stack[p_idx].filename = optarg;
+					p_idx++;
 				}
-				p_idx++;
 				break;
 			case 'D':
 				if (rev == B0) {
@@ -772,7 +774,7 @@ int main(int argc, char **argv)
 		fprintf(stdout, "ivt_offset:\t%d\n", ivt_offset);
 		fprintf(stdout, "rev:\t%d\n", rev);
 		if (rev == B0)
-			build_container_qx_b0(sector_size, ivt_offset, ofname, emmc_fastboot, (image_t *) param_stack);
+			build_container_qx_b0(sector_size, ivt_offset, ofname, emmc_fastboot, (image_t *) param_stack, dcd_skip);
 		else
 			build_container_qx(sector_size, ivt_offset, ofname, emmc_fastboot, (image_t *) param_stack);
 

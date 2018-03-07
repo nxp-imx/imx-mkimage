@@ -311,6 +311,6 @@ int build_container_qx(uint32_t sector_size, uint32_t ivt_offset, char * out_fil
                 bool emmc_fastboot, image_t* image_stack);
 
 int build_container_qx_b0(uint32_t sector_size, uint32_t ivt_offset, char * out_file,
-                bool emmc_fastboot, image_t* image_stack);
+                bool emmc_fastboot, image_t* image_stack, bool dcd_skip);
 
 

@@ -15,7 +15,7 @@ DDR_TRAIN ?= 1
 WGET = /usr/bin/wget
 N ?= latest
 SERVER=http://yb2.am.freescale.net
-DIR = build-output/Linux_IMX_MX8/$(N)/common_bsp
+DIR = build-output/Linux_IMX_Rocko_MX8/$(N)/common_bsp
 
 ifneq ($(wildcard /usr/bin/rename.ul),)
     RENAME = rename.ul
@@ -119,7 +119,7 @@ flash_aprom_ddr_unsigned: $(MKIMG) $(DCD_CFG) scfw_tcm.bin u-boot-atf.bin aprom_
 
 nightly :
 	@rm -rf boot
-	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qm/mx8qm-scfw-tcm.bin -O scfw_tcm.bin
+	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qm/mx8qm-val-scfw-tcm.bin -O scfw_tcm.bin
 	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qm/bl31-imx8qm.bin -O bl31.bin
 	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qm/u-boot-imx8qmlpddr4arm2.bin-sd -O u-boot.bin
 	@$(WGET) -qr -nd -l1 -np $(SERVER)/$(DIR) -P boot -A "Image-fsl-imx8qm-*.dtb"

@@ -20,7 +20,7 @@ DDR_TRAIN ?= 1
 WGET = /usr/bin/wget
 N ?= latest
 SERVER=http://yb2.am.freescale.net
-DIR = build-output/Linux_IMX_MX8/$(N)/common_bsp
+DIR = build-output/Linux_IMX_Rocko_MX8/$(N)/common_bsp
 
 ifeq ($(DDR3_DCD), 1)
 	DCD_CFG_SRC = imx8qx_ddr3_dcd_1066MHz_ecc.cfg
@@ -117,7 +117,7 @@ flash_fastboot: $(MKIMG) $(DCD_CFG) scfw_tcm.bin u-boot-atf.bin m4_image.bin
 
 nightly :
 	@rm -rf boot
-	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qx/mx8qx-scfw-tcm.bin -O scfw_tcm.bin
+	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qx/mx8qx-val-scfw-tcm.bin -O scfw_tcm.bin
 	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qx/bl31-imx8qxp.bin -O bl31.bin
 	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qx/u-boot-imx8qxplpddr4arm2.bin-sd -O u-boot.bin
 	@$(WGET) -qr -nd -l1 -np $(SERVER)/$(DIR) -P boot -A "Image-fsl-imx8qxp-*.dtb"

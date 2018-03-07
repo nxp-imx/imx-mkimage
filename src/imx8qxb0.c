@@ -394,6 +394,10 @@ int build_container_qx_b0(uint32_t sector_size, uint32_t ivt_offset, char *out_f
 		case APPEND:
 			/* nothing to do here, the container is appended in the output */
 			break;
+                case FLAG:
+                        /* override the flags for the current container */
+                        imx_header.fhdr[container].flags = img_sp->entry;
+                        break;
 		default:
 			fprintf(stderr, "unrecognized option in input stack (%d)\n", img_sp->option);
 			exit(EXIT_FAILURE);

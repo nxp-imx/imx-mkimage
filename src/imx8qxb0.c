@@ -60,6 +60,8 @@
 
 #define SECOND_CONTAINER_IMAGE_ARRAY_START_OFFEST	0x7000
 
+uint32_t scfw_flags = 0;
+
 typedef struct {
 	uint8_t version;
 	uint16_t length;
@@ -295,6 +297,7 @@ void set_image_array_entry(flash_header_v3_t *container, option_type_t type, uin
 		img->dst = entry;
 		break;
 	case SCFW:
+		img->hab_flags |= scfw_flags & 0xFFFF0000;
 		img->hab_flags |= IMG_TYPE_EXEC;
 		img->hab_flags |= CORE_SC << BOOT_IMG_FLAGS_CORE_SHIFT;
 		tmp_name = "SCFW";
@@ -398,14 +401,15 @@ int build_container_qx_b0(uint32_t sector_size, uint32_t ivt_offset, char *out_f
 					CONTAINER_FLAGS_DEFAULT,
 					CONTAINER_FUSE_DEFAULT);
 			cont_img_count = 0; /* reset img count when moving to new container */
+                        scfw_flags = 0;
 			break;
 
 		case APPEND:
 			/* nothing to do here, the container is appended in the output */
 			break;
                 case FLAG:
-                        /* override the flags for the current container */
-                        imx_header.fhdr[container].flags = img_sp->entry;
+                        /* override the flags for scfw in current container */
+                        scfw_flags = img_sp->entry & 0xFFFF0000;/* mask off bottom 16 bits */
                         break;
 		default:
 			fprintf(stderr, "unrecognized option in input stack (%d)\n", img_sp->option);

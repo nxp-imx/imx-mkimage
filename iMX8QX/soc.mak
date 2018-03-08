@@ -86,7 +86,7 @@ flash_b0_all: $(MKIMG) $(DCD_CFG) ahab-container.img scfw_tcm.bin u-boot-atf.bin
 	./$(MKIMG) -soc QX -rev B0 -append ahab-container.img -c -scfw scfw_tcm.bin -ap u-boot-atf.bin a35 0x80000000 -m4 CM4.bin 0 0x34FE0000 -out flash.bin
 
 flash_b0_ddrstress: $(MKIMG) $(DCD_CFG) ahab-container.img scfw_tcm.bin mx8qx_ddr_stress_test.bin
-	./$(MKIMG) -soc QX -rev B0 -append ahab-container.img -c -flags 0x00800010 -scfw scfw_tcm.bin -ap mx8qx_ddr_stress_test.bin a35 0x00010000 -out flash.bin
+	./$(MKIMG) -soc QX -rev B0 -append ahab-container.img -c  -flags 0x00800000 -scfw scfw_tcm.bin -ap mx8qx_ddr_stress_test.bin a35 0x00100000 -out flash.bin
 
 flash_b0_test_build_nand_4K: $(MKIMG) $(DCD_CFG) ahab-container.img scfw_tcm.bin u-boot.bin CM4.bin
 	./$(MKIMG) -soc QX -rev B0 -dev nand 4K -append ahab-container.img -c -scfw scfw_tcm.bin -ap u-boot.bin a35 0x80000000 -m4 CM4.bin 0 0x34FE0000 -out flash.bin

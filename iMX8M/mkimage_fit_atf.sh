@@ -6,6 +6,7 @@
 # usage: $0 <dt_name> [<dt_name> [<dt_name] ...]
 
 [ -z "$BL31" ] && BL31="bl31.bin"
+
 # keep backward compatibility
 [ -z "$TEE_LOAD_ADDR" ] && TEE_LOAD_ADDR="0xfe000000"
 
@@ -18,8 +19,8 @@ if [ ! -f $BL31 ]; then
 	echo "ERROR: BL31 file $BL31 NOT found" >&2
 	exit 0
 else
-	echo "bl31.bin size: " >&2
-	ls -lct bl31.bin | awk '{print $5}' >&2
+	echo "$BL31 size: " >&2
+	ls -lct $BL31 | awk '{print $5}' >&2
 fi
 
 [ -z "$BL32" ] && BL32="tee.bin"
@@ -28,13 +29,13 @@ LOADABLES="\"atf-1\""
 if [ ! -f $BL32 ]; then
 	BL32=/dev/null
 else
-	echo "Building with TEE support, make sure your bl31 is compiled with spd. If you do not want tee, please delete tee.bin" >&2
-	echo "tee.bin size: " >&2
-	ls -lct tee.bin | awk '{print $5}' >&2
+	echo "Building with TEE support, make sure $BL31 is compiled with spd. If you do not want tee, please delete $BL32" >&2
+	echo "$BL32 size: " >&2
+	ls -lct $BL32 | awk '{print $5}' >&2
 	LOADABLES="$LOADABLES, \"tee-1\""
 fi
 
-BL33="u-boot-nodtb.bin"
+[ -z "$BL33" ] && BL33="u-boot-nodtb.bin"
 DEK_BLOB="dek_blob_fit_dummy.bin"
 
 if [ ! -f $DEK_BLOB ]; then
@@ -49,8 +50,8 @@ if [ ! -f $BL33 ]; then
 	exit 0
 else
 
-	echo "u-boot-nodtb.bin size: " >&2
-	ls -lct u-boot-nodtb.bin | awk '{print $5}' >&2
+	echo "$BL33 size: " >&2
+	ls -lct $BL33 | awk '{print $5}' >&2
 fi
 
 for dtname in $*

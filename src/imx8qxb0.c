@@ -274,7 +274,7 @@ void set_image_array_entry(flash_header_v3_t *container, option_type_t type, uin
 		img->hab_flags |= IMG_TYPE_EXEC;
 		img->hab_flags |= CORE_CA35 << BOOT_IMG_FLAGS_CORE_SHIFT;
 		tmp_name = "AP";
-		img->dst = dst;
+		img->dst = entry;
 		img->entry = entry;
 		img->meta = IMAGE_AP_DEFAULT_META;
 		break;
@@ -366,25 +366,6 @@ int build_container_qx_b0(uint32_t sector_size, uint32_t ivt_offset, char *out_f
 	while (img_sp->option != NO_IMG) { /* stop once we reach null terminator */
 		switch (img_sp->option) {
 		case AP:
-                        /* additional processing for AP image */
-                        img_sp->dst = img_sp->entry;
-                        if(img_sp->dst >= OCRAM_START && img_sp->dst <= OCRAM_END){
-                          img_sp->entry = 0; /* set OCRAM entry */
-                        }
-	                check_file(&sbuf, img_sp->filename);
-			tmp_filename = img_sp->filename;
-			set_image_array_entry(&imx_header.fhdr[container],
-						img_sp->option,
-						file_off,
-						ALIGN(sbuf.st_size, sector_size),
-						img_sp->dst,
-						img_sp->entry,
-						tmp_filename);
-			img_sp->src = file_off;
-
-			file_off += ALIGN(sbuf.st_size, sector_size);
-			cont_img_count++;
-			break;
 		case M4:
 		case SECO:
 		case SCFW:

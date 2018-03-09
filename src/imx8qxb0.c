@@ -339,10 +339,43 @@ void set_container(flash_header_v3_t *container,  uint16_t sw_version,
 	printf("flags: 0x%x\n", container->flags);
 }
 
+int get_container2_image_start_pos(image_t *image_stack)
+{
+	image_t *img_sp = image_stack;
+	int file_off = SECOND_CONTAINER_IMAGE_ARRAY_START_OFFEST + FILE_INITIAL_PADDING,  ofd = -1;
+	flash_header_v3_t header;
+
+	while (img_sp->option != NO_IMG) {
+
+                if (img_sp->option == APPEND) {
+			ofd = open(img_sp->filename, O_RDONLY);
+			if (ofd < 0) {
+				printf("Failure open first container file %s\n", img_sp->filename);
+				break;
+			}
+
+			if(read(ofd, &header, sizeof(header)) != sizeof(header))
+				printf("Failure Read header \n");
+
+			close(ofd);
+
+			if (header.tag != IVT_HEADER_TAG_B0) {
+				printf("header tag missmatched \n");
+			} else {
+				return header.img[0].size + 0x2000; /*8K total container header*/
+			}
+		}
+
+		img_sp++;
+        }
+
+	return file_off;
+}
+
 int build_container_qx_b0(uint32_t sector_size, uint32_t ivt_offset, char *out_file,
 				bool emmc_fastboot, image_t *image_stack, bool dcd_skip)
 {
-	int file_off = SECOND_CONTAINER_IMAGE_ARRAY_START_OFFEST + FILE_INITIAL_PADDING,  ofd = -1;
+	int file_off, ofd = -1;
 	unsigned int dcd_len = 0;
 
 	static imx_header_v3_t imx_header;
@@ -368,6 +401,11 @@ int build_container_qx_b0(uint32_t sector_size, uint32_t ivt_offset, char *out_f
 	set_imx_hdr_v3(&imx_header, 0, ivt_offset, INITIAL_LOAD_ADDR_AP_ROM, 1);
 
 	printf("ivt_offset:\t%d\n", ivt_offset);
+
+	file_off = get_container2_image_start_pos(image_stack);
+	file_off = ALIGN(file_off, sector_size);
+
+	printf("container2 image off 0x%x\n", file_off);
 
 	/* step through image stack and generate the header */
 	img_sp = image_stack;

@@ -122,8 +122,7 @@ void set_image_hash(boot_img_t *img, char *filename, uint32_t hash_type)
 	char hash[2 * HASH_MAX_LEN + 1];
 
 	if (img->size == 0)
-		sprintf(sha_command, "sha%dsum \'%s\'",
-			hash_type, filename);
+		sprintf(sha_command, "sha%dsum /dev/null", hash_type);
 	else
 		sprintf(sha_command, "dd if=/dev/zero of=tmp_pad bs=%d count=1;\
 				dd if=\'%s\' of=tmp_pad conv=notrunc;\

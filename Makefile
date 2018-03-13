@@ -26,13 +26,13 @@ clean:
 	@$(MAKE) --no-print-directory -C iMX8M -f soc.mak  clean
 	@$(MAKE) --no-print-directory -C iMX8dv -f soc.mak  clean
 
-$(MKIMG): buildinfo $(SRCS)
+$(MKIMG): src/build_info.h $(SRCS)
 	@echo "Compiling mkimage_imx8"
 	$(CC) $(CFLAGS) $(SRCS) -o $(MKIMG) -I src
 
 bin: $(MKIMG)
 
-buildinfo:
+src/build_info.h:
 	@echo -n '#define MKIMAGE_COMMIT 0x' > src/build_info.h
 	@git rev-parse --short=8 HEAD >> src/build_info.h
 	@echo '' >> src/build_info.h

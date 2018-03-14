@@ -105,6 +105,66 @@ typedef struct {
 	dcd_v2_t dcd_table;
 }  __attribute__((packed)) imx_header_v3_t;
 
+static void copy_file_aligned (int ifd, const char *datafile, int offset, int align)
+{
+	int dfd;
+	struct stat sbuf;
+	unsigned char *ptr;
+	uint8_t zeros[0x4000];
+	int size;
+
+	if (align > 0x4000) {
+		fprintf (stderr, "Wrong alignment requested %d\n",
+			align);
+		exit (EXIT_FAILURE);
+	}
+
+	memset(zeros, 0, sizeof(zeros));
+
+	if ((dfd = open(datafile, O_RDONLY|O_BINARY)) < 0) {
+		fprintf (stderr, "Can't open %s: %s\n",
+			datafile, strerror(errno));
+		exit (EXIT_FAILURE);
+	}
+
+	if (fstat(dfd, &sbuf) < 0) {
+		fprintf (stderr, "Can't stat %s: %s\n",
+			datafile, strerror(errno));
+		exit (EXIT_FAILURE);
+	}
+
+	if(sbuf.st_size == 0)
+		goto close;
+
+	ptr = mmap(0, sbuf.st_size, PROT_READ, MAP_SHARED, dfd, 0);
+	if (ptr == MAP_FAILED) {
+		fprintf (stderr, "Can't read %s: %s\n",
+			datafile, strerror(errno));
+		exit (EXIT_FAILURE);
+	}
+
+	size = sbuf.st_size;
+	lseek(ifd, offset, SEEK_SET);
+	if (write(ifd, ptr, size) != size) {
+		fprintf (stderr, "Write error %s\n",
+			strerror(errno));
+		exit (EXIT_FAILURE);
+	}
+
+	align = ALIGN(size, align) - size;
+
+	if (write(ifd, (char *)&zeros, align) != align) {
+		fprintf(stderr, "Write error: %s\n",
+			strerror(errno));
+		exit(EXIT_FAILURE);
+	}
+
+	(void) munmap((void *)ptr, sbuf.st_size);
+close:
+	(void) close (dfd);
+
+}
+
 static void set_imx_hdr_v3(imx_header_v3_t *imxhdr, uint32_t dcd_len,
 		uint32_t flash_offset, uint32_t hdr_base, uint32_t cont_id)
 {
@@ -498,7 +558,7 @@ int build_container_qx_b0(uint32_t sector_size, uint32_t ivt_offset, char *out_f
 	while (img_sp->option != NO_IMG) { /* stop once we reach null terminator */
 		if (img_sp->option == M4 || img_sp->option == AP || img_sp->option == DATA || img_sp->option == SCD ||
 				img_sp->option == SCFW || img_sp->option == SECO) {
-			copy_file(ofd, img_sp->filename, 0, img_sp->src);
+			copy_file_aligned(ofd, img_sp->filename, img_sp->src, sector_size);
 		}
 		img_sp++;
 	}

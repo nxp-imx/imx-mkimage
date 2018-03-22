@@ -52,13 +52,12 @@
 
 #define MAX_NUM_OF_CONTAINER		2
 
-#define FILE_INITIAL_PADDING		0x0
 #define FIRST_CONTAINER_HEADER_LENGTH	0x400
 
 #define IMAGE_AP_DEFAULT_META		0x001355FC
 #define IMAGE_M4_DEFAULT_META		0x0004A516
 
-#define SECOND_CONTAINER_IMAGE_ARRAY_START_OFFEST	0x7000
+#define CONTAINER_IMAGE_ARRAY_START_OFFSET	0x2000
 
 uint32_t scfw_flags = 0;
 
@@ -334,8 +333,10 @@ void set_image_array_entry(flash_header_v3_t *container, option_type_t type, uin
 	switch(type) {
 	case SECO:
 		img->hab_flags |= IMG_TYPE_SECO;
-		img->hab_flags |= CORE_SC << BOOT_IMG_FLAGS_CORE_SHIFT;
+		img->hab_flags |= CORE_SECO << BOOT_IMG_FLAGS_CORE_SHIFT;
 		tmp_name = "SECO";
+		img->dst = 0x20C00000;
+		img->entry = 0x20000000;
 		break;
 	case AP:
 		img->hab_flags |= IMG_TYPE_EXEC;
@@ -401,15 +402,16 @@ void set_container(flash_header_v3_t *container,  uint16_t sw_version,
 	printf("flags: 0x%x\n", container->flags);
 }
 
-int get_container2_image_start_pos(image_t *image_stack)
+int get_container_image_start_pos(image_t *image_stack, uint32_t align)
 {
 	image_t *img_sp = image_stack;
-	int file_off = SECOND_CONTAINER_IMAGE_ARRAY_START_OFFEST + FILE_INITIAL_PADDING,  ofd = -1;
+    /*8K total container header*/
+	int file_off = CONTAINER_IMAGE_ARRAY_START_OFFSET,  ofd = -1;
 	flash_header_v3_t header;
 
-	while (img_sp->option != NO_IMG) {
 
-                if (img_sp->option == APPEND) {
+	while (img_sp->option != NO_IMG) {
+		if (img_sp->option == APPEND) {
 			ofd = open(img_sp->filename, O_RDONLY);
 			if (ofd < 0) {
 				printf("Failure open first container file %s\n", img_sp->filename);
@@ -424,12 +426,13 @@ int get_container2_image_start_pos(image_t *image_stack)
 			if (header.tag != IVT_HEADER_TAG_B0) {
 				printf("header tag missmatched \n");
 			} else {
-				return header.img[0].size + 0x2000; /*8K total container header*/
+				file_off += header.img[header.num_images - 1].size;
+				file_off = ALIGN(file_off, align);
 			}
 		}
 
 		img_sp++;
-        }
+	}
 
 	return file_off;
 }
@@ -445,7 +448,7 @@ int build_container_qx_b0(uint32_t sector_size, uint32_t ivt_offset, char *out_f
 	struct stat sbuf;
 	char *tmp_filename = NULL;
 	uint32_t size = 0;
-	uint32_t file_padding = FIRST_CONTAINER_HEADER_LENGTH + FILE_INITIAL_PADDING;
+	uint32_t file_padding = 0;
 
 	int container = -1;
 	int cont_img_count = 0; /* indexes to arrange the container */
@@ -464,10 +467,8 @@ int build_container_qx_b0(uint32_t sector_size, uint32_t ivt_offset, char *out_f
 
 	printf("ivt_offset:\t%d\n", ivt_offset);
 
-	file_off = get_container2_image_start_pos(image_stack);
-	file_off = ALIGN(file_off, sector_size);
-
-	printf("container2 image off 0x%x\n", file_off);
+	file_off = get_container_image_start_pos(image_stack, sector_size);
+	printf("container image offset (aligned):%x\n", file_off);
 
 	/* step through image stack and generate the header */
 	img_sp = image_stack;
@@ -532,6 +533,7 @@ int build_container_qx_b0(uint32_t sector_size, uint32_t ivt_offset, char *out_f
 	do {
 		if (img_sp->option == APPEND) {
 			copy_file(ofd, img_sp->filename, 0, 0);
+			file_padding += FIRST_CONTAINER_HEADER_LENGTH;
 		}
 		img_sp++;
 	} while (img_sp->option != NO_IMG);

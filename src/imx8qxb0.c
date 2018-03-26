@@ -246,8 +246,8 @@ uint8_t *flatten_container_header(imx_header_v3_t *imx_header,
 			(IMG_ARRAY_ENTRY_SIZE * container->num_images) + sizeof(sig_blk_hdr_t);
 
 		/* Print info needed by CST to sign the container header */
-		fprintf(stderr, "CST: CONTAINER %d offset: 0x%x\n", i, file_offset + size);
-		fprintf(stderr, "CST: CONTAINER %d: Signature Block: offset is at 0x%x\n", i,
+		fprintf(stdout, "CST: CONTAINER %d offset: 0x%x\n", i, file_offset + size);
+		fprintf(stdout, "CST: CONTAINER %d: Signature Block: offset is at 0x%x\n", i,
 						file_offset + size + container->length - SIGNATURE_BLOCK_HEADER_LENGTH);
 
 		size += ALIGN(container->length, container->padding);

@@ -355,7 +355,7 @@ void set_image_array_entry(flash_header_v3_t *container, option_type_t type, uin
 		img->meta = IMAGE_M4_DEFAULT_META;
 		break;
 	case DATA:
-		img->hab_flags = IMG_TYPE_DATA;
+		img->hab_flags |= IMG_TYPE_DATA;
 		img->hab_flags |= CORE_CA35 << BOOT_IMG_FLAGS_CORE_SHIFT;
 		tmp_name = "DATA";
 		img->dst = entry;

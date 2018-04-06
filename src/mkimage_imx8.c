@@ -497,7 +497,6 @@ int main(int argc, char **argv)
 {
 	int c;
 	char *ofname = NULL;
-	bool fw = false;
         bool output = false;
         bool dcd_skip = false;
         bool emmc_fastboot = false;
@@ -593,13 +592,11 @@ int main(int argc, char **argv)
 				fprintf(stdout, "SCFW:\t%s\n", optarg);
                                 param_stack[p_idx].option = SCFW;
                                 param_stack[p_idx++].filename = optarg;
-								fw = true;
 				break;
 			case 'O':
 				fprintf(stdout, "SECO:\t%s\n", optarg);
                                 param_stack[p_idx].option = SECO;
                                 param_stack[p_idx++].filename = optarg;
-								fw = true;
 				break;
 			case 'd':
 				fprintf(stdout, "DCD:\t%s\n", optarg);
@@ -755,7 +752,7 @@ int main(int argc, char **argv)
           exit(EXIT_FAILURE);
         }
 
-		if (!(fw && output)) {
+		if (!output) {
 			fprintf(stderr, "mandatory args scfw and output file name missing! abort\n");
 			exit(EXIT_FAILURE);
 		}

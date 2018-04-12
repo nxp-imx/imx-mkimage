@@ -115,6 +115,12 @@ flash_b0_test_build: $(MKIMG) ahab-container.img scfw_tcm.bin u-boot.bin CM4.bin
 flash_b0_scfw: $(MKIMG) ahab-container.img scfw_tcm.bin
 	./$(MKIMG) -soc QX -rev B0 -dcd skip -append ahab-container.img -c -scfw scfw_tcm.bin -out flash.bin
 
+flash_b0_secofw: $(MKIMG) ahabfw.bin
+	./$(MKIMG) -soc QX -rev B0 -c -seco ahabfw.bin -out flash.bin
+
+flash_b0_linux: $(MKIMG) Image fsl-imx8qxp-lpddr4-arm2.dtb
+	./$(MKIMG) -soc QX -rev B0 -c -ap Image a35 0x80280000 --data fsl-imx8qxp-lpddr4-arm2.dtb 0x83000000 -out flash.bin
+
 flash_b0_test_build_mfg: $(MKIMG) ahab-container.img scfw_tcm.bin dummy_ddr.bin u-boot.bin CM4.bin kernel.bin initramfs.bin board.dtb
 	./$(MKIMG) -soc QX -rev B0 -append ahab-container.img -c -scfw scfw_tcm.bin -ap u-boot.bin a35 0x80000000 -m4 CM4.bin 0 0x34FE0000 -data kernel.bin 0x80280000 -data initramfs.bin 0x83800000 -data board.dtb 0x83000000 -out flash.bin
 

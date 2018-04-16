@@ -54,8 +54,28 @@
 
 #define FIRST_CONTAINER_HEADER_LENGTH	0x400
 
-#define IMAGE_AP_DEFAULT_META		0x001355FC
-#define IMAGE_M4_DEFAULT_META		0x0004A516
+#define BOOT_IMG_META_MU_RID_SHIFT	10
+#define BOOT_IMG_META_PART_ID_SHIFT	20
+
+#define IMAGE_A35_DEFAULT_META		(PARTITION_ID_AP << BOOT_IMG_META_PART_ID_SHIFT | \
+					 SC_R_MU_0A << BOOT_IMG_META_MU_RID_SHIFT | \
+					 SC_R_A35_0)
+
+#define IMAGE_A53_DEFAULT_META		(PARTITION_ID_AP << BOOT_IMG_META_PART_ID_SHIFT | \
+					 SC_R_MU_0A << BOOT_IMG_META_MU_RID_SHIFT | \
+					 SC_R_A53_0)
+
+#define IMAGE_A72_DEFAULT_META		(PARTITION_ID_AP << BOOT_IMG_META_PART_ID_SHIFT | \
+					 SC_R_MU_0A << BOOT_IMG_META_MU_RID_SHIFT | \
+					 SC_R_A72_0)
+
+#define IMAGE_M4_0_DEFAULT_META		(PARTITION_ID_M4 << BOOT_IMG_META_PART_ID_SHIFT | \
+					 SC_R_M4_0_MU_1A << BOOT_IMG_META_MU_RID_SHIFT | \
+					 SC_R_M4_0_PID0)
+
+#define IMAGE_M4_1_DEFAULT_META		(PARTITION_ID_M4 << BOOT_IMG_META_PART_ID_SHIFT | \
+					 SC_R_M4_1_MU_1A << BOOT_IMG_META_MU_RID_SHIFT | \
+					 SC_R_M4_1_PID0)
 
 #define CONTAINER_IMAGE_ARRAY_START_OFFSET	0x2000
 
@@ -320,13 +340,20 @@ uint64_t read_dcd_offset(char *filename)
 	return offset;
 }
 
-void set_image_array_entry(flash_header_v3_t *container, option_type_t type, uint32_t offset,
-		uint32_t size, uint64_t dst, uint64_t entry, char *tmp_filename, bool dcd_skip)
+void set_image_array_entry(flash_header_v3_t *container, soc_type_t soc,
+		const image_t *image_stack, uint32_t offset,
+		uint32_t size, char *tmp_filename, bool dcd_skip)
 {
+	uint64_t entry = image_stack->entry;
+	uint64_t core = image_stack->ext;
+	uint32_t meta;
+	char *tmp_name = "";
+	option_type_t type = image_stack->option;
 	boot_img_t *img = &container->img[container->num_images];
+
+
 	img->offset = offset;  /* Is re-adjusted later */
 	img->size = size;
-	char *tmp_name = "";
 
 	set_image_hash(img, tmp_filename, IMAGE_HASH_ALGO_DEFAULT);
 
@@ -339,24 +366,44 @@ void set_image_array_entry(flash_header_v3_t *container, option_type_t type, uin
 		img->entry = 0x20000000;
 		break;
 	case AP:
+		if (soc == QX && core == CORE_CA35)
+			meta = IMAGE_A35_DEFAULT_META;
+		else if (soc == QM && core == CORE_CA53)
+			meta = IMAGE_A53_DEFAULT_META;
+		else if (soc == QM && core == CORE_CA72)
+			meta = IMAGE_A72_DEFAULT_META;
+		else {
+			fprintf(stderr, "Error: invalid AP core id: %" PRIi64 "\n", core);
+			exit(EXIT_FAILURE);
+		}
 		img->hab_flags |= IMG_TYPE_EXEC;
-		img->hab_flags |= CORE_CA35 << BOOT_IMG_FLAGS_CORE_SHIFT;
+		img->hab_flags |= core << BOOT_IMG_FLAGS_CORE_SHIFT;
 		tmp_name = "AP";
 		img->dst = entry;
 		img->entry = entry;
-		img->meta = IMAGE_AP_DEFAULT_META;
+		img->meta = meta;
 		break;
 	case M4:
+		if (core == 0) {
+			core = CORE_CM4_0;
+			meta = IMAGE_M4_0_DEFAULT_META;
+		} else if (core == 1) {
+			core = CORE_CM4_1;
+			meta = IMAGE_M4_1_DEFAULT_META;
+		} else {
+			fprintf(stderr, "Error: invalid m4 core id: %" PRIi64 "\n", core);
+			exit(EXIT_FAILURE);
+		}
 		img->hab_flags |= IMG_TYPE_EXEC;
-		img->hab_flags |= CORE_CM4_0 << BOOT_IMG_FLAGS_CORE_SHIFT;
+		img->hab_flags |= core << BOOT_IMG_FLAGS_CORE_SHIFT;
 		tmp_name = "M4";
 		img->dst = entry;
 		img->entry = entry;
-		img->meta = IMAGE_M4_DEFAULT_META;
+		img->meta = meta;
 		break;
 	case DATA:
 		img->hab_flags |= IMG_TYPE_DATA;
-		img->hab_flags |= CORE_CA35 << BOOT_IMG_FLAGS_CORE_SHIFT;
+		img->hab_flags |= core << BOOT_IMG_FLAGS_CORE_SHIFT;
 		tmp_name = "DATA";
 		img->dst = entry;
 		break;
@@ -437,7 +484,7 @@ int get_container_image_start_pos(image_t *image_stack, uint32_t align)
 	return file_off;
 }
 
-int build_container_qx_b0(uint32_t sector_size, uint32_t ivt_offset, char *out_file,
+int build_container_qx_qm_b0(soc_type_t soc, uint32_t sector_size, uint32_t ivt_offset, char *out_file,
 				bool emmc_fastboot, image_t *image_stack, bool dcd_skip)
 {
 	int file_off, ofd = -1;
@@ -460,7 +507,10 @@ int build_container_qx_b0(uint32_t sector_size, uint32_t ivt_offset, char *out_f
 		exit(EXIT_FAILURE);
 	}
 
-	fprintf(stdout, "Platform:\ti.MX8QXP B0\n");
+	if (soc == QX)
+		fprintf(stdout, "Platform:\ti.MX8QXP B0\n");
+	else if (soc == QM)
+		fprintf(stdout, "Platform:\ti.MX8QM B0\n");
 
 	set_imx_hdr_v3(&imx_header, dcd_len, ivt_offset, INITIAL_LOAD_ADDR_SCU_ROM, 0);
 	set_imx_hdr_v3(&imx_header, 0, ivt_offset, INITIAL_LOAD_ADDR_AP_ROM, 1);
@@ -483,11 +533,10 @@ int build_container_qx_b0(uint32_t sector_size, uint32_t ivt_offset, char *out_f
 			check_file(&sbuf, img_sp->filename);
 			tmp_filename = img_sp->filename;
 			set_image_array_entry(&imx_header.fhdr[container],
-						img_sp->option,
+						soc,
+						img_sp,
 						file_off,
 						ALIGN(sbuf.st_size, sector_size),
-						img_sp->dst,
-						img_sp->entry,
 						tmp_filename,
 						dcd_skip);
 			img_sp->src = file_off;

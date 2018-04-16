@@ -575,7 +575,7 @@ int main(int argc, char **argv)
                                 fprintf(stdout, "SOC: %s \n",optarg);
                                 break;
                         case 'r':
-				if(soc == QX) {
+				if(soc == QX || soc == QM) {
 				  if(strcmp(optarg, "A0") == 0)
 				    rev = A0;
 				  else if(strcmp(optarg, "B0") == 0) {
@@ -772,13 +772,16 @@ int main(int argc, char **argv)
 		fprintf(stdout, "ivt_offset:\t%d\n", ivt_offset);
 		fprintf(stdout, "rev:\t%d\n", rev);
 		if (rev == B0)
-			build_container_qx_b0(sector_size, ivt_offset, ofname, emmc_fastboot, (image_t *) param_stack, dcd_skip);
+			build_container_qx_qm_b0(soc, sector_size, ivt_offset, ofname, emmc_fastboot, (image_t *) param_stack, dcd_skip);
 		else
 			build_container_qx(sector_size, ivt_offset, ofname, emmc_fastboot, (image_t *) param_stack);
 
 		break;
           case QM:
-              build_container_qm(sector_size, ivt_offset, ofname, emmc_fastboot, (image_t *) param_stack);
+		if (rev == B0)
+			build_container_qx_qm_b0(soc, sector_size, ivt_offset, ofname, emmc_fastboot, (image_t *) param_stack, dcd_skip);
+		else
+			build_container_qm(sector_size, ivt_offset, ofname, emmc_fastboot, (image_t *) param_stack);
               break;
           default:
               fprintf(stderr, " unrecognized SOC defined");

@@ -1,0 +1,63 @@
+OPTIONS:
+
+	-soc [soc]
+		Specifies the SOC to build the image for.
+		This option is mandatory.
+
+	-rev [revision]
+		Specifies the SOC's revision to build the image for.
+		Valid values for revision are A0 and B0.
+		For now, only socs QX and QM have B0 revisions.
+		When not specified, default revision is A0.
+
+	-commit
+		Prints the commit used to build the mkimage.
+
+	-dev [device] [page_size]
+		Specifies the boot device.
+		The valid device values are: flexspi, sd and nand.
+		The page size argument is available only for B0 revisions when device is 'nand'.
+		The valid page size values are: 4K, 8K or 16K.
+
+	-append [filename]
+		Specifies the container blob file to be appended as is.
+
+	-out [filename]
+		Specifies the output file for the generated and appened containers.
+
+	-c, --container
+		Create new container to be appended.
+
+	-flags [value]
+		Specifies flags for the new container.
+		The value needs to be a 32bit value in hex.
+
+	-dcd [filename]
+		Specifies the DCD image to be appended to the new container.
+		Not applicable for socs QX and QM revision B0.
+
+	-scfw [filename]
+		Specifies the SCFW image to be appended to the new container.
+
+	-scd [filename]
+		Specifies the SCD image to be appended to the new container.
+		Applicable only for non B0 revisions.
+
+	-csf [filename]
+		Specifies the CSF image to be appended to the new container.
+		Applicable only for non B0 revisions.
+
+	-ap [filename] [core] [address]
+		Specifies the AP image to be appended to the new container.
+		Valid core values for this image are 'a35', 'a53' and 'a72'.
+		The address represents the start address and needs to be a 32bit value in hex.
+
+	-m4 [filename] [core] [address]
+		Specifies the M4 image to be appended to the new container.
+		Valid core values for this image are 0 and 1.
+		The address represents the start address and needs to be a 32bit value in hex.
+
+	-data [filename] [address]
+		Specifies a data image to be appended to the new container, usually a rootfs image or a kernel image.
+		The address represents the load address and needs to be a 32bit value in hex.
+

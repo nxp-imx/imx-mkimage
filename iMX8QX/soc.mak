@@ -63,6 +63,18 @@ Image1: Image
 clean:
 	@rm -f $(MKIMG) $(DCD_CFG) .imx8qx_dcd.cfg.cfgtmp.d Image0 Image1
 
+flash_b0_cm4: $(MKIMG) ahab-container.img scfw_tcm.bin m4_image.bin
+	./$(MKIMG) -soc QX -rev B0 -append ahab-container.img -c -scfw scfw_tcm.bin -m4 m4_image.bin 0 0x34FE0000 -out flash.bin
+
+flash_b0_cm4ddr: $(MKIMG) ahab-container.img scfw_tcm.bin m4_image.bin
+	./$(MKIMG) -soc QX -rev B0 -append ahab-container.img -c -scfw scfw_tcm.bin -m4 m4_image.bin 0 0x88000000 -out flash.bin
+
+flash_b0_uboot_cm4ddr: $(MKIMG) ahab-container.img scfw_tcm.bin u-boot-atf.bin m4_image.bin
+	./$(MKIMG) -soc QX -rev B0 -append ahab-container.img -c -scfw scfw_tcm.bin -ap u-boot-atf.bin a35 0x80000000 -m4 m4_image.bin 0 0x88000000 -out flash.bin
+
+flash_b0_uboot_cm4: $(MKIMG) ahab-container.img scfw_tcm.bin u-boot-atf.bin m4_image.bin
+	./$(MKIMG) -soc QX -rev B0 -append ahab-container.img -c -scfw scfw_tcm.bin -ap u-boot-atf.bin a35 0x80000000 -m4 m4_image.bin 0 0x34FE0000 -out flash.bin
+
 flash_scfw: $(MKIMG) scfw_tcm.bin
 	./$(MKIMG) -soc QX -c -scfw scfw_tcm.bin -out flash.bin
 
@@ -93,7 +105,7 @@ flash_multi_cores: $(MKIMG) $(DCD_CFG) scfw_tcm.bin m40_tcm.bin u-boot-atf.bin
 flash_nand: $(MKIMG) $(DCD_CFG) scfw_tcm.bin u-boot-atf.bin
 	./$(MKIMG) -soc QX -dev nand -c -dcd $(DCD_CFG) -scfw scfw_tcm.bin -c -ap u-boot-atf.bin a35 0x80000000 -out flash.bin
 
-flash_cm4_0: $(MKIMG) $(DCD_CFG) scfw_tcm.bin m4_image.bin
+flash_cm4: $(MKIMG) $(DCD_CFG) scfw_tcm.bin m4_image.bin
 	./$(MKIMG) -soc QX -c -dcd $(DCD_CFG) -scfw scfw_tcm.bin -m4 m4_image.bin 0 0x34FE0000 -out flash.bin
 
 flash_b0: $(MKIMG) ahab-container.img scfw_tcm.bin u-boot-atf.bin

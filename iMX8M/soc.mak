@@ -1,7 +1,5 @@
 MKIMG = mkimage_imx8
 OUTIMG = flash.bin
-DCD_CFG_SRC = imx8mq_dcd.cfg
-DCD_CFG = imx8mq_dcd.cfg.tmp
 
 CC ?= gcc
 CFLAGS ?= -O2 -Wall -std=c99 -static
@@ -11,15 +9,21 @@ WGET = /usr/bin/wget
 N ?= latest
 SERVER=http://yb2.am.freescale.net
 DIR = build-output/Linux_IMX_4.9_morty_trunk_next_mx8/$(N)/common_bsp
-FW_DIR = imx-boot/imx-boot-tools/imx8mq
+
+ifeq ($(SOC),iMX8MM)
+PLAT = imx8mm
+HDMI = no
+else
+PLAT = imx8mq
+HDMI = yes
+endif
+
+FW_DIR = imx-boot/imx-boot-tools/$(PLAT)
 
 $(MKIMG): mkimage_imx8.c
+	@echo "PLAT="$(PLAT) "HDMI="$(HDMI)
 	@echo "Compiling mkimage_imx8"
 	$(CC) $(CFLAGS) mkimage_imx8.c -o $(MKIMG) -lz
-
-$(DCD_CFG): $(DCD_CFG_SRC)
-	@echo "Converting iMX8M DCD file" 
-	$(CC) -E -Wp,-MD,.imx8mq_dcd.cfg.cfgtmp.d  -nostdinc -Iinclude -I$(INCLUDE) -x c -o $(DCD_CFG) $(DCD_CFG_SRC)
 
 u-boot-spl-ddr.bin: u-boot-spl.bin lpddr4_pmu_train_1d_imem.bin lpddr4_pmu_train_1d_dmem.bin lpddr4_pmu_train_2d_imem.bin lpddr4_pmu_train_2d_dmem.bin
 	@objcopy -I binary -O binary --pad-to 0x8000 --gap-fill=0x0 lpddr4_pmu_train_1d_imem.bin lpddr4_pmu_train_1d_imem_pad.bin
@@ -56,24 +60,25 @@ u-boot-atf-tee.bin: u-boot.bin bl31.bin tee.bin
 
 .PHONY: clean
 clean:
-	@rm -f $(MKIMG) $(DCD_CFG) .imx8mq_dcd.cfg.cfgtmp.d u-boot-atf.bin u-boot-atf-tee.bin u-boot-spl-ddr.bin u-boot.itb u-boot.its u-boot-ddr3l.itb u-boot-ddr3l.its u-boot-spl-ddr3l.bin u-boot-ddr4.itb u-boot-ddr4.its u-boot-spl-ddr4.bin $(OUTIMG)
+	@rm -f $(MKIMG) u-boot-atf.bin u-boot-atf-tee.bin u-boot-spl-ddr.bin u-boot.itb u-boot.its u-boot-ddr3l.itb u-boot-ddr3l.its u-boot-spl-ddr3l.bin u-boot-ddr4.itb u-boot-ddr4.its u-boot-spl-ddr4.bin $(OUTIMG)
 
-dtbs = fsl-imx8mq-evk.dtb
+dtbs = fsl-$(PLAT)-evk.dtb
 u-boot.itb: $(dtbs)
 	./mkimage_fit_atf.sh $(dtbs) > u-boot.its
 	./mkimage_uboot -E -p 0x3000 -f u-boot.its u-boot.itb
 	@rm -f u-boot.its
 
-dtbs_ddr3l = fsl-imx8mq-ddr3l-arm2.dtb
+dtbs_ddr3l = fsl-$(PLAT)-ddr3l-arm2.dtb
 u-boot-ddr3l.itb: $(dtbs_ddr3l)
 	./mkimage_fit_atf.sh $(dtbs_ddr3l) > u-boot-ddr3l.its
 	./mkimage_uboot -E -p 0x3000 -f u-boot-ddr3l.its u-boot-ddr3l.itb
 
-dtbs_ddr4 = fsl-imx8mq-ddr4-arm2.dtb
+dtbs_ddr4 = fsl-$(PLAT)-ddr4-arm2.dtb
 u-boot-ddr4.itb: $(dtbs_ddr4)
 	./mkimage_fit_atf.sh $(dtbs_ddr4) > u-boot-ddr4.its
 	./mkimage_uboot -E -p 0x3000 -f u-boot-ddr4.its u-boot-ddr4.itb
 
+ifeq ($(HDMI),yes)
 flash_evk: $(MKIMG) signed_hdmi_imx8m.bin u-boot-spl-ddr.bin u-boot.itb
 	./mkimage_imx8 -fit -signed_hdmi signed_hdmi_imx8m.bin -loader u-boot-spl-ddr.bin 0x7E1000 -second_loader u-boot.itb 0x40200000 0x60000 -out $(OUTIMG)
 
@@ -82,6 +87,15 @@ flash_ddr3l_arm2: $(MKIMG) signed_hdmi_imx8m.bin u-boot-spl-ddr3l.bin u-boot-ddr
 
 flash_ddr4_arm2: $(MKIMG) signed_hdmi_imx8m.bin u-boot-spl-ddr4.bin u-boot-ddr4.itb
 	./mkimage_imx8 -fit -signed_hdmi signed_hdmi_imx8m.bin -loader u-boot-spl-ddr4.bin 0x7E1000 -second_loader u-boot-ddr4.itb 0x40200000 0x60000 -out $(OUTIMG)
+
+else
+flash_evk: flash_evk_no_hdmi
+
+flash_ddr3l_arm2: flash_ddr3l_arm2_no_hdmi
+
+flash_ddr4_arm2: flash_ddr4_arm2_no_hdmi
+
+endif
 
 flash_evk_no_hdmi: $(MKIMG) u-boot-spl-ddr.bin u-boot.itb
 	./mkimage_imx8 -fit -loader u-boot-spl-ddr.bin 0x7E1000 -second_loader u-boot.itb 0x40200000 0x60000 -out $(OUTIMG)
@@ -104,10 +118,10 @@ nightly :
 	@$(WGET) -q $(SERVER)/$(DIR)/$(FW_DIR)/lpddr4_pmu_train_1d_imem.bin -O lpddr4_pmu_train_1d_imem.bin
 	@$(WGET) -q $(SERVER)/$(DIR)/$(FW_DIR)/lpddr4_pmu_train_2d_dmem.bin -O lpddr4_pmu_train_2d_dmem.bin
 	@$(WGET) -q $(SERVER)/$(DIR)/$(FW_DIR)/lpddr4_pmu_train_2d_imem.bin -O lpddr4_pmu_train_2d_imem.bin
-	@$(WGET) -q $(SERVER)/$(DIR)/$(FW_DIR)/bl31-imx8mq.bin -O bl31.bin
-	@$(WGET) -q $(SERVER)/$(DIR)/$(FW_DIR)/u-boot-spl.bin-imx8mqevk-sd -O u-boot-spl.bin
+	@$(WGET) -q $(SERVER)/$(DIR)/$(FW_DIR)/bl31-$(PLAT).bin -O bl31.bin
+	@$(WGET) -q $(SERVER)/$(DIR)/$(FW_DIR)/u-boot-spl.bin-$(PLAT)evk-sd -O u-boot-spl.bin
 	@$(WGET) -q $(SERVER)/$(DIR)/$(FW_DIR)/u-boot-nodtb.bin -O u-boot-nodtb.bin
-	@$(WGET) -q $(SERVER)/$(DIR)/$(FW_DIR)/fsl-imx8mq-evk.dtb -O fsl-imx8mq-evk.dtb
+	@$(WGET) -q $(SERVER)/$(DIR)/$(FW_DIR)/fsl-$(PLAT)-evk.dtb -O fsl-$(PLAT)-evk.dtb
 	@$(WGET) -q $(SERVER)/$(DIR)/$(FW_DIR)/signed_hdmi_imx8m.bin -O signed_hdmi_imx8m.bin
 	@$(WGET) -q $(SERVER)/$(DIR)/$(FW_DIR)/mkimage_uboot -O mkimage_uboot
 

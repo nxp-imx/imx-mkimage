@@ -6,6 +6,10 @@ INCLUDE += $(CURR_DIR)/src
 
 SRCS = src/imx8qm.c  src/imx8qx.c src/imx8qxb0.c src/mkimage_imx8.c
 
+ifneq ($(findstring iMX8M,$(SOC)),)
+SOC_DIR = iMX8M
+endif
+SOC_DIR ?= $(SOC)
 
 vpath $(INCLUDE)
 
@@ -13,7 +17,7 @@ vpath $(INCLUDE)
 
 .DEFAULT:
 	@$(MAKE) -s --no-print-directory bin
-	@$(MAKE) --no-print-directory -C $(SOC) -f soc.mak $@
+	@$(MAKE) --no-print-directory -C $(SOC_DIR) -f soc.mak $@
 
 #print out usage as the default target
 all: $(MKIMG) help

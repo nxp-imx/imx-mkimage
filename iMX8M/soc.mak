@@ -8,7 +8,9 @@ INCLUDE = ./lib
 WGET = /usr/bin/wget
 N ?= latest
 SERVER=http://yb2.am.freescale.net
-DIR = build-output/Linux_IMX_4.9_morty_trunk_next_mx8/$(N)/common_bsp
+DIR = internal-only/Linux_IMX_Rocko_MX8/$(N)/common_bsp
+BITBUCKET_SERVER=https://bitbucket.sw.nxp.com
+DDR_FW_DIR=projects/IMX/repos/linux-firmware-imx/raw/firmware/ddr/synopsys
 
 ifeq ($(SOC),iMX8MM)
 PLAT = imx8mm
@@ -114,10 +116,10 @@ print_fit_hab: u-boot-nodtb.bin bl31.bin $(dtbs)
 	./print_fit_hab.sh 0x60000 $(dtbs)
 
 nightly :
-	@$(WGET) -q $(SERVER)/$(DIR)/$(FW_DIR)/lpddr4_pmu_train_1d_dmem.bin -O lpddr4_pmu_train_1d_dmem.bin
-	@$(WGET) -q $(SERVER)/$(DIR)/$(FW_DIR)/lpddr4_pmu_train_1d_imem.bin -O lpddr4_pmu_train_1d_imem.bin
-	@$(WGET) -q $(SERVER)/$(DIR)/$(FW_DIR)/lpddr4_pmu_train_2d_dmem.bin -O lpddr4_pmu_train_2d_dmem.bin
-	@$(WGET) -q $(SERVER)/$(DIR)/$(FW_DIR)/lpddr4_pmu_train_2d_imem.bin -O lpddr4_pmu_train_2d_imem.bin
+	@$(WGET) -q $(BITBUCKET_SERVER)/$(DDR_FW_DIR)/lpddr4_pmu_train_1d_dmem.bin -O lpddr4_pmu_train_1d_dmem.bin
+	@$(WGET) -q $(BITBUCKET_SERVER)/$(DDR_FW_DIR)/lpddr4_pmu_train_1d_imem.bin -O lpddr4_pmu_train_1d_imem.bin
+	@$(WGET) -q $(BITBUCKET_SERVER)/$(DDR_FW_DIR)/lpddr4_pmu_train_2d_dmem.bin -O lpddr4_pmu_train_2d_dmem.bin
+	@$(WGET) -q $(BITBUCKET_SERVER)/$(DDR_FW_DIR)/lpddr4_pmu_train_2d_imem.bin -O lpddr4_pmu_train_2d_imem.bin
 	@$(WGET) -q $(SERVER)/$(DIR)/$(FW_DIR)/bl31-$(PLAT).bin -O bl31.bin
 	@$(WGET) -q $(SERVER)/$(DIR)/$(FW_DIR)/u-boot-spl.bin-$(PLAT)evk-sd -O u-boot-spl.bin
 	@$(WGET) -q $(SERVER)/$(DIR)/$(FW_DIR)/u-boot-nodtb.bin -O u-boot-nodtb.bin

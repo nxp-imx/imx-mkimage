@@ -42,7 +42,7 @@ atf_load_addr=`printf "0x%X" ${atf_load_addr}`
 echo ${uboot_load_addr} ${uboot_sign_off} ${uboot_size}
 echo ${atf_load_addr} ${atf_sign_off} ${atf_size}
 
-if [ ${tee_size} != 0 ]
+if [ ${tee_size} != 0x0 ]
 then
 	echo ${tee_load_addr} ${tee_sign_off} ${tee_size}
 fi

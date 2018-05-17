@@ -108,6 +108,9 @@ flash_ddr3l_arm2_no_hdmi: $(MKIMG) u-boot-spl-ddr3l.bin u-boot-ddr3l.itb
 flash_ddr4_arm2_no_hdmi: $(MKIMG) u-boot-spl-ddr4.bin u-boot-ddr4.itb
 	./mkimage_imx8 -fit -loader u-boot-spl-ddr4.bin 0x7E1000 -second_loader u-boot-ddr4.itb 0x40200000 0x60000 -out $(OUTIMG)
 
+flash_evk_flexspi: $(MKIMG) u-boot-spl-ddr.bin u-boot.itb
+	./mkimage_imx8 -dev flexspi -fit -loader u-boot-spl-ddr.bin 0x7E2000 -second_loader u-boot.itb 0x40200000 0x60000 -out $(OUTIMG)
+
 flash_hdmi_spl_uboot: flash_evk
 
 flash_spl_uboot: flash_evk_no_hdmi

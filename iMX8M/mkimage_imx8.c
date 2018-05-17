@@ -1010,8 +1010,8 @@ int main(int argc, char **argv)
 				break;
 			case 'e':
 				fprintf(stderr, "BOOT DEVICE:\t%s\n", optarg);
-				if (!strcmp(optarg, "nand")) {
-					ivt_offset = IVT_OFFSET_NAND;
+				if (!strcmp(optarg, "flexspi")) {
+					ivt_offset = IVT_OFFSET_FLEXSPI;
 					rom_image_offset = 0;
 				} else if (!strcmp(optarg, "sd")) {
 					ivt_offset = IVT_OFFSET_SD;

@@ -331,6 +331,7 @@ void set_dcd_rst_v2(dcd_v2_t *dcd_v2, uint32_t dcd_len,
 	dcd_v2->header.tag = DCD_HEADER_TAG;
 	dcd_v2->header.length = cpu_to_be16(len);
 	dcd_v2->header.version = DCD_VERSION;
+	printf("dcd size in bytes = %d\n", len);
 }
 
 void parse_cfg_cmd(dcd_v2_t *dcd_v2, int32_t cmd, char *token,

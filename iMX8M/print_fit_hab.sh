@@ -4,6 +4,9 @@ BL32="tee.bin"
 
 let fit_off=$1
 
+# keep backward compatibility
+[ -z "$TEE_LOAD_ADDR" ] && TEE_LOAD_ADDR="0xfe000000"
+
 # We dd flash.bin to 33KB "0x8400" offset, so need minus 0x8400
 let uboot_sign_off=$((fit_off - 0x8400 + 0x3000))
 let uboot_size=$(ls -lct u-boot-nodtb.bin | awk '{print $5}')
@@ -20,7 +23,7 @@ else
 	let tee_size=$(ls -lct tee.bin | awk '{print $5}')
 
 	let tee_sign_off=$((atf_sign_off + atf_size))
-	let tee_load_addr=0xfe000000
+	let tee_load_addr=$TEE_LOAD_ADDR
 fi
 
 let last_sign_off=$((tee_sign_off + tee_size))

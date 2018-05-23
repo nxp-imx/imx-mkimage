@@ -15,9 +15,11 @@ DDR_FW_DIR=projects/IMX/repos/linux-firmware-imx/raw/firmware/ddr/synopsys
 ifeq ($(SOC),iMX8MM)
 PLAT = imx8mm
 HDMI = no
+TEE_LOAD_ADDR = 0xbe000000
 else
 PLAT = imx8mq
 HDMI = yes
+TEE_LOAD_ADDR = 0xfe000000
 endif
 
 FW_DIR = imx-boot/imx-boot-tools/$(PLAT)
@@ -66,18 +68,18 @@ clean:
 
 dtbs = fsl-$(PLAT)-evk.dtb
 u-boot.itb: $(dtbs)
-	./mkimage_fit_atf.sh $(dtbs) > u-boot.its
+	TEE_LOAD_ADDR=$(TEE_LOAD_ADDR) ./mkimage_fit_atf.sh $(dtbs) > u-boot.its
 	./mkimage_uboot -E -p 0x3000 -f u-boot.its u-boot.itb
 	@rm -f u-boot.its
 
 dtbs_ddr3l = fsl-$(PLAT)-ddr3l-arm2.dtb
 u-boot-ddr3l.itb: $(dtbs_ddr3l)
-	./mkimage_fit_atf.sh $(dtbs_ddr3l) > u-boot-ddr3l.its
+	TEE_LOAD_ADDR=$(TEE_LOAD_ADDR) ./mkimage_fit_atf.sh $(dtbs_ddr3l) > u-boot-ddr3l.its
 	./mkimage_uboot -E -p 0x3000 -f u-boot-ddr3l.its u-boot-ddr3l.itb
 
 dtbs_ddr4 = fsl-$(PLAT)-ddr4-arm2.dtb
 u-boot-ddr4.itb: $(dtbs_ddr4)
-	./mkimage_fit_atf.sh $(dtbs_ddr4) > u-boot-ddr4.its
+	TEE_LOAD_ADDR=$(TEE_LOAD_ADDR) ./mkimage_fit_atf.sh $(dtbs_ddr4) > u-boot-ddr4.its
 	./mkimage_uboot -E -p 0x3000 -f u-boot-ddr4.its u-boot-ddr4.itb
 
 ifeq ($(HDMI),yes)
@@ -116,7 +118,7 @@ flash_hdmi_spl_uboot: flash_evk
 flash_spl_uboot: flash_evk_no_hdmi
 
 print_fit_hab: u-boot-nodtb.bin bl31.bin $(dtbs)
-	./print_fit_hab.sh 0x60000 $(dtbs)
+	TEE_LOAD_ADDR=$(TEE_LOAD_ADDR) ./print_fit_hab.sh 0x60000 $(dtbs)
 
 nightly :
 	@$(WGET) -q $(BITBUCKET_SERVER)/$(DDR_FW_DIR)/lpddr4_pmu_train_1d_dmem.bin -O lpddr4_pmu_train_1d_dmem.bin

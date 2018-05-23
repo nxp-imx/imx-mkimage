@@ -6,6 +6,8 @@
 # usage: $0 <dt_name> [<dt_name> [<dt_name] ...]
 
 [ -z "$BL31" ] && BL31="bl31.bin"
+# keep backward compatibility
+[ -z "$TEE_LOAD_ADDR" ] && TEE_LOAD_ADDR="0xfe000000"
 
 if [ ! -f $BL31 ]; then
 	echo "ERROR: BL31 file $BL31 NOT found" >&2
@@ -77,8 +79,8 @@ cat << __HEADER_EOF
 			type = "firmware";
 			arch = "arm64";
 			compression = "none";
-			load = <0xfe000000>;
-			entry = <0xfe000000>;
+			load = <$TEE_LOAD_ADDR>;
+			entry = <$TEE_LOAD_ADDR>;
 		};
 __HEADER_EOF
 fi

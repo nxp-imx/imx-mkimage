@@ -530,11 +530,12 @@ int main(int argc, char **argv)
 		{"commit", no_argument, NULL, 't'},
 		{"append", no_argument, NULL, 'A'},
 		{"data", required_argument, NULL, 'D'},
+		{"fileoff", required_argument, NULL, 'P'},
 		{NULL, 0, NULL, 0}
 	};
 
 
-        /* scan in parameters in order */
+	/* scan in parameters in order */
 	while(1)
 	{
 		/* getopt_long stores the option index here. */
@@ -714,24 +715,30 @@ int main(int argc, char **argv)
 						}
 					}
 				} else if (!strcmp(optarg, "emmc_fast")) {
-                                        ivt_offset = IVT_OFFSET_EMMC;
-                                        emmc_fastboot = true;/* emmc boot */
-                                } else {
+						ivt_offset = IVT_OFFSET_EMMC;
+						emmc_fastboot = true;/* emmc boot */
+				} else {
 					fprintf(stdout, "\n-dev option, Valid boot devices are:\r\n sd\r\nflexspi\r\nnand\n\n");
 					exit(EXIT_FAILURE);
 				}
 				break;
-                        case 'c':
-                                fprintf(stdout, "New Container: \t%d\n",++container);
-                                param_stack[p_idx++].option = NEW_CONTAINER;
-                                break;
+			case 'c':
+					fprintf(stdout, "New Container: \t%d\n",++container);
+					param_stack[p_idx++].option = NEW_CONTAINER;
+					break;
 			case ':':
 				fprintf(stderr, "option %c missing arguments\n", optopt);
-                                exit(EXIT_FAILURE);
+				exit(EXIT_FAILURE);
 				break;
 			case 't':
 				fprintf(stdout, "%08x\n", MKIMAGE_COMMIT);
 				exit(0);
+				break;
+			case 'P':
+				fprintf(stdout, "FILEOFF:\t%s\n", optarg);
+				param_stack[p_idx].option = FILEOFF;
+				param_stack[p_idx++].dst = (uint64_t) strtoll(optarg, NULL, 0);
+				break;
 			case '?':
 			default:
 				/* invalid option */

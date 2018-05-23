@@ -33,72 +33,71 @@
 #endif
 
 
-#define IMG_STACK_SIZE        32 /* max of 32 images for commandline images */
+#define IMG_STACK_SIZE			32 /* max of 32 images for commandline images */
 
 enum imximage_fld_types {
-        CFG_INVALID = -1,
-        CFG_COMMAND,
-        CFG_REG_SIZE,
-        CFG_REG_ADDRESS,
-        CFG_REG_VALUE
+		CFG_INVALID = -1,
+		CFG_COMMAND,
+		CFG_REG_SIZE,
+		CFG_REG_ADDRESS,
+		CFG_REG_VALUE
 };
 
 enum imximage_cmd {
-        CMD_INVALID,
-        CMD_IMAGE_VERSION,
-        CMD_BOOT_FROM,
-        CMD_BOOT_OFFSET,
-        CMD_WRITE_DATA,
-        CMD_WRITE_CLR_BIT,
-        CMD_WRITE_SET_BIT,
-        CMD_CHECK_BITS_SET,
-        CMD_CHECK_BITS_CLR,
-        CMD_CHECK_ANY_BIT_SET,
-        CMD_CHECK_ANY_BIT_CLR,
-        CMD_CSF,
-        CMD_PLUGIN,
+		CMD_INVALID,
+		CMD_IMAGE_VERSION,
+		CMD_BOOT_FROM,
+		CMD_BOOT_OFFSET,
+		CMD_WRITE_DATA,
+		CMD_WRITE_CLR_BIT,
+		CMD_WRITE_SET_BIT,
+		CMD_CHECK_BITS_SET,
+		CMD_CHECK_BITS_CLR,
+		CMD_CHECK_ANY_BIT_SET,
+		CMD_CHECK_ANY_BIT_CLR,
+		CMD_CSF,
+		CMD_PLUGIN,
 };
 
 typedef struct table_entry {
-        int     id;
-        char    *sname;         /* short (input) name to find table entry */
-        char    *lname;         /* long (output) name to print for messages */
+		int 	id;
+		char	*sname;			/* short (input) name to find table entry */
+		char	*lname;			/* long (output) name to print for messages */
 } table_entry_t;
 
 /*
  * Supported commands for configuration file
  */
 static table_entry_t imximage_cmds[] = {
-        {CMD_BOOT_FROM,         "BOOT_FROM",            "boot command",   },
-        {CMD_BOOT_OFFSET,       "BOOT_OFFSET",          "Boot offset",    },
-        {CMD_WRITE_DATA,        "DATA",                 "Reg Write Data", },
-        {CMD_WRITE_CLR_BIT,     "CLR_BIT",              "Reg clear bit",  },
-        {CMD_WRITE_SET_BIT,     "SET_BIT",              "Reg set bit",  },
-        {CMD_CHECK_BITS_SET,    "CHECK_BITS_SET",   "Reg Check all bits set", },
-        {CMD_CHECK_BITS_CLR,    "CHECK_BITS_CLR",   "Reg Check all bits clr", },
-        {CMD_CHECK_ANY_BIT_SET, "CHECK_ANY_BIT_SET",   "Reg Check any bit set", },
-        {CMD_CHECK_ANY_BIT_CLR, "CHECK_ANY_BIT_CLR",   "Reg Check any bit clr", },
-        {CMD_CSF,               "CSF",           "Command Sequence File", },
-        {CMD_IMAGE_VERSION,     "IMAGE_VERSION",        "image version",  },
-        {-1,                    "",                     "",               },
+		{CMD_BOOT_FROM,         "BOOT_FROM",            "boot command",   },
+		{CMD_BOOT_OFFSET,       "BOOT_OFFSET",          "Boot offset",    },
+		{CMD_WRITE_DATA,        "DATA",                 "Reg Write Data", },
+		{CMD_WRITE_CLR_BIT,     "CLR_BIT",              "Reg clear bit",  },
+		{CMD_WRITE_SET_BIT,     "SET_BIT",              "Reg set bit",  },
+		{CMD_CHECK_BITS_SET,    "CHECK_BITS_SET",   "Reg Check all bits set", },
+		{CMD_CHECK_BITS_CLR,    "CHECK_BITS_CLR",   "Reg Check all bits clr", },
+		{CMD_CHECK_ANY_BIT_SET, "CHECK_ANY_BIT_SET",   "Reg Check any bit set", },
+		{CMD_CHECK_ANY_BIT_CLR, "CHECK_ANY_BIT_CLR",   "Reg Check any bit clr", },
+		{CMD_CSF,               "CSF",           "Command Sequence File", },
+		{CMD_IMAGE_VERSION,     "IMAGE_VERSION",        "image version",  },
+		{-1,                    "",                     "",               },
 };
 
 void check_file(struct stat* sbuf,char * filename)
 {
-        int tmp_fd  = open(filename, O_RDONLY | O_BINARY);
-        if (tmp_fd < 0) {
-                fprintf(stderr, "%s: Can't open: %s\n",
-                                filename, strerror(errno));
-                exit(EXIT_FAILURE);
-        }
+	int tmp_fd  = open(filename, O_RDONLY | O_BINARY);
+	if (tmp_fd < 0) {
+			fprintf(stderr, "%s: Can't open: %s\n",
+							filename, strerror(errno));
+			exit(EXIT_FAILURE);
+	}
 
-        if (fstat(tmp_fd, sbuf) < 0) {
-                fprintf(stderr, "%s: Can't stat: %s\n",
-                                filename, strerror(errno));
-                exit(EXIT_FAILURE);
-        }
-        close(tmp_fd);
-
+	if (fstat(tmp_fd, sbuf) < 0) {
+			fprintf(stderr, "%s: Can't stat: %s\n",
+							filename, strerror(errno));
+			exit(EXIT_FAILURE);
+	}
+	close(tmp_fd);
 }
 
 void
@@ -226,7 +225,7 @@ void set_dcd_param_v2(dcd_v2_t *dcd_v2, uint32_t dcd_len,
 	/* Write value: *address = val_msk */
 	case CMD_WRITE_DATA:
 		if ((d->write_dcd_command.tag == DCD_WRITE_DATA_COMMAND_TAG) &&
-		    (d->write_dcd_command.param == DCD_WRITE_DATA_PARAM))
+			(d->write_dcd_command.param == DCD_WRITE_DATA_PARAM))
 			break;
 		d = d2;
 		d->write_dcd_command.tag = DCD_WRITE_DATA_COMMAND_TAG;
@@ -243,10 +242,10 @@ void set_dcd_param_v2(dcd_v2_t *dcd_v2, uint32_t dcd_len,
 		d->write_dcd_command.length = cpu_to_be16(4);
 		d->write_dcd_command.param = DCD_WRITE_CLR_BIT_PARAM;
 		break;
-	/* Set  bitmask: *address |= val_msk */
+	/* Set bitmask: *address |= val_msk */
 	case CMD_WRITE_SET_BIT:
 		if ((d->write_dcd_command.tag == DCD_WRITE_DATA_COMMAND_TAG) &&
-		    (d->write_dcd_command.param == DCD_WRITE_SET_BIT_PARAM))
+			(d->write_dcd_command.param == DCD_WRITE_SET_BIT_PARAM))
 			break;
 		d = d2;
 		d->write_dcd_command.tag = DCD_WRITE_DATA_COMMAND_TAG;
@@ -498,18 +497,18 @@ int main(int argc, char **argv)
 {
 	int c;
 	char *ofname = NULL;
-        bool output = false;
-        bool dcd_skip = false;
-        bool emmc_fastboot = false;
+	bool output = false;
+	bool dcd_skip = false;
+	bool emmc_fastboot = false;
 
-        int container = -1;
-        image_t param_stack[IMG_STACK_SIZE];/* stack of input images */
-        int p_idx = 0;/* param index counter */
+	int container = -1;
+	image_t param_stack[IMG_STACK_SIZE];/* stack of input images */
+	int p_idx = 0;/* param index counter */
 
 	uint32_t ivt_offset = IVT_OFFSET_SD;
 	uint32_t sector_size = 0x200; /* default sector size */
-        soc_type_t soc = NONE; /* Initially No SOC defined */
-        rev_type_t rev = NO_REV; /* Initially No REV defined */
+	soc_type_t soc = NONE; /* Initially No SOC defined */
+	rev_type_t rev = NO_REV; /* Initially No REV defined */
 
 	static struct option long_options[] =
 	{
@@ -557,48 +556,48 @@ int main(int argc, char **argv)
 				fprintf(stderr, "\n");
 				break;
 			case 'A':
-                                param_stack[p_idx].option = APPEND;
-                                param_stack[p_idx++].filename = argv[optind++];
+				param_stack[p_idx].option = APPEND;
+				param_stack[p_idx++].filename = argv[optind++];
 				break;
-                        case 'p':
-                                fprintf(stdout, "PARTITION:\t%s\n", optarg);
-                                param_stack[p_idx].option = PARTITION;
-                                param_stack[p_idx++].entry = (uint32_t) strtoll(optarg, NULL, 0);
-                                break;
-                        case 's':
-                                if(!strncmp(optarg, "QX", 2))
-                                  soc = QX;
-                                else if (!strncmp(optarg, "QM", 2))
-                                  soc = QM;
-                                else{
-                                  fprintf(stdout, "unrecognized SOC: %s \n",optarg);
-                                  exit(EXIT_FAILURE);
-                                }
-                                fprintf(stdout, "SOC: %s \n",optarg);
-                                break;
-                        case 'r':
-				if(soc == QX || soc == QM) {
-				  if(strcmp(optarg, "A0") == 0)
-				    rev = A0;
-				  else if(strcmp(optarg, "B0") == 0) {
-				    rev = B0;
-				    sector_size = 0x400;
-				  } else {
-				    fprintf(stdout, "unrecognized REVISION: %s \n",optarg);
-				    exit(EXIT_FAILURE);
-				  }
-				  fprintf(stdout, "REVISION: %s \n",optarg);
+			case 'p':
+				fprintf(stdout, "PARTITION:\t%s\n", optarg);
+				param_stack[p_idx].option = PARTITION;
+				param_stack[p_idx++].entry = (uint32_t) strtoll(optarg, NULL, 0);
+				break;
+			case 's':
+				if(!strncmp(optarg, "QX", 2))
+					soc = QX;
+				else if (!strncmp(optarg, "QM", 2))
+					soc = QM;
+				else{
+					fprintf(stdout, "unrecognized SOC: %s \n",optarg);
+					exit(EXIT_FAILURE);
 				}
-                                break;
+				fprintf(stdout, "SOC: %s \n",optarg);
+				break;
+			case 'r':
+				if(soc == QX || soc == QM) {
+					if(strcmp(optarg, "A0") == 0)
+						rev = A0;
+					else if(strcmp(optarg, "B0") == 0) {
+						rev = B0;
+						sector_size = 0x400;
+					} else {
+						fprintf(stdout, "unrecognized REVISION: %s \n",optarg);
+						exit(EXIT_FAILURE);
+					}
+					fprintf(stdout, "REVISION: %s \n",optarg);
+				}
+				break;
 			case 'f':
 				fprintf(stdout, "SCFW:\t%s\n", optarg);
-                                param_stack[p_idx].option = SCFW;
-                                param_stack[p_idx++].filename = optarg;
+				param_stack[p_idx].option = SCFW;
+				param_stack[p_idx++].filename = optarg;
 				break;
 			case 'O':
 				fprintf(stdout, "SECO:\t%s\n", optarg);
-                                param_stack[p_idx].option = SECO;
-                                param_stack[p_idx++].filename = optarg;
+				param_stack[p_idx].option = SECO;
+				param_stack[p_idx++].filename = optarg;
 				break;
 			case 'd':
 				fprintf(stdout, "DCD:\t%s\n", optarg);
@@ -610,7 +609,7 @@ int main(int argc, char **argv)
 						exit(EXIT_FAILURE);
 					}
 				} else {
-	                                param_stack[p_idx].option = DCD;
+					param_stack[p_idx].option = DCD;
 					param_stack[p_idx].filename = optarg;
 					p_idx++;
 				}
@@ -634,8 +633,8 @@ int main(int argc, char **argv)
 				break;
 			case 'm':
 				fprintf(stdout, "CM4:\t%s", optarg);
-                                param_stack[p_idx].option = M4;
-                                param_stack[p_idx].filename = optarg;
+				param_stack[p_idx].option = M4;
+				param_stack[p_idx].filename = optarg;
 				if ((optind < argc && *argv[optind] != '-') && (optind+1 < argc &&*argv[optind+1] != '-' )) {
 					param_stack[p_idx].ext = strtol(argv[optind++], NULL, 0);
 					param_stack[p_idx].entry = (uint32_t) strtoll(argv[optind++], NULL, 0);
@@ -648,20 +647,19 @@ int main(int argc, char **argv)
 				break;
 			case 'a':
 				fprintf(stdout, "AP:\t%s", optarg);
-                                param_stack[p_idx].option = AP;
-                                param_stack[p_idx].filename = optarg;
+				param_stack[p_idx].option = AP;
+				param_stack[p_idx].filename = optarg;
 				if ((optind < argc && *argv[optind] != '-') && (optind+1 < argc &&*argv[optind+1] != '-' )) {
-					if      (!strncmp(argv[optind], "a53", 3))
-						  param_stack[p_idx].ext = CORE_CA53;
-                                        else if (!strncmp(argv[optind], "a35", 3))
-                                                  param_stack[p_idx].ext = CORE_CA35;
+					if (!strncmp(argv[optind], "a53", 3))
+						param_stack[p_idx].ext = CORE_CA53;
+					else if (!strncmp(argv[optind], "a35", 3))
+						param_stack[p_idx].ext = CORE_CA35;
 					else if (!strncmp(argv[optind], "a72", 3))
-              param_stack[p_idx].ext = CORE_CA72;
-                                        else {
-                                                  fprintf(stderr, "ERROR: AP Core not found %s\n", argv[optind+2]);
-                                                  exit(EXIT_FAILURE);
-                                        }
-
+						param_stack[p_idx].ext = CORE_CA72;
+					else {
+						fprintf(stderr, "ERROR: AP Core not found %s\n", argv[optind+2]);
+						exit(EXIT_FAILURE);
+					}
 					fprintf(stdout, "\tcore: %s", argv[optind++]);
 
 					param_stack[p_idx].entry = (uint32_t) strtoll(argv[optind++], NULL, 0);
@@ -674,23 +672,23 @@ int main(int argc, char **argv)
 				break;
 			case 'l':
 				fprintf(stdout, "FLAG:\t%s\n", optarg);
-                                param_stack[p_idx].option = FLAG;
+				param_stack[p_idx].option = FLAG;
 				param_stack[p_idx++].entry = (uint32_t) strtoll(optarg, NULL, 0);
 				break;
 			case 'o':
 				fprintf(stdout, "Output:\t%s\n", optarg);
 				ofname = optarg;
-                                output = true;
+				output = true;
 				break;
 			case 'x':
 				fprintf(stdout, "SCD:\t%s\n", optarg);
 				param_stack[p_idx].option = SCD;
-                                param_stack[p_idx++].filename = optarg;
+				param_stack[p_idx++].filename = optarg;
 				break;
 			case 'z':
 				fprintf(stdout, "CSF:\t%s\n", optarg);
-                                param_stack[p_idx].option = CSF;
-                                param_stack[p_idx++].filename = optarg;
+				param_stack[p_idx].option = CSF;
+				param_stack[p_idx++].filename = optarg;
 				break;
 			case 'e':
 				fprintf(stdout, "BOOT DEVICE:\t%s\n", optarg);
@@ -699,7 +697,7 @@ int main(int argc, char **argv)
 				} else if (!strcmp(optarg, "sd")) {
 					ivt_offset = IVT_OFFSET_SD;
 				} else if (!strcmp(optarg, "nand")) {
-                                        sector_size = 0x8000;/* sector size for NAND */
+					sector_size = 0x8000;/* sector size for NAND */
 					if (rev == B0) {
 						if (optind < argc && *argv[optind] != '-') {
 							if (!strcmp(argv[optind], "4K")) {
@@ -747,54 +745,54 @@ int main(int argc, char **argv)
 				exit(EXIT_FAILURE);
 		}
 	}
-        param_stack[p_idx].option = NO_IMG; /* null terminate the img stack */
 
-        if(soc == NONE){
-          fprintf(stderr, " No SOC defined");
-          exit(EXIT_FAILURE);
-        }
+	param_stack[p_idx].option = NO_IMG; /* null terminate the img stack */
 
-        if(container < 0)
-        { /* check to make sure there is at least 1 container defined */
-          fprintf(stderr, " No Container defined");
-          exit(EXIT_FAILURE);
-        }
+	if(soc == NONE){
+		fprintf(stderr, " No SOC defined");
+		exit(EXIT_FAILURE);
+	}
 
-		if (!output) {
-			fprintf(stderr, "mandatory args scfw and output file name missing! abort\n");
+	if(container < 0)
+	{ /* check to make sure there is at least 1 container defined */
+		fprintf(stderr, " No Container defined");
+		exit(EXIT_FAILURE);
+	}
+
+	if (!output) {
+		fprintf(stderr, "mandatory args scfw and output file name missing! abort\n");
+		exit(EXIT_FAILURE);
+	}
+
+	/* Now begin assembling the image acording to each SOC container */
+
+
+
+	switch(soc)
+	{
+		case QX:
+			if (rev == NO_REV) {
+				fprintf(stdout, "No REVISION defined, using A0 by default\n");
+				rev = A0;
+			}
+			fprintf(stdout, "ivt_offset:\t%d\n", ivt_offset);
+			fprintf(stdout, "rev:\t%d\n", rev);
+			if (rev == B0)
+				build_container_qx_qm_b0(soc, sector_size, ivt_offset, ofname, emmc_fastboot, (image_t *) param_stack, dcd_skip);
+			else
+				build_container_qx(sector_size, ivt_offset, ofname, emmc_fastboot, (image_t *) param_stack);
+
+			break;
+		case QM:
+			if (rev == B0)
+				build_container_qx_qm_b0(soc, sector_size, ivt_offset, ofname, emmc_fastboot, (image_t *) param_stack, dcd_skip);
+			else
+				build_container_qm(sector_size, ivt_offset, ofname, emmc_fastboot, (image_t *) param_stack);
+			break;
+		default:
+			fprintf(stderr, " unrecognized SOC defined");
 			exit(EXIT_FAILURE);
-		}
-
-        /* Now begin assembling the image acording to each SOC container */
-
-
-
-        switch(soc)
-        {
-          case QX:
-		if (rev == NO_REV) {
-			fprintf(stdout, "No REVISION defined, using A0 by default\n");
-			rev = A0;
-		}
-
-		fprintf(stdout, "ivt_offset:\t%d\n", ivt_offset);
-		fprintf(stdout, "rev:\t%d\n", rev);
-		if (rev == B0)
-			build_container_qx_qm_b0(soc, sector_size, ivt_offset, ofname, emmc_fastboot, (image_t *) param_stack, dcd_skip);
-		else
-			build_container_qx(sector_size, ivt_offset, ofname, emmc_fastboot, (image_t *) param_stack);
-
-		break;
-          case QM:
-		if (rev == B0)
-			build_container_qx_qm_b0(soc, sector_size, ivt_offset, ofname, emmc_fastboot, (image_t *) param_stack, dcd_skip);
-		else
-			build_container_qm(sector_size, ivt_offset, ofname, emmc_fastboot, (image_t *) param_stack);
-              break;
-          default:
-              fprintf(stderr, " unrecognized SOC defined");
-              exit(EXIT_FAILURE);
-        }
+	}
 
 
 	fprintf(stdout, "DONE.\n");

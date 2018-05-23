@@ -11,8 +11,8 @@
 #include <inttypes.h>
 #include <stdio.h>
 
-#define OCRAM_START                     0x00100000
-#define OCRAM_END                       0x00400000
+#define OCRAM_START						0x00100000
+#define OCRAM_END						0x00400000
 
 #define IV_MAX_LEN			32
 #define HASH_MAX_LEN			64
@@ -117,7 +117,7 @@ typedef struct {
 	sig_blk_hdr_t sig_blk_hdr;
 	uint32_t sigblk_size;
 	uint32_t padding;
-}  __attribute__((packed)) flash_header_v3_t;
+} __attribute__((packed)) flash_header_v3_t;
 
 typedef struct {
 	flash_header_v3_t fhdr[MAX_NUM_OF_CONTAINER];
@@ -317,19 +317,19 @@ uint64_t read_dcd_offset(char *filename)
 
 	dfd = open(filename, O_RDONLY|O_BINARY);
 	if (dfd < 0) {
-	        fprintf(stderr, "Can't open %s: %s\n", filename, strerror(errno));
-	        exit(EXIT_FAILURE);
+		fprintf(stderr, "Can't open %s: %s\n", filename, strerror(errno));
+		exit(EXIT_FAILURE);
 	}
 
 	if (fstat(dfd, &sbuf) < 0) {
 		fprintf(stderr, "Can't stat %s: %s\n", filename, strerror(errno));
-	        exit(EXIT_FAILURE);
+		exit(EXIT_FAILURE);
 	}
 
 	ptr = mmap(0, sbuf.st_size, PROT_READ, MAP_SHARED, dfd, 0);
 	if (ptr == MAP_FAILED) {
-	        fprintf(stderr, "Can't read %s: %s\n", filename, strerror(errno));
-	        exit(EXIT_FAILURE);
+		fprintf(stderr, "Can't read %s: %s\n", filename, strerror(errno));
+		exit(EXIT_FAILURE);
 	}
 
 	offset = *(uint32_t *)(ptr + DCD_ENTRY_ADDR_IN_SCFW);
@@ -552,7 +552,7 @@ int build_container_qx_qm_b0(soc_type_t soc, uint32_t sector_size, uint32_t ivt_
 					CONTAINER_FLAGS_DEFAULT,
 					CONTAINER_FUSE_DEFAULT);
 			cont_img_count = 0; /* reset img count when moving to new container */
-                        scfw_flags = 0;
+			scfw_flags = 0;
 			break;
 
 		case APPEND:

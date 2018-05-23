@@ -432,7 +432,7 @@ void set_image_array_entry(flash_header_v3_t *container, soc_type_t soc,
 		exit(EXIT_FAILURE);
 	}
 
-	fprintf(stdout, "%s size = %d\n", tmp_name, size);
+	fprintf(stdout, "%s file_offset = 0x%x size = 0x%x\n", tmp_name, offset, size);
 
 	container->num_images++;
 }
@@ -558,10 +558,23 @@ int build_container_qx_qm_b0(soc_type_t soc, uint32_t sector_size, uint32_t ivt_
 		case APPEND:
 			/* nothing to do here, the container is appended in the output */
 			break;
-                case FLAG:
-                        /* override the flags for scfw in current container */
-                        scfw_flags = img_sp->entry & 0xFFFF0000;/* mask off bottom 16 bits */
-                        break;
+		case FLAG:
+			/* override the flags for scfw in current container */
+			scfw_flags = img_sp->entry & 0xFFFF0000;/* mask off bottom 16 bits */
+			break;
+		case FILEOFF:
+			if (file_off > img_sp->dst)
+			{
+				fprintf(stderr, "FILEOFF address less than current file offset!!!\n");
+				exit(EXIT_FAILURE);
+			}
+			if (img_sp->dst != ALIGN(img_sp->dst, sector_size))
+			{
+				fprintf(stderr, "FILEOFF address is not aligned to sector size!!!\n");
+				exit(EXIT_FAILURE);
+			}
+			file_off = img_sp->dst;
+			break;
 		default:
 			fprintf(stderr, "unrecognized option in input stack (%d)\n", img_sp->option);
 			exit(EXIT_FAILURE);

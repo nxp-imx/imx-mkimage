@@ -61,3 +61,8 @@ OPTIONS:
 		Specifies a data image to be appended to the new container, usually a rootfs image or a kernel image.
 		The address represents the load address and needs to be a 32bit value in hex.
 
+	-fileoff [offset]
+		Specifies a position to set the file offset of the following image to.
+		The offset must be greater than file offset at the time and aligned to
+		sector size.
+		This is only aplicable for QX/QM revision B0

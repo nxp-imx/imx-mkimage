@@ -16,7 +16,7 @@ DDR_TRAIN ?= 1
 WGET = /usr/bin/wget
 N ?= latest
 SERVER=http://yb2.am.freescale.net
-DIR = build-output/Linux_IMX_Rocko_MX8/$(N)/common_bsp
+DIR = internal-only/Linux_IMX_Rocko_MX8/$(N)/common_bsp
 
 ifneq ($(wildcard /usr/bin/rename.ul),)
     RENAME = rename.ul
@@ -130,14 +130,27 @@ flash_aprom_ddr_unsigned: $(MKIMG) $(DCD_CFG) scfw_tcm.bin u-boot-atf.bin aprom_
 flash_b0: $(MKIMG) $(DCD_CFG) ahab-container.img scfw_tcm.bin u-boot-atf.bin
 	./$(MKIMG) -soc QM -rev B0 -append ahab-container.img -c -scfw scfw_tcm.bin -ap u-boot-atf.bin a53 0x80000000 -out flash.bin
 
-
 nightly :
 	@rm -rf boot
+	@echo "Pulling nightly for Validation board from $(SERVER)/$(DIR)"
 	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qm/mx8qm-val-scfw-tcm.bin -O scfw_tcm.bin
 	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qm/bl31-imx8qm.bin -O bl31.bin
 	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qm/u-boot-imx8qmlpddr4arm2.bin-sd -O u-boot.bin
 	@$(WGET) -qr -nd -l1 -np $(SERVER)/$(DIR) -P boot -A "Image-fsl-imx8qm-*.dtb"
 	@$(WGET) -q $(SERVER)/$(DIR)/Image-imx8_all.bin -O Image
+	wget -q https://bitbucket.sw.nxp.com/projects/IMX/repos/linux-firmware-imx/raw/firmware/seco/ahab-container.img?at=refs%2Fheads%2Fmaster -O ahab-container.img
+	@mv -f Image boot
+	@$(RENAME) "Image-" "" boot/*.dtb
+
+nightly_mek :
+	@rm -rf boot
+	@echo "Pulling nightly for MEK board from $(SERVER)/$(DIR)"
+	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qm/mx8qm-mek-scfw-tcm.bin -O scfw_tcm.bin
+	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qm/bl31-imx8qm.bin -O bl31.bin
+	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qm/u-boot-imx8qmmek.bin-sd -O u-boot.bin
+	@$(WGET) -qr -nd -l1 -np $(SERVER)/$(DIR) -P boot -A "Image-fsl-imx8qm-*.dtb"
+	@$(WGET) -q $(SERVER)/$(DIR)/Image-imx8_all.bin -O Image
+	wget -q https://bitbucket.sw.nxp.com/projects/IMX/repos/linux-firmware-imx/raw/firmware/seco/ahab-container.img?at=refs%2Fheads%2Fmaster -O ahab-container.img
 	@mv -f Image boot
 	@$(RENAME) "Image-" "" boot/*.dtb
 

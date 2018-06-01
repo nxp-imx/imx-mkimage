@@ -24,7 +24,7 @@ DDR_TRAIN ?= 1
 WGET = /usr/bin/wget
 N ?= latest
 SERVER=http://yb2.am.freescale.net
-DIR = build-output/Linux_IMX_Rocko_MX8/$(N)/common_bsp
+DIR = internal-only/Linux_IMX_Rocko_MX8/$(N)/common_bsp
 
 ifeq ($(DDR3_DCD), 1)
     ifeq ($(DX), 1)
@@ -170,10 +170,22 @@ flash_fastboot_a0: $(MKIMG) $(DCD_CFG) scfw_tcm.bin u-boot-atf.bin m4_image.bin
 
 nightly :
 	@rm -rf boot
+	@echo "Pulling nightly for Validation board from $(SERVER)/$(DIR)"
 	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qx/mx8qx-val-scfw-tcm.bin -O scfw_tcm.bin
 	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qx/bl31-imx8qxp.bin -O bl31.bin
 	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qx/u-boot-imx8qxplpddr4arm2.bin-sd -O u-boot.bin
 	@$(WGET) -qr -nd -l1 -np $(SERVER)/$(DIR) -P boot -A "Image-fsl-imx8qxp-*.dtb"
 	@$(WGET) -q $(SERVER)/$(DIR)/Image-imx8_all.bin -O Image
 	@mv -f Image boot
+
+nightly_mek :
+	@rm -rf boot
+	@echo "Pulling nightly for MEK board from $(SERVER)/$(DIR)"
+	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qx/mx8qx-mek-scfw-tcm.bin -O scfw_tcm.bin
+	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qx/bl31-imx8qxp.bin -O bl31.bin
+	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qx/u-boot-imx8qxpmek.bin-sd -O u-boot.bin
+	@$(WGET) -qr -nd -l1 -np $(SERVER)/$(DIR) -P boot -A "Image-fsl-imx8qxp-*.dtb"
+	@$(WGET) -q $(SERVER)/$(DIR)/Image-imx8_all.bin -O Image
+	@mv -f Image boot
 	@$(RENAME) "Image-" "" boot/*.dtb
+

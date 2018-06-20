@@ -409,6 +409,7 @@ void set_image_array_entry(flash_header_v3_t *container, soc_type_t soc,
 		break;
 	case MSG_BLOCK:
 		img->hab_flags |= IMG_TYPE_DATA;
+		img->hab_flags |= CORE_CA35 << BOOT_IMG_FLAGS_CORE_SHIFT;
 		img->meta = core << BOOT_IMG_META_MU_RID_SHIFT;
 		tmp_name = "MSG_BLOCK";
 		img->dst = entry;

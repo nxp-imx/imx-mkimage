@@ -46,7 +46,8 @@ typedef enum option_type {
     APPEND,
     DATA,
     PARTITION,
-    FILEOFF
+    FILEOFF,
+    MSG_BLOCK
 } option_type_t;
 
 
@@ -107,6 +108,14 @@ typedef struct {
 #define CORE_CA35       4
 #define CORE_CA72       5
 #define CORE_SECO       6
+
+#define SC_R_OTP                  357U
+#define SC_R_DEBUG                354U
+#define SC_R_ROM_0                236U
+
+#define MSG_DEBUG_EN    SC_R_DEBUG
+#define MSG_FUSE        SC_R_OTP
+#define MSG_FIELD       SC_R_ROM_0
 
 #define IMG_TYPE_CSF     0x01   /* CSF image type */
 #define IMG_TYPE_SCD     0x02   /* SCD image type */

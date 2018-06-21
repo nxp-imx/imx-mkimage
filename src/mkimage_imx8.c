@@ -530,6 +530,7 @@ int main(int argc, char **argv)
 		{"append", no_argument, NULL, 'A'},
 		{"data", required_argument, NULL, 'D'},
 		{"fileoff", required_argument, NULL, 'P'},
+		{"msg_blk", required_argument, NULL, 'M'},
 		{NULL, 0, NULL, 0}
 	};
 
@@ -736,6 +737,31 @@ int main(int argc, char **argv)
 				fprintf(stdout, "FILEOFF:\t%s\n", optarg);
 				param_stack[p_idx].option = FILEOFF;
 				param_stack[p_idx++].dst = (uint64_t) strtoll(optarg, NULL, 0);
+				break;
+			case 'M':
+				fprintf(stdout, "MSG BLOCK:\t%s", optarg);
+				param_stack[p_idx].option = MSG_BLOCK;
+				param_stack[p_idx].filename = optarg;
+				if ((optind < argc && *argv[optind] != '-') && (optind+1 < argc &&*argv[optind+1] != '-' )) {
+					if (!strncmp(argv[optind], "fuse", 4))
+						param_stack[p_idx].ext = SC_R_OTP;
+					else if (!strncmp(argv[optind], "debug", 5))
+						param_stack[p_idx].ext = SC_R_DEBUG;
+					else if (!strncmp(argv[optind], "field", 5))
+						param_stack[p_idx].ext = SC_R_ROM_0;
+					else {
+						fprintf(stderr, "ERROR: MSG type not found %s\n", argv[optind+2]);
+						exit(EXIT_FAILURE);
+					}
+					fprintf(stdout, "\ttype: %s", argv[optind++]);
+
+					param_stack[p_idx].entry = (uint32_t) strtoll(argv[optind++], NULL, 0);
+
+					fprintf(stdout, " addr: 0x%08" PRIx64 "\n", param_stack[p_idx++].entry);
+				} else {
+					fprintf(stderr, "\nmsg block option require THREE arguments: filename, debug/fuse/field, start address in hex\n\n");
+					exit(EXIT_FAILURE);
+				}
 				break;
 			case '?':
 			default:

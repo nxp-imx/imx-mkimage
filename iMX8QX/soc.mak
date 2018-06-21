@@ -141,6 +141,9 @@ flash_scfw flash_b0_scfw: $(MKIMG) ahab-container.img scfw_tcm.bin
 flash_secofw flash_b0_secofw: $(MKIMG) ahabfw.bin
 	./$(MKIMG) -soc QX -rev B0 -c -seco ahabfw.bin -out flash.bin
 
+flash_msg_block:
+	./$(MKIMG) -soc QX -rev B0 -append ahab-container.img -c -scfw scfw_tcm.bin -msg_blk test_block.bin debug 0x83000000 -out flash.bin
+
 flash_linux flash_b0_linux: $(MKIMG) Image fsl-imx8qxp-lpddr4-arm2.dtb
 	./$(MKIMG) -soc QX -rev B0 -c -ap Image a35 0x80280000 --data fsl-imx8qxp-lpddr4-arm2.dtb 0x83000000 -out flash.bin
 

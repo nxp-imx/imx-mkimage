@@ -407,6 +407,13 @@ void set_image_array_entry(flash_header_v3_t *container, soc_type_t soc,
 		tmp_name = "DATA";
 		img->dst = entry;
 		break;
+	case MSG_BLOCK:
+		img->hab_flags |= IMG_TYPE_DATA;
+		img->hab_flags |= CORE_CA35 << BOOT_IMG_FLAGS_CORE_SHIFT;
+		img->meta = core << BOOT_IMG_META_MU_RID_SHIFT;
+		tmp_name = "MSG_BLOCK";
+		img->dst = entry;
+		break;
 	case SCFW:
 		img->hab_flags |= scfw_flags & 0xFFFF0000;
 		img->hab_flags |= IMG_TYPE_EXEC;
@@ -530,6 +537,7 @@ int build_container_qx_qm_b0(soc_type_t soc, uint32_t sector_size, uint32_t ivt_
 		case SECO:
 		case SCFW:
 		case DATA:
+		case MSG_BLOCK:
 			check_file(&sbuf, img_sp->filename);
 			tmp_filename = img_sp->filename;
 			set_image_array_entry(&imx_header.fhdr[container],
@@ -621,7 +629,7 @@ int build_container_qx_qm_b0(soc_type_t soc, uint32_t sector_size, uint32_t ivt_
 	img_sp = image_stack;
 	while (img_sp->option != NO_IMG) { /* stop once we reach null terminator */
 		if (img_sp->option == M4 || img_sp->option == AP || img_sp->option == DATA || img_sp->option == SCD ||
-				img_sp->option == SCFW || img_sp->option == SECO) {
+				img_sp->option == SCFW || img_sp->option == SECO || img_sp->option == MSG_BLOCK) {
 			copy_file_aligned(ofd, img_sp->filename, img_sp->src, sector_size);
 		}
 		img_sp++;

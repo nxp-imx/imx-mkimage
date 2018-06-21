@@ -16,10 +16,12 @@ ifeq ($(SOC),iMX8MM)
 PLAT = imx8mm
 HDMI = no
 TEE_LOAD_ADDR = 0xbe000000
+VAL_BOARD = val
 else
 PLAT = imx8mq
 HDMI = yes
 TEE_LOAD_ADDR = 0xfe000000
+VAL_BOARD = arm2
 endif
 
 FW_DIR = imx-boot/imx-boot-tools/$(PLAT)
@@ -72,12 +74,12 @@ u-boot.itb: $(dtbs)
 	./mkimage_uboot -E -p 0x3000 -f u-boot.its u-boot.itb
 	@rm -f u-boot.its
 
-dtbs_ddr3l = fsl-$(PLAT)-ddr3l-arm2.dtb
+dtbs_ddr3l = fsl-$(PLAT)-ddr3l-$(VAL_BOARD).dtb
 u-boot-ddr3l.itb: $(dtbs_ddr3l)
 	TEE_LOAD_ADDR=$(TEE_LOAD_ADDR) ./mkimage_fit_atf.sh $(dtbs_ddr3l) > u-boot-ddr3l.its
 	./mkimage_uboot -E -p 0x3000 -f u-boot-ddr3l.its u-boot-ddr3l.itb
 
-dtbs_ddr4 = fsl-$(PLAT)-ddr4-arm2.dtb
+dtbs_ddr4 = fsl-$(PLAT)-ddr4-$(VAL_BOARD).dtb
 u-boot-ddr4.itb: $(dtbs_ddr4)
 	TEE_LOAD_ADDR=$(TEE_LOAD_ADDR) ./mkimage_fit_atf.sh $(dtbs_ddr4) > u-boot-ddr4.its
 	./mkimage_uboot -E -p 0x3000 -f u-boot-ddr4.its u-boot-ddr4.itb
@@ -86,28 +88,28 @@ ifeq ($(HDMI),yes)
 flash_evk: $(MKIMG) signed_hdmi_imx8m.bin u-boot-spl-ddr.bin u-boot.itb
 	./mkimage_imx8 -fit -signed_hdmi signed_hdmi_imx8m.bin -loader u-boot-spl-ddr.bin 0x7E1000 -second_loader u-boot.itb 0x40200000 0x60000 -out $(OUTIMG)
 
-flash_ddr3l_arm2: $(MKIMG) signed_hdmi_imx8m.bin u-boot-spl-ddr3l.bin u-boot-ddr3l.itb
+flash_ddr3l_val: $(MKIMG) signed_hdmi_imx8m.bin u-boot-spl-ddr3l.bin u-boot-ddr3l.itb
 	./mkimage_imx8 -fit -signed_hdmi signed_hdmi_imx8m.bin -loader u-boot-spl-ddr3l.bin 0x7E1000 -second_loader u-boot-ddr3l.itb 0x40200000 0x60000 -out $(OUTIMG)
 
-flash_ddr4_arm2: $(MKIMG) signed_hdmi_imx8m.bin u-boot-spl-ddr4.bin u-boot-ddr4.itb
+flash_ddr4_val: $(MKIMG) signed_hdmi_imx8m.bin u-boot-spl-ddr4.bin u-boot-ddr4.itb
 	./mkimage_imx8 -fit -signed_hdmi signed_hdmi_imx8m.bin -loader u-boot-spl-ddr4.bin 0x7E1000 -second_loader u-boot-ddr4.itb 0x40200000 0x60000 -out $(OUTIMG)
 
 else
 flash_evk: flash_evk_no_hdmi
 
-flash_ddr3l_arm2: flash_ddr3l_arm2_no_hdmi
+flash_ddr3l_val: flash_ddr3l_val_no_hdmi
 
-flash_ddr4_arm2: flash_ddr4_arm2_no_hdmi
+flash_ddr4_val: flash_ddr4_val_no_hdmi
 
 endif
 
 flash_evk_no_hdmi: $(MKIMG) u-boot-spl-ddr.bin u-boot.itb
 	./mkimage_imx8 -fit -loader u-boot-spl-ddr.bin 0x7E1000 -second_loader u-boot.itb 0x40200000 0x60000 -out $(OUTIMG)
 
-flash_ddr3l_arm2_no_hdmi: $(MKIMG) u-boot-spl-ddr3l.bin u-boot-ddr3l.itb
+flash_ddr3l_val_no_hdmi: $(MKIMG) u-boot-spl-ddr3l.bin u-boot-ddr3l.itb
 	./mkimage_imx8 -fit -loader u-boot-spl-ddr3l.bin 0x7E1000 -second_loader u-boot-ddr3l.itb 0x40200000 0x60000 -out $(OUTIMG)
 
-flash_ddr4_arm2_no_hdmi: $(MKIMG) u-boot-spl-ddr4.bin u-boot-ddr4.itb
+flash_ddr4_val_no_hdmi: $(MKIMG) u-boot-spl-ddr4.bin u-boot-ddr4.itb
 	./mkimage_imx8 -fit -loader u-boot-spl-ddr4.bin 0x7E1000 -second_loader u-boot-ddr4.itb 0x40200000 0x60000 -out $(OUTIMG)
 
 flash_evk_flexspi: $(MKIMG) u-boot-spl-ddr.bin u-boot.itb
@@ -127,7 +129,7 @@ nightly :
 	@$(WGET) -q $(BITBUCKET_SERVER)/$(DDR_FW_DIR)/lpddr4_pmu_train_2d_imem.bin -O lpddr4_pmu_train_2d_imem.bin
 	@$(WGET) -q $(SERVER)/$(DIR)/$(FW_DIR)/bl31-$(PLAT).bin -O bl31.bin
 	@$(WGET) -q $(SERVER)/$(DIR)/$(FW_DIR)/u-boot-spl.bin-$(PLAT)evk-sd -O u-boot-spl.bin
-	@$(WGET) -q $(SERVER)/$(DIR)/$(FW_DIR)/u-boot-nodtb.bin -O u-boot-nodtb.bin
+	@$(WGET) -q $(SERVER)/$(DIR)/$(FW_DIR)/u-boot-nodtb.bin-$(PLAT)evk-sd -O u-boot-nodtb.bin
 	@$(WGET) -q $(SERVER)/$(DIR)/$(FW_DIR)/fsl-$(PLAT)-evk.dtb -O fsl-$(PLAT)-evk.dtb
 	@$(WGET) -q $(SERVER)/$(DIR)/$(FW_DIR)/signed_hdmi_imx8m.bin -O signed_hdmi_imx8m.bin
 	@$(WGET) -q $(SERVER)/$(DIR)/$(FW_DIR)/mkimage_uboot -O mkimage_uboot

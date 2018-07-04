@@ -168,7 +168,7 @@ flash_ca35_ddrstress_dcd_a0: $(MKIMG) $(DCD_CFG) scfw_tcm.bin mx8qx_ddr_stress_t
 flash_cm4ddr_a0: $(MKIMG) $(DCD_CFG) scfw_tcm.bin m4_image.bin
 	./$(MKIMG) -soc QX -c -dcd $(DCD_CFG) -scfw scfw_tcm.bin -m4 m4_image.bin 0 0x88000000 -out flash.bin
 
-flash_fastboot_a0: $(MKIMG) $(DCD_CFG) scfw_tcm.bin u-boot-atf.bin m4_image.bin
+flash_fastboot_a0: $(MKIMG) $(DCD_CFG) scfw_tcm.bin u-boot-atf.bin
 	./$(MKIMG) -soc QX -dev emmc_fast -c -dcd $(DCD_CFG) -scfw scfw_tcm.bin -ap u-boot-atf.bin a35 0x80000000 -out flash.bin
 
 nightly :

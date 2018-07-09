@@ -16,11 +16,13 @@ ifeq ($(SOC),iMX8MM)
 PLAT = imx8mm
 HDMI = no
 TEE_LOAD_ADDR = 0xbe000000
+ATF_LOAD_ADDR = 0x00920000
 VAL_BOARD = val
 else
 PLAT = imx8mq
 HDMI = yes
 TEE_LOAD_ADDR = 0xfe000000
+ATF_LOAD_ADDR = 0x00910000
 VAL_BOARD = arm2
 endif
 
@@ -70,18 +72,18 @@ clean:
 
 dtbs = fsl-$(PLAT)-evk.dtb
 u-boot.itb: $(dtbs)
-	TEE_LOAD_ADDR=$(TEE_LOAD_ADDR) ./mkimage_fit_atf.sh $(dtbs) > u-boot.its
+	TEE_LOAD_ADDR=$(TEE_LOAD_ADDR) ATF_LOAD_ADDR=$(ATF_LOAD_ADDR) ./mkimage_fit_atf.sh $(dtbs) > u-boot.its
 	./mkimage_uboot -E -p 0x3000 -f u-boot.its u-boot.itb
 	@rm -f u-boot.its
 
 dtbs_ddr3l = fsl-$(PLAT)-ddr3l-$(VAL_BOARD).dtb
 u-boot-ddr3l.itb: $(dtbs_ddr3l)
-	TEE_LOAD_ADDR=$(TEE_LOAD_ADDR) ./mkimage_fit_atf.sh $(dtbs_ddr3l) > u-boot-ddr3l.its
+	TEE_LOAD_ADDR=$(TEE_LOAD_ADDR) ATF_LOAD_ADDR=$(ATF_LOAD_ADDR) ./mkimage_fit_atf.sh $(dtbs_ddr3l) > u-boot-ddr3l.its
 	./mkimage_uboot -E -p 0x3000 -f u-boot-ddr3l.its u-boot-ddr3l.itb
 
 dtbs_ddr4 = fsl-$(PLAT)-ddr4-$(VAL_BOARD).dtb
 u-boot-ddr4.itb: $(dtbs_ddr4)
-	TEE_LOAD_ADDR=$(TEE_LOAD_ADDR) ./mkimage_fit_atf.sh $(dtbs_ddr4) > u-boot-ddr4.its
+	TEE_LOAD_ADDR=$(TEE_LOAD_ADDR) ATF_LOAD_ADDR=$(ATF_LOAD_ADDR) ./mkimage_fit_atf.sh $(dtbs_ddr4) > u-boot-ddr4.its
 	./mkimage_uboot -E -p 0x3000 -f u-boot-ddr4.its u-boot-ddr4.itb
 
 ifeq ($(HDMI),yes)
@@ -125,7 +127,7 @@ flash_dp_spl_uboot: flash_dp_evk
 flash_spl_uboot: flash_evk_no_hdmi
 
 print_fit_hab: u-boot-nodtb.bin bl31.bin $(dtbs)
-	TEE_LOAD_ADDR=$(TEE_LOAD_ADDR) ./print_fit_hab.sh 0x60000 $(dtbs)
+	TEE_LOAD_ADDR=$(TEE_LOAD_ADDR) ATF_LOAD_ADDR=$(ATF_LOAD_ADDR) ./print_fit_hab.sh 0x60000 $(dtbs)
 
 nightly :
 	@$(WGET) -q $(BITBUCKET_SERVER)/$(DDR_FW_DIR)/lpddr4_pmu_train_1d_dmem.bin -O lpddr4_pmu_train_1d_dmem.bin

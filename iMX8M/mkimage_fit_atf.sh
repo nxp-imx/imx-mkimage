@@ -9,6 +9,11 @@
 # keep backward compatibility
 [ -z "$TEE_LOAD_ADDR" ] && TEE_LOAD_ADDR="0xfe000000"
 
+if [ -z "$ATF_LOAD_ADDR" ]; then
+	echo "ERROR: BL31 load address is not set" >&2
+	exit 0
+fi
+
 if [ ! -f $BL31 ]; then
 	echo "ERROR: BL31 file $BL31 NOT found" >&2
 	exit 0
@@ -66,8 +71,8 @@ cat << __HEADER_EOF
 			type = "firmware";
 			arch = "arm64";
 			compression = "none";
-			load = <0x00910000>;
-			entry = <0x00910000>;
+			load = <$ATF_LOAD_ADDR>;
+			entry = <$ATF_LOAD_ADDR>;
 		};
 __HEADER_EOF
 

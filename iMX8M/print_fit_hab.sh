@@ -7,13 +7,18 @@ let fit_off=$1
 # keep backward compatibility
 [ -z "$TEE_LOAD_ADDR" ] && TEE_LOAD_ADDR="0xfe000000"
 
+if [ -z "$ATF_LOAD_ADDR" ]; then
+	echo "ERROR: BL31 load address is not set" >&2
+	exit 0
+fi
+
 # We dd flash.bin to 33KB "0x8400" offset, so need minus 0x8400
 let uboot_sign_off=$((fit_off - 0x8400 + 0x3000))
 let uboot_size=$(ls -lct u-boot-nodtb.bin | awk '{print $5}')
 let uboot_load_addr=0x40200000
 
 let atf_sign_off=$((uboot_sign_off + uboot_size))
-let atf_load_addr=0x910000
+let atf_load_addr=$ATF_LOAD_ADDR
 let atf_size=$(ls -lct bl31.bin | awk '{print $5}')
 
 if [ ! -f $BL32 ]; then

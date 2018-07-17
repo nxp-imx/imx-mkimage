@@ -510,6 +510,9 @@ int main(int argc, char **argv)
 	soc_type_t soc = NONE; /* Initially No SOC defined */
 	rev_type_t rev = NO_REV; /* Initially No REV defined */
 
+	uint8_t  fuse_version = 0;
+	uint16_t sw_version   = 0;
+
 	static struct option long_options[] =
 	{
 		{"scfw", required_argument, NULL, 'f'},
@@ -531,6 +534,8 @@ int main(int argc, char **argv)
 		{"data", required_argument, NULL, 'D'},
 		{"fileoff", required_argument, NULL, 'P'},
 		{"msg_blk", required_argument, NULL, 'M'},
+		{"fuse_version", required_argument, NULL, 'u'},
+		{"sw_version", required_argument, NULL, 'v'},
 		{NULL, 0, NULL, 0}
 	};
 
@@ -541,7 +546,7 @@ int main(int argc, char **argv)
 		/* getopt_long stores the option index here. */
 		int option_index = 0;
 
-		c = getopt_long_only (argc, argv, ":f:m:a:d:o:l:x:z:e:p:c",
+		c = getopt_long_only (argc, argv, ":f:m:a:d:o:l:x:z:e:p:cu:v:",
 			long_options, &option_index);
 
 		/* Detect the end of the options. */
@@ -763,6 +768,12 @@ int main(int argc, char **argv)
 					exit(EXIT_FAILURE);
 				}
 				break;
+			case 'u':
+				fuse_version = (uint8_t) (strtoll(optarg, NULL, 0) & 0xFF);
+				break;
+			case 'v':
+				sw_version = (uint16_t) (strtoll(optarg, NULL, 0) & 0xFFFF);
+				break;
 			case '?':
 			default:
 				/* invalid option */
@@ -771,6 +782,9 @@ int main(int argc, char **argv)
 				exit(EXIT_FAILURE);
 		}
 	}
+
+	fprintf(stdout, "CONTAINER FUSE VERSION:\t0x%02x\n", fuse_version);
+	fprintf(stdout, "CONTAINER SW VERSION:\t0x%04x\n", sw_version);
 
 	param_stack[p_idx].option = NO_IMG; /* null terminate the img stack */
 
@@ -804,14 +818,14 @@ int main(int argc, char **argv)
 			fprintf(stdout, "ivt_offset:\t%d\n", ivt_offset);
 			fprintf(stdout, "rev:\t%d\n", rev);
 			if (rev == B0)
-				build_container_qx_qm_b0(soc, sector_size, ivt_offset, ofname, emmc_fastboot, (image_t *) param_stack, dcd_skip);
+				build_container_qx_qm_b0(soc, sector_size, ivt_offset, ofname, emmc_fastboot, (image_t *) param_stack, dcd_skip, fuse_version, sw_version);
 			else
 				build_container_qx(sector_size, ivt_offset, ofname, emmc_fastboot, (image_t *) param_stack);
 
 			break;
 		case QM:
 			if (rev == B0)
-				build_container_qx_qm_b0(soc, sector_size, ivt_offset, ofname, emmc_fastboot, (image_t *) param_stack, dcd_skip);
+				build_container_qx_qm_b0(soc, sector_size, ivt_offset, ofname, emmc_fastboot, (image_t *) param_stack, dcd_skip, fuse_version, sw_version);
 			else
 				build_container_qm(sector_size, ivt_offset, ofname, emmc_fastboot, (image_t *) param_stack);
 			break;

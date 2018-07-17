@@ -496,7 +496,7 @@ int get_container_image_start_pos(image_t *image_stack, uint32_t align)
 }
 
 int build_container_qx_qm_b0(soc_type_t soc, uint32_t sector_size, uint32_t ivt_offset, char *out_file,
-				bool emmc_fastboot, image_t *image_stack, bool dcd_skip)
+				bool emmc_fastboot, image_t *image_stack, bool dcd_skip, uint8_t fuse_version, uint16_t sw_version)
 {
 	int file_off, ofd = -1;
 	unsigned int dcd_len = 0;
@@ -538,7 +538,6 @@ int build_container_qx_qm_b0(soc_type_t soc, uint32_t sector_size, uint32_t ivt_
 		switch (img_sp->option) {
 		case AP:
 		case M4:
-		case SECO:
 		case SCFW:
 		case DATA:
 		case MSG_BLOCK:
@@ -557,12 +556,28 @@ int build_container_qx_qm_b0(soc_type_t soc, uint32_t sector_size, uint32_t ivt_
 			cont_img_count++;
 			break;
 
+		case SECO:
+			check_file(&sbuf, img_sp->filename);
+			tmp_filename = img_sp->filename;
+			set_image_array_entry(&imx_header.fhdr[container],
+						soc,
+						img_sp,
+						file_off,
+						sbuf.st_size,
+						tmp_filename,
+						dcd_skip);
+			img_sp->src = file_off;
+
+			file_off += sbuf.st_size;
+			cont_img_count++;
+			break;
+
 		case NEW_CONTAINER:
 			container++;
-			set_container(&imx_header.fhdr[container], 0xCAFE,
+			set_container(&imx_header.fhdr[container], sw_version,
 					CONTAINER_ALIGNMENT,
 					CONTAINER_FLAGS_DEFAULT,
-					CONTAINER_FUSE_DEFAULT);
+					fuse_version);
 			cont_img_count = 0; /* reset img count when moving to new container */
 			scfw_flags = 0;
 			break;

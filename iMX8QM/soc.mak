@@ -127,6 +127,9 @@ flash_aprom_ddr: $(MKIMG) $(DCD_CFG) scfw_tcm.bin u-boot-atf.bin aprom_ddr.bin c
 flash_aprom_ddr_unsigned: $(MKIMG) $(DCD_CFG) scfw_tcm.bin u-boot-atf.bin aprom_ddr.bin csf_ap.bin
 	./$(MKIMG) -soc QM -c -dcd $(DCD_CFG) -scfw scfw_tcm.bin -ap aprom_ddr.bin a53 0x80000000 -c -ap u-boot-atf.bin a53 0x90000000 -out flash.bin
 
+flash_b0_scfw: $(MKIMG) $(DCD_CFG) ahab-container.img scfw_tcm.bin
+	./$(MKIMG) -soc QM -rev B0 -dcd skip -append ahab-container.img -c -scfw scfw_tcm.bin -out flash.bin
+
 flash_b0: $(MKIMG) $(DCD_CFG) ahab-container.img scfw_tcm.bin u-boot-atf.bin
 	./$(MKIMG) -soc QM -rev B0 -append ahab-container.img -c -scfw scfw_tcm.bin -ap u-boot-atf.bin a53 0x80000000 -out flash.bin
 

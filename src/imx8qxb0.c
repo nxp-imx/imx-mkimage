@@ -377,7 +377,7 @@ void set_image_array_entry(flash_header_v3_t *container, soc_type_t soc,
 			exit(EXIT_FAILURE);
 		}
 		img->hab_flags |= IMG_TYPE_EXEC;
-		img->hab_flags |= core << BOOT_IMG_FLAGS_CORE_SHIFT;
+		img->hab_flags |= CORE_CA53 << BOOT_IMG_FLAGS_CORE_SHIFT; /* On B0, only core id = 4 is valid */
 		tmp_name = "AP";
 		img->dst = entry;
 		img->entry = entry;

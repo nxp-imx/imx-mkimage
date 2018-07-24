@@ -133,7 +133,7 @@ flash_b0_scfw: $(MKIMG) $(DCD_CFG) ahab-container.img scfw_tcm.bin
 flash_b0: $(MKIMG) $(DCD_CFG) ahab-container.img scfw_tcm.bin u-boot-atf.bin
 	./$(MKIMG) -soc QM -rev B0 -append ahab-container.img -c -scfw scfw_tcm.bin -ap u-boot-atf.bin a53 0x80000000 -out flash.bin
 
-flash_ddrstress flash_b0_ca72_ddrstress: $(MKIMG) ahab-container.img scfw_tcm.bin mx8qmb0_ddr_stress_test.bin
+flash_b0_ca72_ddrstress: $(MKIMG) ahab-container.img scfw_tcm.bin mx8qmb0_ddr_stress_test.bin
 	./$(MKIMG) -soc QM -rev B0 -append ahab-container.img -c  -flags 0x00800000 -scfw scfw_tcm.bin -ap mx8qmb0_ddr_stress_test.bin a72 0x00100000 -out flash.bin
 
 flash_ddrstress flash_b0_ca53_ddrstress: $(MKIMG) ahab-container.img scfw_tcm.bin mx8qmb0_ddr_stress_test.bin

@@ -127,17 +127,17 @@ flash_aprom_ddr: $(MKIMG) $(DCD_CFG) scfw_tcm.bin u-boot-atf.bin aprom_ddr.bin c
 flash_aprom_ddr_unsigned: $(MKIMG) $(DCD_CFG) scfw_tcm.bin u-boot-atf.bin aprom_ddr.bin csf_ap.bin
 	./$(MKIMG) -soc QM -c -dcd $(DCD_CFG) -scfw scfw_tcm.bin -ap aprom_ddr.bin a53 0x80000000 -c -ap u-boot-atf.bin a53 0x90000000 -out flash.bin
 
-flash_b0_scfw: $(MKIMG) $(DCD_CFG) ahab-container.img scfw_tcm.bin
-	./$(MKIMG) -soc QM -rev B0 -dcd skip -append ahab-container.img -c -scfw scfw_tcm.bin -out flash.bin
+flash_b0_scfw: $(MKIMG) $(DCD_CFG) mx8qm-ahab-container.img scfw_tcm.bin
+	./$(MKIMG) -soc QM -rev B0 -dcd skip -append mx8qm-ahab-container.img -c -scfw scfw_tcm.bin -out flash.bin
 
-flash_b0: $(MKIMG) $(DCD_CFG) ahab-container.img scfw_tcm.bin u-boot-atf.bin
-	./$(MKIMG) -soc QM -rev B0 -append ahab-container.img -c -scfw scfw_tcm.bin -ap u-boot-atf.bin a53 0x80000000 -out flash.bin
+flash_b0: $(MKIMG) $(DCD_CFG) mx8qm-ahab-container.img scfw_tcm.bin u-boot-atf.bin
+	./$(MKIMG) -soc QM -rev B0 -append mx8qm-ahab-container.img -c -scfw scfw_tcm.bin -ap u-boot-atf.bin a53 0x80000000 -out flash.bin
 
-flash_b0_ca72_ddrstress: $(MKIMG) ahab-container.img scfw_tcm.bin mx8qmb0_ddr_stress_test.bin
-	./$(MKIMG) -soc QM -rev B0 -append ahab-container.img -c  -flags 0x00800000 -scfw scfw_tcm.bin -ap mx8qmb0_ddr_stress_test.bin a72 0x00100000 -out flash.bin
+flash_b0_ca72_ddrstress: $(MKIMG) mx8qm-ahab-container.img scfw_tcm.bin mx8qmb0_ddr_stress_test.bin
+	./$(MKIMG) -soc QM -rev B0 -append mx8qm-ahab-container.img -c  -flags 0x00800000 -scfw scfw_tcm.bin -ap mx8qmb0_ddr_stress_test.bin a72 0x00100000 -out flash.bin
 
-flash_ddrstress flash_b0_ca53_ddrstress: $(MKIMG) ahab-container.img scfw_tcm.bin mx8qmb0_ddr_stress_test.bin
-	./$(MKIMG) -soc QM -rev B0 -append ahab-container.img -c  -flags 0x00800000 -scfw scfw_tcm.bin -ap mx8qmb0_ddr_stress_test.bin a53 0x00100000 -out flash.bin
+flash_ddrstress flash_b0_ca53_ddrstress: $(MKIMG) mx8qm-ahab-container.img scfw_tcm.bin mx8qmb0_ddr_stress_test.bin
+	./$(MKIMG) -soc QM -rev B0 -append mx8qm-ahab-container.img -c  -flags 0x00800000 -scfw scfw_tcm.bin -ap mx8qmb0_ddr_stress_test.bin a53 0x00100000 -out flash.bin
 	
 nightly :
 	@rm -rf boot
@@ -147,7 +147,7 @@ nightly :
 	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qm/u-boot-imx8qmlpddr4arm2.bin-sd -O u-boot.bin
 	@$(WGET) -qr -nd -l1 -np $(SERVER)/$(DIR) -P boot -A "Image-fsl-imx8qm-*.dtb"
 	@$(WGET) -q $(SERVER)/$(DIR)/Image-imx8_all.bin -O Image
-	wget -q https://bitbucket.sw.nxp.com/projects/IMX/repos/linux-firmware-imx/raw/firmware/seco/ahab-container.img?at=refs%2Fheads%2Fmaster -O ahab-container.img
+	wget -q https://bitbucket.sw.nxp.com/projects/IMX/repos/linux-firmware-imx/raw/firmware/seco/mx8qm-ahab-container.img?at=refs%2Fheads%2Fmaster -O mx8qm-ahab-container.img
 	@mv -f Image boot
 	@$(RENAME) "Image-" "" boot/*.dtb
 
@@ -159,7 +159,7 @@ nightly_mek :
 	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qm/u-boot-imx8qmmek.bin-sd -O u-boot.bin
 	@$(WGET) -qr -nd -l1 -np $(SERVER)/$(DIR) -P boot -A "Image-fsl-imx8qm-*.dtb"
 	@$(WGET) -q $(SERVER)/$(DIR)/Image-imx8_all.bin -O Image
-	wget -q https://bitbucket.sw.nxp.com/projects/IMX/repos/linux-firmware-imx/raw/firmware/seco/ahab-container.img?at=refs%2Fheads%2Fmaster -O ahab-container.img
+	wget -q https://bitbucket.sw.nxp.com/projects/IMX/repos/linux-firmware-imx/raw/firmware/seco/mx8qm-ahab-container.img?at=refs%2Fheads%2Fmaster -O mx8qm-ahab-container.img
 	@mv -f Image boot
 	@$(RENAME) "Image-" "" boot/*.dtb
 

@@ -144,7 +144,19 @@ flash_ddrstress flash_b0_ca53_ddrstress: $(MKIMG) mx8qm-ahab-container.img scfw_
 
 flash_b0_ca72: $(MKIMG) mx8qm-ahab-container.img scfw_tcm.bin u-boot-atf.bin
 	./$(MKIMG) -soc QM -rev B0 -append mx8qm-ahab-container.img -c -scfw scfw_tcm.bin -ap u-boot-atf.bin a72 0x80000000 -out flash.bin
-	
+
+flash_b0_cm4_0: $(MKIMG) $(DCD_CFG) mx8qm-ahab-container.img scfw_tcm.bin m4_image.bin
+	./$(MKIMG) -soc QM -rev B0 -dcd skip -append mx8qm-ahab-container.img -c -scfw scfw_tcm.bin -m4 m4_image.bin 0 0x34FE0000 -out flash.bin
+
+flash_b0_cm4_1: $(MKIMG) $(DCD_CFG) mx8qm-ahab-container.img scfw_tcm.bin m4_image.bin
+	./$(MKIMG) -soc QM -rev B0 -dcd skip -append mx8qm-ahab-container.img -c -scfw scfw_tcm.bin -m4 m4_image.bin 1 0x38FE0000 -out flash.bin
+
+flash_b0_m4s_tcm: $(MKIMG) $(DCD_CFG) mx8qm-ahab-container.img scfw_tcm.bin m40_tcm.bin m41_tcm.bin
+	./$(MKIMG) -soc QM -rev B0 -dcd skip -append mx8qm-ahab-container.img -c -scfw scfw_tcm.bin -m4 m40_tcm.bin 0 0x34FE0000 -m4 m41_tcm.bin 1 0x38FE0000 -out flash.bin
+
+flash_b0_m40_uboot: $(MKIMG) mx8qm-ahab-container.img scfw_tcm.bin m4_image.bin u-boot-atf.bin
+	./$(MKIMG) -soc QM -rev B0 -append mx8qm-ahab-container.img -c -scfw scfw_tcm.bin -m4 m4_image.bin 0 0x88000000 -ap u-boot-atf.bin a53 0x80000000 -out flash.bin
+
 nightly :
 	@rm -rf boot
 	@echo "Pulling nightly for Validation board from $(SERVER)/$(DIR)"

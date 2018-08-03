@@ -17,7 +17,7 @@ let uboot_sign_off=$((fit_off - 0x8400 + 0x3000))
 let uboot_size=$(ls -lct u-boot-nodtb.bin | awk '{print $5}')
 let uboot_load_addr=0x40200000
 
-let atf_sign_off=$((uboot_sign_off + uboot_size))
+let atf_sign_off=$(((uboot_sign_off + uboot_size + 3) & ~3))
 let atf_load_addr=$ATF_LOAD_ADDR
 let atf_size=$(ls -lct bl31.bin | awk '{print $5}')
 
@@ -27,11 +27,11 @@ if [ ! -f $BL32 ]; then
 else
 	let tee_size=$(ls -lct tee.bin | awk '{print $5}')
 
-	let tee_sign_off=$((atf_sign_off + atf_size))
+	let tee_sign_off=$(((atf_sign_off + atf_size + 3) & ~3))
 	let tee_load_addr=$TEE_LOAD_ADDR
 fi
 
-let last_sign_off=$((tee_sign_off + tee_size))
+let last_sign_off=$(((tee_sign_off + tee_size + 3) & ~3))
 let last_size=$((tee_size))
 let last_load_addr=$((uboot_load_addr + uboot_size))
 
@@ -70,7 +70,7 @@ do
 		fdt_sign_off=`printf "0x%X" ${last_sign_off}`
 		fdt_load_addr=`printf "0x%X" ${last_load_addr}`
 
-		let last_sign_off=$((last_sign_off + fdt${cnt}_size))
+		let last_sign_off=$(((last_sign_off + fdt${cnt}_size + 3) & ~3))
 		let last_load_addr=$((last_load_addr + fdt${cnt}_size))
 
 		echo ${fdt_load_addr} ${fdt_sign_off} ${fdt_size}

@@ -26,6 +26,10 @@ N ?= latest
 SERVER=http://yb2.am.freescale.net
 DIR = internal-only/Linux_IMX_Rocko_MX8/$(N)/common_bsp
 
+#define the F(Q)SPI header file
+QSPI_HEADER = ../scripts/fspi_header
+QSPI_PACKER = ../scripts/fspi_packer.sh
+
 ifeq ($(DDR3_DCD), 1)
     ifeq ($(DX), 1)
 	    DCD_CFG_SRC = imx8dx_ddr3_dcd_16bit_933MHz.cfg
@@ -99,8 +103,9 @@ flash_early_a0: $(MKIMG) scfw_tcm.bin u-boot-atf.bin
 flash_flexspi_a0: $(MKIMG) $(DCD_CFG) scfw_tcm.bin u-boot-atf.bin
 	./$(MKIMG) -soc QX -dev flexspi -c -dcd $(DCD_CFG) -scfw scfw_tcm.bin -c -ap u-boot-atf.bin a35 0x80000000 -out flash.bin
 
-flash_flexspi: $(MKIMG) mx8qx-ahab-container.img scfw_tcm.bin u-boot-atf.bin
+flash_flexspi: $(MKIMG) mx8qx-ahab-container.img scfw_tcm.bin u-boot-atf.bin $(QSPI_HEADER)
 	./$(MKIMG) -soc QX -rev B0 -dev flexspi -append mx8qx-ahab-container.img -c -scfw scfw_tcm.bin -ap u-boot-atf.bin a35 0x80000000 -out flash.bin
+	./$(QSPI_PACKER) $(QSPI_HEADER)
 
 flash_multi_cores_a0: $(MKIMG) $(DCD_CFG) scfw_tcm.bin m40_tcm.bin u-boot-atf.bin
 	./$(MKIMG) -soc QX -c -dcd $(DCD_CFG) -scfw scfw_tcm.bin -m4 m40_tcm.bin 0 0x34FE0000 -c -ap u-boot-atf.bin a35 0x80000000 -out flash.bin

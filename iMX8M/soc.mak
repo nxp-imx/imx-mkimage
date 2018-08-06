@@ -18,12 +18,18 @@ HDMI = no
 TEE_LOAD_ADDR = 0xbe000000
 ATF_LOAD_ADDR = 0x00920000
 VAL_BOARD = val
+#define the F(Q)SPI header file
+QSPI_HEADER = ../scripts/fspi_header
+QSPI_PACKER = ../scripts/fspi_packer.sh
 else
 PLAT = imx8mq
 HDMI = yes
 TEE_LOAD_ADDR = 0xfe000000
 ATF_LOAD_ADDR = 0x00910000
 VAL_BOARD = arm2
+#define the F(Q)SPI header file
+QSPI_HEADER = ../scripts/qspi_header
+QSPI_PACKER = ../scripts/fspi_packer.sh
 endif
 
 FW_DIR = imx-boot/imx-boot-tools/$(PLAT)
@@ -119,6 +125,7 @@ flash_ddr4_val_no_hdmi: $(MKIMG) u-boot-spl-ddr4.bin u-boot-ddr4.itb
 
 flash_evk_flexspi: $(MKIMG) u-boot-spl-ddr.bin u-boot.itb
 	./mkimage_imx8 -dev flexspi -fit -loader u-boot-spl-ddr.bin 0x7E2000 -second_loader u-boot.itb 0x40200000 0x60000 -out $(OUTIMG)
+	./$(QSPI_PACKER) $(QSPI_HEADER)
 
 flash_hdmi_spl_uboot: flash_evk
 

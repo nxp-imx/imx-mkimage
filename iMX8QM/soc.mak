@@ -24,6 +24,9 @@ else
     RENAME = rename
 endif
 
+#define the F(Q)SPI header file
+QSPI_HEADER = ../scripts/fspi_header
+QSPI_PACKER = ../scripts/fspi_packer.sh
 
 $(DCD_CFG): FORCE
 	@echo "Converting iMX8 DCD 1.6GHz file"
@@ -75,6 +78,7 @@ flash_early: $(MKIMG) $(DCD_CFG) scfw_tcm.bin u-boot-atf.bin
 
 flash_flexspi: $(MKIMG) $(DCD_CFG) scfw_tcm.bin u-boot-atf.bin
 	./$(MKIMG) -soc QM -c -dev flexspi -scfw scfw_tcm.bin -c -ap u-boot-atf.bin a53 0x80000000 -out flash.bin
+	./$(QSPI_PACKER) $(QSPI_HEADER)
 
 flash_ca72: $(MKIMG) $(DCD_CFG) scfw_tcm.bin u-boot-atf.bin
 	./$(MKIMG) -soc QM -c -scfw scfw_tcm.bin -c -ap u-boot-atf.bin a72 0x80000000 -out flash.bin

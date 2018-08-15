@@ -131,11 +131,18 @@ flash_aprom_ddr: $(MKIMG) $(DCD_CFG) scfw_tcm.bin u-boot-atf.bin aprom_ddr.bin c
 flash_aprom_ddr_unsigned: $(MKIMG) $(DCD_CFG) scfw_tcm.bin u-boot-atf.bin aprom_ddr.bin csf_ap.bin
 	./$(MKIMG) -soc QM -c -dcd $(DCD_CFG) -scfw scfw_tcm.bin -ap aprom_ddr.bin a53 0x80000000 -c -ap u-boot-atf.bin a53 0x90000000 -out flash.bin
 
-flash_b0_scfw: $(MKIMG) $(DCD_CFG) mx8qm-ahab-container.img scfw_tcm.bin
+flash_b0_scfw: $(MKIMG) mx8qm-ahab-container.img scfw_tcm.bin
 	./$(MKIMG) -soc QM -rev B0 -dcd skip -append mx8qm-ahab-container.img -c -scfw scfw_tcm.bin -out flash.bin
 
-flash_b0: $(MKIMG) $(DCD_CFG) mx8qm-ahab-container.img scfw_tcm.bin u-boot-atf.bin
+flash_b0: $(MKIMG) mx8qm-ahab-container.img scfw_tcm.bin u-boot-atf.bin
 	./$(MKIMG) -soc QM -rev B0 -append mx8qm-ahab-container.img -c -scfw scfw_tcm.bin -ap u-boot-atf.bin a53 0x80000000 -out flash.bin
+
+flash_b0_spl: $(MKIMG) mx8qm-ahab-container.img scfw_tcm.bin u-boot-atf.bin u-boot-spl.bin
+	./$(MKIMG) -soc QM -rev B0 -dcd skip -append mx8qm-ahab-container.img -c -scfw scfw_tcm.bin -ap u-boot-spl.bin a53 0x00100000 -out flash.bin
+	@flashbin_size=`wc -c flash.bin | awk '{print $$1}'`; \
+                   pad_cnt=$$(((flashbin_size + 0x400 - 1) / 0x400)); \
+                   echo "append u-boot-atf.bin at $$pad_cnt KB"; \
+                   dd if=u-boot-atf.bin of=flash.bin bs=1K seek=$$pad_cnt
 
 flash_b0_linux: $(MKIMG) Image fsl-imx8qm-lpddr4-arm2.dtb
 	./$(MKIMG) -soc QM -rev B0 -c -ap Image a53 0x80280000 --data fsl-imx8qm-lpddr4-arm2.dtb 0x83000000 -out flash.bin
@@ -149,13 +156,13 @@ flash_ddrstress flash_b0_ca53_ddrstress: $(MKIMG) mx8qm-ahab-container.img scfw_
 flash_b0_ca72: $(MKIMG) mx8qm-ahab-container.img scfw_tcm.bin u-boot-atf.bin
 	./$(MKIMG) -soc QM -rev B0 -append mx8qm-ahab-container.img -c -scfw scfw_tcm.bin -ap u-boot-atf.bin a72 0x80000000 -out flash.bin
 
-flash_b0_cm4_0: $(MKIMG) $(DCD_CFG) mx8qm-ahab-container.img scfw_tcm.bin m4_image.bin
+flash_b0_cm4_0: $(MKIMG) mx8qm-ahab-container.img scfw_tcm.bin m4_image.bin
 	./$(MKIMG) -soc QM -rev B0 -dcd skip -append mx8qm-ahab-container.img -c -scfw scfw_tcm.bin -m4 m4_image.bin 0 0x34FE0000 -out flash.bin
 
-flash_b0_cm4_1: $(MKIMG) $(DCD_CFG) mx8qm-ahab-container.img scfw_tcm.bin m4_image.bin
+flash_b0_cm4_1: $(MKIMG) mx8qm-ahab-container.img scfw_tcm.bin m4_image.bin
 	./$(MKIMG) -soc QM -rev B0 -dcd skip -append mx8qm-ahab-container.img -c -scfw scfw_tcm.bin -m4 m4_image.bin 1 0x38FE0000 -out flash.bin
 
-flash_b0_m4s_tcm: $(MKIMG) $(DCD_CFG) mx8qm-ahab-container.img scfw_tcm.bin m40_tcm.bin m41_tcm.bin
+flash_b0_m4s_tcm: $(MKIMG) mx8qm-ahab-container.img scfw_tcm.bin m40_tcm.bin m41_tcm.bin
 	./$(MKIMG) -soc QM -rev B0 -dcd skip -append mx8qm-ahab-container.img -c -scfw scfw_tcm.bin -m4 m40_tcm.bin 0 0x34FE0000 -m4 m41_tcm.bin 1 0x38FE0000 -out flash.bin
 
 flash_b0_m40_uboot: $(MKIMG) mx8qm-ahab-container.img scfw_tcm.bin m4_image.bin u-boot-atf.bin

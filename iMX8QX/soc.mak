@@ -122,6 +122,13 @@ flash_cm4_a0: $(MKIMG) $(DCD_CFG) scfw_tcm.bin m4_image.bin
 flash flash_b0: $(MKIMG) mx8qx-ahab-container.img scfw_tcm.bin u-boot-atf.bin
 	./$(MKIMG) -soc QX -rev B0 -append mx8qx-ahab-container.img -c -scfw scfw_tcm.bin -ap u-boot-atf.bin a35 0x80000000 -out flash.bin
 
+flash_spl: $(MKIMG) mx8qx-ahab-container.img scfw_tcm.bin u-boot-atf.bin u-boot-spl.bin
+	./$(MKIMG) -soc QX -rev B0 -dcd skip -append mx8qx-ahab-container.img -c -scfw scfw_tcm.bin -ap u-boot-spl.bin a35 0x00100000 -out flash.bin
+	@flashbin_size=`wc -c flash.bin | awk '{print $$1}'`; \
+                   pad_cnt=$$(((flashbin_size + 0x400 - 1) / 0x400)); \
+                   echo "append u-boot-atf.bin at $$pad_cnt KB"; \
+                   dd if=u-boot-atf.bin of=flash.bin bs=1K seek=$$pad_cnt
+
 flash_all flash_b0_all: $(MKIMG) mx8qx-ahab-container.img scfw_tcm.bin u-boot-atf.bin CM4.bin
 	./$(MKIMG) -soc QX -rev B0 -append mx8qx-ahab-container.img -c -scfw scfw_tcm.bin -ap u-boot-atf.bin a35 0x80000000 -m4 CM4.bin 0 0x34FE0000 -out flash.bin
 

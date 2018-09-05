@@ -267,6 +267,9 @@ int build_container_qx(uint32_t sector_size, uint32_t ivt_offset, char* out_file
                         container++;
                         cont_img_count=0; /* reset img count when moving to new container */
                         break;
+                case PARTITION: /* keep custom partition until next executable image */
+                        custom_partition = img_sp->entry;
+                        break;
                 case DCD:
                         break; /* skip DCD here because we already processed it */
                 default:

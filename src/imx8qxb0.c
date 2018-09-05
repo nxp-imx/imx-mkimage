@@ -57,23 +57,23 @@
 #define BOOT_IMG_META_MU_RID_SHIFT	10
 #define BOOT_IMG_META_PART_ID_SHIFT	20
 
-#define IMAGE_A35_DEFAULT_META		(PARTITION_ID_AP << BOOT_IMG_META_PART_ID_SHIFT | \
+#define IMAGE_A35_DEFAULT_META(PART)		(((PART == 0 ) ? PARTITION_ID_AP : PART)  << BOOT_IMG_META_PART_ID_SHIFT |\
 					 SC_R_MU_0A << BOOT_IMG_META_MU_RID_SHIFT | \
 					 SC_R_A35_0)
 
-#define IMAGE_A53_DEFAULT_META		(PARTITION_ID_AP << BOOT_IMG_META_PART_ID_SHIFT | \
+#define IMAGE_A53_DEFAULT_META(PART)		(((PART == 0 ) ? PARTITION_ID_AP : PART) << BOOT_IMG_META_PART_ID_SHIFT |\
 					 SC_R_MU_0A << BOOT_IMG_META_MU_RID_SHIFT | \
 					 SC_R_A53_0)
 
-#define IMAGE_A72_DEFAULT_META		(PARTITION_ID_AP << BOOT_IMG_META_PART_ID_SHIFT | \
+#define IMAGE_A72_DEFAULT_META(PART)		(((PART == 0 ) ? PARTITION_ID_AP : PART) << BOOT_IMG_META_PART_ID_SHIFT |\
 					 SC_R_MU_0A << BOOT_IMG_META_MU_RID_SHIFT | \
 					 SC_R_A72_0)
 
-#define IMAGE_M4_0_DEFAULT_META		(PARTITION_ID_M4 << BOOT_IMG_META_PART_ID_SHIFT | \
+#define IMAGE_M4_0_DEFAULT_META(PART)		(((PART == 0) ? PARTITION_ID_M4 : PART) << BOOT_IMG_META_PART_ID_SHIFT |\
 					 SC_R_M4_0_MU_1A << BOOT_IMG_META_MU_RID_SHIFT | \
 					 SC_R_M4_0_PID0)
 
-#define IMAGE_M4_1_DEFAULT_META		(PARTITION_ID_M4 << BOOT_IMG_META_PART_ID_SHIFT | \
+#define IMAGE_M4_1_DEFAULT_META(PART)		(((PART == 0) ? PARTITION_ID_M4 : PART) << BOOT_IMG_META_PART_ID_SHIFT |\
 					 SC_R_M4_1_MU_1A << BOOT_IMG_META_MU_RID_SHIFT | \
 					 SC_R_M4_1_PID0)
 
@@ -123,6 +123,8 @@ typedef struct {
 	flash_header_v3_t fhdr[MAX_NUM_OF_CONTAINER];
 	dcd_v2_t dcd_table;
 }  __attribute__((packed)) imx_header_v3_t;
+
+uint32_t custom_partition = 0;
 
 static void copy_file_aligned (int ifd, const char *datafile, int offset, int align)
 {
@@ -367,11 +369,11 @@ void set_image_array_entry(flash_header_v3_t *container, soc_type_t soc,
 		break;
 	case AP:
 		if (soc == QX && core == CORE_CA35)
-			meta = IMAGE_A35_DEFAULT_META;
+			meta = IMAGE_A35_DEFAULT_META(custom_partition);
 		else if (soc == QM && core == CORE_CA53)
-			meta = IMAGE_A53_DEFAULT_META;
+			meta = IMAGE_A53_DEFAULT_META(custom_partition);
 		else if (soc == QM && core == CORE_CA72)
-			meta = IMAGE_A72_DEFAULT_META;
+			meta = IMAGE_A72_DEFAULT_META(custom_partition);
 		else {
 			fprintf(stderr, "Error: invalid AP core id: %" PRIi64 "\n", core);
 			exit(EXIT_FAILURE);
@@ -382,14 +384,15 @@ void set_image_array_entry(flash_header_v3_t *container, soc_type_t soc,
 		img->dst = entry;
 		img->entry = entry;
 		img->meta = meta;
+		custom_partition = 0;
 		break;
 	case M4:
 		if (core == 0) {
 			core = CORE_CM4_0;
-			meta = IMAGE_M4_0_DEFAULT_META;
+			meta = IMAGE_M4_0_DEFAULT_META(custom_partition);
 		} else if (core == 1) {
 			core = CORE_CM4_1;
-			meta = IMAGE_M4_1_DEFAULT_META;
+			meta = IMAGE_M4_1_DEFAULT_META(custom_partition);
 		} else {
 			fprintf(stderr, "Error: invalid m4 core id: %" PRIi64 "\n", core);
 			exit(EXIT_FAILURE);
@@ -404,6 +407,7 @@ void set_image_array_entry(flash_header_v3_t *container, soc_type_t soc,
 		img->dst = entry;
 		img->entry = entry;
 		img->meta = meta;
+		custom_partition = 0;
 		break;
 	case DATA:
 		img->hab_flags |= IMG_TYPE_DATA;
@@ -602,6 +606,9 @@ int build_container_qx_qm_b0(soc_type_t soc, uint32_t sector_size, uint32_t ivt_
 			}
 			file_off = img_sp->dst;
 			break;
+		case PARTITION: /* keep custom partition until next executable image */
+			custom_partition = img_sp->entry; /* use a global var for default behaviour */
+            break;
 		default:
 			fprintf(stderr, "unrecognized option in input stack (%d)\n", img_sp->option);
 			exit(EXIT_FAILURE);

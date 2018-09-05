@@ -70,9 +70,6 @@ flash_dcd_800: $(MKIMG) $(DCD_800_CFG) scfw_tcm.bin u-boot-atf.bin
 flash_dcd_1200: $(MKIMG) $(DCD_1200_CFG) scfw_tcm.bin u-boot-atf.bin
 	./$(MKIMG) -soc QM -c -dcd $(DCD_1200_CFG) -scfw scfw_tcm.bin -c -ap u-boot-atf.bin a53 0x80000000 -out flash.bin
 
-flash: $(MKIMG) $(DCD_CFG) scfw_tcm.bin u-boot-atf.bin
-	./$(MKIMG) -soc QM -c -scfw scfw_tcm.bin -c -ap u-boot-atf.bin a53 0x80000000 -out flash.bin
-
 flash_early: $(MKIMG) $(DCD_CFG) scfw_tcm.bin u-boot-atf.bin
 	./$(MKIMG) -soc QM -c -flags 0x00400000 -scfw scfw_tcm.bin -c -ap u-boot-atf.bin a53 0x80000000 -out flash.bin
 

@@ -183,6 +183,9 @@ flash_cm4ddr_a0: $(MKIMG) $(DCD_CFG) scfw_tcm.bin m4_image.bin
 flash_fastboot_a0: $(MKIMG) $(DCD_CFG) scfw_tcm.bin u-boot-atf.bin
 	./$(MKIMG) -soc QX -dev emmc_fast -c -dcd $(DCD_CFG) -scfw scfw_tcm.bin -ap u-boot-atf.bin a35 0x80000000 -out flash.bin
 
+flash_linux_m4: $(MKIMG) mx8qx-ahab-container.img scfw_tcm.bin u-boot-atf.bin m4_image.bin
+	./$(MKIMG) -soc QX -rev B0 -append mx8qx-ahab-container.img -c -flags 0x00200000 -scfw scfw_tcm.bin -ap u-boot-atf.bin a35 0x80000000 -p3 -m4 m4_image.bin 0 0x34FE0000 -out flash.bin
+
 nightly :
 	@rm -rf boot
 	@echo "Pulling nightly for Validation board from $(SERVER)/$(DIR)"

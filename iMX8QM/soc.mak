@@ -168,6 +168,9 @@ flash_b0_m4s_tcm: $(MKIMG) mx8qm-ahab-container.img scfw_tcm.bin m40_tcm.bin m41
 flash_b0_m40_uboot: $(MKIMG) mx8qm-ahab-container.img scfw_tcm.bin m4_image.bin u-boot-atf.bin
 	./$(MKIMG) -soc QM -rev B0 -append mx8qm-ahab-container.img -c -scfw scfw_tcm.bin -m4 m4_image.bin 0 0x88000000 -ap u-boot-atf.bin a53 0x80000000 -out flash.bin
 
+flash_linux_m4: $(MKIMG) mx8qm-ahab-container.img scfw_tcm.bin u-boot-atf.bin m4_0_image.bin m4_1_image.bin
+	./$(MKIMG) -soc QM -rev B0 -append mx8qm-ahab-container.img -c -flags 0x00200000 -scfw scfw_tcm.bin -ap u-boot-atf.bin a53 0x80000000 -p3 -m4 m4_0_image.bin 0 0x34FE0000 -p4 -m4 m4_1_image.bin 1 0x38FE0000 -out flash.bin
+
 nightly :
 	@rm -rf boot
 	@echo "Pulling nightly for Validation board from $(SERVER)/$(DIR)"

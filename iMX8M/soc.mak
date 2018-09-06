@@ -92,6 +92,11 @@ u-boot-ddr4.itb: $(dtbs_ddr4)
 	TEE_LOAD_ADDR=$(TEE_LOAD_ADDR) ATF_LOAD_ADDR=$(ATF_LOAD_ADDR) ./mkimage_fit_atf.sh $(dtbs_ddr4) > u-boot-ddr4.its
 	./mkimage_uboot -E -p 0x3000 -f u-boot-ddr4.its u-boot-ddr4.itb
 
+dtbs_ddr4_evk = fsl-$(PLAT)-ddr4-evk.dtb
+u-boot-ddr4-evk.itb: $(dtbs_ddr4_evk)
+	TEE_LOAD_ADDR=$(TEE_LOAD_ADDR) ATF_LOAD_ADDR=$(ATF_LOAD_ADDR) ./mkimage_fit_atf.sh $(dtbs_ddr4_evk) > u-boot-ddr4-evk.its
+	./mkimage_uboot -E -p 0x3000 -f u-boot-ddr4-evk.its u-boot-ddr4-evk.itb
+
 ifeq ($(HDMI),yes)
 flash_evk: $(MKIMG) signed_hdmi_imx8m.bin u-boot-spl-ddr.bin u-boot.itb
 	./mkimage_imx8 -fit -signed_hdmi signed_hdmi_imx8m.bin -loader u-boot-spl-ddr.bin 0x7E1000 -second_loader u-boot.itb 0x40200000 0x60000 -out $(OUTIMG)
@@ -108,6 +113,8 @@ flash_ddr4_val: $(MKIMG) signed_hdmi_imx8m.bin u-boot-spl-ddr4.bin u-boot-ddr4.i
 else
 flash_evk: flash_evk_no_hdmi
 
+flash_ddr4_evk: flash_ddr4_evk_no_hdmi
+
 flash_ddr3l_val: flash_ddr3l_val_no_hdmi
 
 flash_ddr4_val: flash_ddr4_val_no_hdmi
@@ -122,6 +129,9 @@ flash_ddr3l_val_no_hdmi: $(MKIMG) u-boot-spl-ddr3l.bin u-boot-ddr3l.itb
 
 flash_ddr4_val_no_hdmi: $(MKIMG) u-boot-spl-ddr4.bin u-boot-ddr4.itb
 	./mkimage_imx8 -fit -loader u-boot-spl-ddr4.bin 0x7E1000 -second_loader u-boot-ddr4.itb 0x40200000 0x60000 -out $(OUTIMG)
+
+flash_ddr4_evk_no_hdmi: $(MKIMG) u-boot-spl-ddr4.bin u-boot-ddr4-evk.itb
+	./mkimage_imx8 -fit -loader u-boot-spl-ddr4.bin 0x7E1000 -second_loader u-boot-ddr4-evk.itb 0x40200000 0x60000 -out $(OUTIMG)
 
 flash_evk_flexspi: $(MKIMG) u-boot-spl-ddr.bin u-boot.itb
 	./mkimage_imx8 -dev flexspi -fit -loader u-boot-spl-ddr.bin 0x7E2000 -second_loader u-boot.itb 0x40200000 0x60000 -out $(OUTIMG)

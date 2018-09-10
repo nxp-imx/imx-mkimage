@@ -132,6 +132,9 @@ flash_spl: $(MKIMG) mx8qx-ahab-container.img scfw_tcm.bin u-boot-atf.bin u-boot-
 flash_all flash_b0_all: $(MKIMG) mx8qx-ahab-container.img scfw_tcm.bin u-boot-atf.bin CM4.bin
 	./$(MKIMG) -soc QX -rev B0 -append mx8qx-ahab-container.img -c -scfw scfw_tcm.bin -ap u-boot-atf.bin a35 0x80000000 -m4 CM4.bin 0 0x34FE0000 -out flash.bin
 
+flash_all_trusty flash_b0_all_trusty: $(MKIMG) mx8qx-ahab-container.img scfw_tcm.bin u-boot-atf.bin CM4.bin tee.bin
+	./$(MKIMG) -soc QX -rev B0 -append mx8qx-ahab-container.img -c -scfw scfw_tcm.bin -ap u-boot-atf.bin a35 0x80000000 -data tee.bin 0x84000000 -m4 CM4.bin 0 0x34FE0000 -out flash.bin
+
 flash_ddrstress flash_b0_ddrstress: $(MKIMG) mx8qx-ahab-container.img scfw_tcm.bin mx8qx_ddr_stress_test.bin
 	./$(MKIMG) -soc QX -rev B0 -append mx8qx-ahab-container.img -c  -flags 0x00800000 -scfw scfw_tcm.bin -ap mx8qxb0_ddr_stress_test.bin a35 0x00100000 -out flash.bin
 

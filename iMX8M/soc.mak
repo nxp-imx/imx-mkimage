@@ -101,6 +101,9 @@ ifeq ($(HDMI),yes)
 flash_evk: $(MKIMG) signed_hdmi_imx8m.bin u-boot-spl-ddr.bin u-boot.itb
 	./mkimage_imx8 -fit -signed_hdmi signed_hdmi_imx8m.bin -loader u-boot-spl-ddr.bin 0x7E1000 -second_loader u-boot.itb 0x40200000 0x60000 -out $(OUTIMG)
 
+flash_evk_emmc_fastboot: $(MKIMG) signed_hdmi_imx8m.bin u-boot-spl-ddr.bin u-boot.itb
+	./mkimage_imx8 -dev emmc_fastboot -fit -signed_hdmi signed_hdmi_imx8m.bin -loader u-boot-spl-ddr.bin 0x7E1000 -second_loader u-boot.itb 0x40200000 0x60000 -out $(OUTIMG)
+
 flash_dp_evk: $(MKIMG) signed_dp_imx8m.bin u-boot-spl-ddr.bin u-boot.itb
 	./mkimage_imx8 -fit -signed_hdmi signed_dp_imx8m.bin -loader u-boot-spl-ddr.bin 0x7E1000 -second_loader u-boot.itb 0x40200000 0x60000 -out $(OUTIMG)
 
@@ -113,6 +116,8 @@ flash_ddr4_val: $(MKIMG) signed_hdmi_imx8m.bin u-boot-spl-ddr4.bin u-boot-ddr4.i
 else
 flash_evk: flash_evk_no_hdmi
 
+flash_evk_emmc_fastboot: flash_evk_no_hdmi_emmc_fastboot
+
 flash_ddr4_evk: flash_ddr4_evk_no_hdmi
 
 flash_ddr3l_val: flash_ddr3l_val_no_hdmi
@@ -123,6 +128,9 @@ endif
 
 flash_evk_no_hdmi: $(MKIMG) u-boot-spl-ddr.bin u-boot.itb
 	./mkimage_imx8 -fit -loader u-boot-spl-ddr.bin 0x7E1000 -second_loader u-boot.itb 0x40200000 0x60000 -out $(OUTIMG)
+
+flash_evk_no_hdmi_emmc_fastboot: $(MKIMG) u-boot-spl-ddr.bin u-boot.itb
+	./mkimage_imx8 -dev emmc_fastboot -fit -loader u-boot-spl-ddr.bin 0x7E1000 -second_loader u-boot.itb 0x40200000 0x60000 -out $(OUTIMG)
 
 flash_ddr3l_val_no_hdmi: $(MKIMG) u-boot-spl-ddr3l.bin u-boot-ddr3l.itb
 	./mkimage_imx8 -fit -loader u-boot-spl-ddr3l.bin 0x7E1000 -second_loader u-boot-ddr3l.itb 0x40200000 0x60000 -out $(OUTIMG)

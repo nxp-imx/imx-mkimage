@@ -82,6 +82,7 @@ typedef struct {
 typedef struct {
 	flash_header_v2_t fhdr;
 	boot_data_t boot_data;
+	uint32_t alignment[4];
 } imx_header_v2_t;
 
 
@@ -1215,10 +1216,10 @@ int main(int argc, char **argv)
 			close(csf_plugin_fd);
 
 			imx_header[PLUGIN_IVT_ID].fhdr.csf = imx_header[PLUGIN_IVT_ID].boot_data.start + imx_header[PLUGIN_IVT_ID].boot_data.size;
-			imx_header[PLUGIN_IVT_ID].boot_data.size += ALIGN(sbuf.st_size, 8);
+			imx_header[PLUGIN_IVT_ID].boot_data.size += ALIGN(sbuf.st_size, 64);
 
 			csf_plugin_off = file_off;
-			file_off += ALIGN(sbuf.st_size, 8); /* Align for the next IVT */
+			file_off += ALIGN(sbuf.st_size, 64); /* Align for the next IVT */
 		}
 
 		/* We attach the secondary IVT to the plugin image (CSF contained),  and set it to load with plugin image.
@@ -1236,8 +1237,8 @@ int main(int argc, char **argv)
 		dcd_size = parse_cfg_file(&dcd_table, dcd_img);
 		fprintf(stderr, "dcd size = %d\n", dcd_size);
 
-		if (dcd_size > (ROM_INITIAL_LOAD_SIZE - ivt_offset - sizeof(imx_header_v2_t))) {
-			fprintf(stderr, "DCD table with size %u exceeds maximum size %lu\n", dcd_size, (ROM_INITIAL_LOAD_SIZE - ivt_offset - sizeof(imx_header_v2_t)));
+		if (ALIGN(dcd_size, 64) > (ROM_INITIAL_LOAD_SIZE - ivt_offset - sizeof(imx_header_v2_t))) {
+			fprintf(stderr, "DCD table with size %u exceeds maximum size %lu\n", ALIGN(dcd_size, 64), (ROM_INITIAL_LOAD_SIZE - ivt_offset - sizeof(imx_header_v2_t)));
 			exit(EXIT_FAILURE);
 		}
 	}
@@ -1260,7 +1261,7 @@ int main(int argc, char **argv)
 	imx_header[IMAGE_IVT_ID].fhdr.header.version = IVT_VERSION; /* 0x41 */
 	imx_header[IMAGE_IVT_ID].fhdr.entry = ap_start_addr;
 
-	imx_header[IMAGE_IVT_ID].fhdr.self = ap_start_addr - sizeof(imx_header_v2_t) - ALIGN(dcd_size, 8);
+	imx_header[IMAGE_IVT_ID].fhdr.self = ap_start_addr - sizeof(imx_header_v2_t) - ALIGN(dcd_size, 64);
 	if (dcd_size) {
 		imx_header[IMAGE_IVT_ID].fhdr.dcd_ptr = imx_header[IMAGE_IVT_ID].fhdr.self + sizeof(imx_header_v2_t);
 		dcd_off = header_image_off + sizeof(imx_header_v2_t);
@@ -1282,9 +1283,9 @@ int main(int argc, char **argv)
 		file_off +=  ALIGN(sbuf.st_size + sizeof(imx_header_v2_t), sector_size);
 	} else {
 		imx_header[IMAGE_IVT_ID].boot_data.start = imx_header[IMAGE_IVT_ID].fhdr.self - ivt_offset;
-		imx_header[IMAGE_IVT_ID].boot_data.size = ALIGN(sbuf.st_size + sizeof(imx_header_v2_t) + ivt_offset + ALIGN(dcd_size, 8), sector_size);
+		imx_header[IMAGE_IVT_ID].boot_data.size = ALIGN(sbuf.st_size + sizeof(imx_header_v2_t) + ivt_offset + ALIGN(dcd_size, 64), sector_size);
 
-		image_off = header_image_off + sizeof(imx_header_v2_t) + ALIGN(dcd_size, 8);
+		image_off = header_image_off + sizeof(imx_header_v2_t) + ALIGN(dcd_size, 64);
 		file_off +=  imx_header[IMAGE_IVT_ID].boot_data.size;
 	}
 

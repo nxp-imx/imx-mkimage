@@ -16,7 +16,10 @@ DDR_TRAIN ?= 1
 WGET = /usr/bin/wget
 N ?= latest
 SERVER=http://yb2.am.freescale.net
-DIR = internal-only/Linux_IMX_Rocko_MX8/$(N)/common_bsp
+
+#DIR = internal-only/Linux_IMX_Rocko_MX8/$(N)/common_bsp
+#DIR = internal-only/Linux_IMX_Core/$(N)/common_bsp
+DIR = internal-only/Linux_IMX_Regression/$(N)/common_bsp
 
 ifneq ($(wildcard /usr/bin/rename.ul),)
     RENAME = rename.ul
@@ -184,21 +187,17 @@ nightly :
 	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qm/mx8qm-val-scfw-tcm.bin -O scfw_tcm.bin
 	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qm/bl31-imx8qm.bin -O bl31.bin
 	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qm/u-boot-imx8qmlpddr4arm2.bin-sd -O u-boot.bin
-	@$(WGET) -qr -nd -l1 -np $(SERVER)/$(DIR) -P boot -A "Image-fsl-imx8qm-*.dtb"
-	@$(WGET) -q $(SERVER)/$(DIR)/Image-imx8_all.bin -O Image
-	wget -q https://bitbucket.sw.nxp.com/projects/IMX/repos/linux-firmware-imx/raw/firmware/seco/mx8qm-ahab-container.img?at=refs%2Fheads%2Fmaster -O mx8qm-ahab-container.img
-	@mv -f Image boot
+	@$(WGET) -qr -nd -l1 -np $(SERVER)/$(DIR) -P boot -A "Image-*imx8qm*"
+	@$(WGET) -q https://bitbucket.sw.nxp.com/projects/IMX/repos/linux-firmware-imx/raw/firmware/seco/mx8qm-ahab-container.img?at=refs%2Fheads%2Fmaster -O mx8qm-ahab-container.img
 	@$(RENAME) "Image-" "" boot/*.dtb
 
 nightly_mek :
-	@rm -rf boot
-	@echo "Pulling nightly for MEK board from $(SERVER)/$(DIR)"
+	rm -rf boot
+	echo "Pulling nightly for MEK board from $(SERVER)/$(DIR)"
 	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qm/mx8qm-mek-scfw-tcm.bin -O scfw_tcm.bin
 	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qm/bl31-imx8qm.bin -O bl31.bin
 	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qm/u-boot-imx8qmmek.bin-sd -O u-boot.bin
-	@$(WGET) -qr -nd -l1 -np $(SERVER)/$(DIR) -P boot -A "Image-fsl-imx8qm-*.dtb"
-	@$(WGET) -q $(SERVER)/$(DIR)/Image-imx8_all.bin -O Image
-	wget -q https://bitbucket.sw.nxp.com/projects/IMX/repos/linux-firmware-imx/raw/firmware/seco/mx8qm-ahab-container.img?at=refs%2Fheads%2Fmaster -O mx8qm-ahab-container.img
-	@mv -f Image boot
+	@$(WGET) -qr -nd -l1 -np $(SERVER)/$(DIR) -P boot -A "Image-*imx8qm*"
+	@$(WGET) -q https://bitbucket.sw.nxp.com/projects/IMX/repos/linux-firmware-imx/raw/firmware/seco/mx8qm-ahab-container.img?at=refs%2Fheads%2Fmaster -O mx8qm-ahab-container.img
 	@$(RENAME) "Image-" "" boot/*.dtb
 

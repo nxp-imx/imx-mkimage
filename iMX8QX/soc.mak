@@ -107,6 +107,14 @@ flash_flexspi: $(MKIMG) mx8qx-ahab-container.img scfw_tcm.bin u-boot-atf.bin $(Q
 	./$(MKIMG) -soc QX -rev B0 -dev flexspi -append mx8qx-ahab-container.img -c -scfw scfw_tcm.bin -ap u-boot-atf.bin a35 0x80000000 -out flash.bin
 	./$(QSPI_PACKER) $(QSPI_HEADER)
 
+flash_cm4flexspi flash_b0_cm4flexspi: $(MKIMG) mx8qx-ahab-container.img scfw_tcm.bin m4_image.bin $(QSPI_HEADER)
+	./$(MKIMG) -soc QX -rev B0 -dev flexspi -append mx8qx-ahab-container.img -c -scfw scfw_tcm.bin -fileoff 0x80000 -m4 m4_image.bin 0 0x08081000 -out flash.bin
+	./$(QSPI_PACKER) $(QSPI_HEADER)
+
+flash_flexspi_all : $(MKIMG) mx8qx-ahab-container.img scfw_tcm.bin u-boot-atf.bin m4_image.bin $(QSPI_HEADER)
+	./$(MKIMG) -soc QX -rev B0 -dev flexspi -append mx8qx-ahab-container.img -c -scfw scfw_tcm.bin -fileoff 0x80000 -m4 m4_image.bin 0 0x08081000 -ap u-boot-atf.bin a35 0x80000000 -out flash.bin
+	./$(QSPI_PACKER) $(QSPI_HEADER)
+
 flash_multi_cores_a0: $(MKIMG) $(DCD_CFG) scfw_tcm.bin m40_tcm.bin u-boot-atf.bin
 	./$(MKIMG) -soc QX -c -dcd $(DCD_CFG) -scfw scfw_tcm.bin -m4 m40_tcm.bin 0 0x34FE0000 -c -ap u-boot-atf.bin a35 0x80000000 -out flash.bin
 

@@ -58,6 +58,13 @@ u-boot-atf.bin: u-boot.bin bl31.bin
 	@cat u-boot.bin head.hash > u-boot-hash.bin
 	@dd if=u-boot-hash.bin of=u-boot-atf.bin bs=1K seek=128
 
+u-boot-atf.itb:
+	./$(MKIMG) -commit > head.hash
+	@cat u-boot.bin head.hash > u-boot-hash.bin
+	./mkimage_fit_atf.sh > u-boot.its;
+	./mkimage_uboot -E -p 0x3000 -f u-boot.its u-boot-atf.itb;
+	@rm -f u-boot.its
+
 Image0: Image
 	@dd if=Image of=Image0 bs=10M count=1
 Image1: Image
@@ -129,6 +136,14 @@ flash_cm4_a0: $(MKIMG) $(DCD_CFG) scfw_tcm.bin m4_image.bin
 
 flash flash_b0: $(MKIMG) mx8qx-ahab-container.img scfw_tcm.bin u-boot-atf.bin
 	./$(MKIMG) -soc QX -rev B0 -append mx8qx-ahab-container.img -c -scfw scfw_tcm.bin -ap u-boot-atf.bin a35 0x80000000 -out flash.bin
+
+flash_spl_fit: $(MKIMG) mx8qx-ahab-container.img scfw_tcm.bin u-boot-atf.itb u-boot-spl.bin
+	./$(MKIMG) -soc QX -rev B0 -dcd skip -append mx8qx-ahab-container.img -c -scfw scfw_tcm.bin -ap u-boot-spl.bin a35 0x00100000 -out flash.bin
+	@flashbin_size=`wc -c flash.bin | awk '{print $$1}'`; \
+                   pad_cnt=$$(((flashbin_size + 0x400 - 1) / 0x400)); \
+                   echo "append u-boot-atf.itb at $$pad_cnt KB"; \
+                   dd if=u-boot-atf.itb of=flash.bin bs=1K seek=$$pad_cnt; \
+		   rm -f u-boot-atf.itb;
 
 flash_spl: $(MKIMG) mx8qx-ahab-container.img scfw_tcm.bin u-boot-atf.bin u-boot-spl.bin
 	./$(MKIMG) -soc QX -rev B0 -dcd skip -append mx8qx-ahab-container.img -c -scfw scfw_tcm.bin -ap u-boot-spl.bin a35 0x00100000 -out flash.bin

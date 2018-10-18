@@ -35,6 +35,10 @@
 #define IMG_ARRAY_ENTRY_SIZE		128
 #define HEADER_IMG_ARRAY_OFFSET		0x10
 
+#define HASH_STR_SHA_256		"sha256"
+#define HASH_STR_SHA_384		"sha384"
+#define HASH_STR_SHA_512		"sha512"
+
 #define HASH_TYPE_SHA_256		256
 #define HASH_TYPE_SHA_384		384
 #define HASH_TYPE_SHA_512		512
@@ -342,9 +346,36 @@ uint64_t read_dcd_offset(char *filename)
 	return offset;
 }
 
+uint32_t get_hash_algo(char *images_hash)
+{
+	uint32_t hash_algo = IMAGE_HASH_ALGO_DEFAULT;
+
+	if (NULL != images_hash) {
+	    if (0 == strcmp(images_hash, HASH_STR_SHA_256)) {
+			hash_algo = HASH_TYPE_SHA_256;
+		}
+		else if (0 == strcmp(images_hash, HASH_STR_SHA_384)) {
+			hash_algo = HASH_TYPE_SHA_384;
+		}
+		else if (0 == strcmp(images_hash, HASH_STR_SHA_512)) {
+			hash_algo = HASH_TYPE_SHA_512;
+		}
+		else {
+			fprintf(stderr,
+					"\nERROR: %s is an invalid hash argument\n"
+					"    Expected values: %s, %s, %s\n\n",
+					images_hash, HASH_STR_SHA_256, HASH_STR_SHA_384, HASH_STR_SHA_512);
+			exit(EXIT_FAILURE);
+		}
+	}
+
+	fprintf(stdout, "Hash of the images = sha%d\n", hash_algo);
+	return hash_algo;
+}
+
 void set_image_array_entry(flash_header_v3_t *container, soc_type_t soc,
 		const image_t *image_stack, uint32_t offset,
-		uint32_t size, char *tmp_filename, bool dcd_skip)
+		uint32_t size, char *tmp_filename, bool dcd_skip, char *images_hash)
 {
 	uint64_t entry = image_stack->entry;
 	uint64_t core = image_stack->ext;
@@ -357,7 +388,7 @@ void set_image_array_entry(flash_header_v3_t *container, soc_type_t soc,
 	img->offset = offset;  /* Is re-adjusted later */
 	img->size = size;
 
-	set_image_hash(img, tmp_filename, IMAGE_HASH_ALGO_DEFAULT);
+	set_image_hash(img, tmp_filename, get_hash_algo(images_hash));
 
 	switch(type) {
 	case SECO:
@@ -500,7 +531,8 @@ int get_container_image_start_pos(image_t *image_stack, uint32_t align)
 }
 
 int build_container_qx_qm_b0(soc_type_t soc, uint32_t sector_size, uint32_t ivt_offset, char *out_file,
-				bool emmc_fastboot, image_t *image_stack, bool dcd_skip, uint8_t fuse_version, uint16_t sw_version)
+				bool emmc_fastboot, image_t *image_stack, bool dcd_skip, uint8_t fuse_version,
+				uint16_t sw_version, char *images_hash)
 {
 	int file_off, ofd = -1;
 	unsigned int dcd_len = 0;
@@ -553,7 +585,8 @@ int build_container_qx_qm_b0(soc_type_t soc, uint32_t sector_size, uint32_t ivt_
 						file_off,
 						ALIGN(sbuf.st_size, sector_size),
 						tmp_filename,
-						dcd_skip);
+						dcd_skip,
+						images_hash);
 			img_sp->src = file_off;
 
 			file_off += ALIGN(sbuf.st_size, sector_size);
@@ -569,7 +602,8 @@ int build_container_qx_qm_b0(soc_type_t soc, uint32_t sector_size, uint32_t ivt_
 						file_off,
 						sbuf.st_size,
 						tmp_filename,
-						dcd_skip);
+						dcd_skip,
+						"sha384");
 			img_sp->src = file_off;
 
 			file_off += sbuf.st_size;

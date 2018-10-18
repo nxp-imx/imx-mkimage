@@ -512,6 +512,7 @@ int main(int argc, char **argv)
 
 	uint8_t  fuse_version = 0;
 	uint16_t sw_version   = 0;
+	char     *images_hash = NULL;
 
 	static struct option long_options[] =
 	{
@@ -536,6 +537,7 @@ int main(int argc, char **argv)
 		{"msg_blk", required_argument, NULL, 'M'},
 		{"fuse_version", required_argument, NULL, 'u'},
 		{"sw_version", required_argument, NULL, 'v'},
+		{"images_hash", required_argument, NULL, 'h'},
 		{NULL, 0, NULL, 0}
 	};
 
@@ -546,7 +548,7 @@ int main(int argc, char **argv)
 		/* getopt_long stores the option index here. */
 		int option_index = 0;
 
-		c = getopt_long_only (argc, argv, ":f:m:a:d:o:l:x:z:e:p:cu:v:",
+		c = getopt_long_only (argc, argv, ":f:m:a:d:o:l:x:z:e:p:cu:v:h:",
 			long_options, &option_index);
 
 		/* Detect the end of the options. */
@@ -774,6 +776,9 @@ int main(int argc, char **argv)
 			case 'v':
 				sw_version = (uint16_t) (strtoll(optarg, NULL, 0) & 0xFFFF);
 				break;
+			case 'h':
+				images_hash = optarg;
+				break;
 			case '?':
 			default:
 				/* invalid option */
@@ -818,14 +823,14 @@ int main(int argc, char **argv)
 			fprintf(stdout, "ivt_offset:\t%d\n", ivt_offset);
 			fprintf(stdout, "rev:\t%d\n", rev);
 			if (rev == B0)
-				build_container_qx_qm_b0(soc, sector_size, ivt_offset, ofname, emmc_fastboot, (image_t *) param_stack, dcd_skip, fuse_version, sw_version);
+				build_container_qx_qm_b0(soc, sector_size, ivt_offset, ofname, emmc_fastboot, (image_t *) param_stack, dcd_skip, fuse_version, sw_version, images_hash);
 			else
 				build_container_qx(sector_size, ivt_offset, ofname, emmc_fastboot, (image_t *) param_stack);
 
 			break;
 		case QM:
 			if (rev == B0)
-				build_container_qx_qm_b0(soc, sector_size, ivt_offset, ofname, emmc_fastboot, (image_t *) param_stack, dcd_skip, fuse_version, sw_version);
+				build_container_qx_qm_b0(soc, sector_size, ivt_offset, ofname, emmc_fastboot, (image_t *) param_stack, dcd_skip, fuse_version, sw_version, images_hash);
 			else
 				build_container_qm(sector_size, ivt_offset, ofname, emmc_fastboot, (image_t *) param_stack);
 			break;

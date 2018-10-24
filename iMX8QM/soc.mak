@@ -97,13 +97,13 @@ flash_multi_cores: $(MKIMG) $(DCD_CFG) scfw_tcm.bin m40_tcm.bin m41_tcm.bin u-bo
 	./$(MKIMG) -soc QM -c -dcd $(DCD_CFG) -scfw scfw_tcm.bin -m4 m40_tcm.bin 0 0x34FE0000 -m4 m41_tcm.bin 1 0x38FE0000 -c -ap u-boot-atf.bin a53 0x80000000 -out flash.bin
 
 flash_cm4_0: $(MKIMG) $(DCD_CFG) scfw_tcm.bin m4_image.bin
-	./$(MKIMG) -soc QM -c -dcd $(DCD_CFG) -scfw scfw_tcm.bin -m4 m4_image.bin 0 0x34FE0000 -out flash.bin
+	./$(MKIMG) -soc QM -c -dcd $(DCD_CFG) -scfw scfw_tcm.bin -p1 -m4 m4_image.bin 0 0x34FE0000 -out flash.bin
 
 flash_cm4_1: $(MKIMG) $(DCD_CFG) scfw_tcm.bin m4_image.bin
-	./$(MKIMG) -soc QM -c -dcd $(DCD_CFG) -scfw scfw_tcm.bin -m4 m4_image.bin 1 0x38FE0000 -out flash.bin
+	./$(MKIMG) -soc QM -c -dcd $(DCD_CFG) -scfw scfw_tcm.bin -p1 -m4 m4_image.bin 1 0x38FE0000 -out flash.bin
 
 flash_m4s_tcm: $(MKIMG) $(DCD_CFG) scfw_tcm.bin m40_tcm.bin m41_tcm.bin
-	./$(MKIMG) -soc QM -c -scfw scfw_tcm.bin -m4 m40_tcm.bin 0 0x34FE0000 -m4 m41_tcm.bin 1 0x38FE0000 -out flash.bin
+	./$(MKIMG) -soc QM -c -scfw scfw_tcm.bin -p1 -m4 m40_tcm.bin 0 0x34FE0000 -m4 m41_tcm.bin 1 0x38FE0000 -out flash.bin
 
 flash_all: $(MKIMG) $(DCD_CFG) scfw_tcm.bin m4_image.bin u-boot-atf.bin scd.bin csf.bin csf_ap.bin
 	./$(MKIMG) -soc QM -c -dcd $(DCD_CFG) -scfw scfw_tcm.bin -m4 m4_image.bin 0 0x34FE0000 -csf csf.bin -scd scd.bin -c -ap u-boot-atf.bin a53 0x80000000 -csf csf_ap.bin -out flash.bin
@@ -121,13 +121,13 @@ flash_ca53_ddrstress_dcd: $(MKIMG) $(DCD_CFG) scfw_tcm.bin mx8qm_ddr_stress_test
 	./$(MKIMG) -soc QM -c -flags 0x00800000 -dcd $(DCD_CFG) -scfw scfw_tcm.bin -c -ap mx8qm_ddr_stress_test.bin a53 0x00112000 -out flash.bin
 
 flash_cm4_01_ddr: $(MKIMG) $(DCD_CFG) scfw_tcm.bin m40_ddr.bin m41_ddr.bin
-	./$(MKIMG) -soc QM -c -dcd $(DCD_CFG) -scfw scfw_tcm.bin -m4 m40_ddr.bin 0 0x88000000 -m4 m41_ddr.bin 1 0x88800000 -out flash.bin
+	./$(MKIMG) -soc QM -c -dcd $(DCD_CFG) -scfw scfw_tcm.bin -p1 -m4 m40_ddr.bin 0 0x88000000 -m4 m41_ddr.bin 1 0x88800000 -out flash.bin
 
 flash_m4_tcm_ddr: $(MKIMG) $(DCD_CFG) scfw_tcm.bin m4_image.bin m41_ddr.bin
-	./$(MKIMG) -soc QM -c -dcd $(DCD_CFG) -scfw scfw_tcm.bin -m4 m4_image.bin 0 0x34FE0000 -m4 m41_ddr.bin 1 0x88800000 -out flash.bin
+	./$(MKIMG) -soc QM -c -dcd $(DCD_CFG) -scfw scfw_tcm.bin -p1 -m4 m4_image.bin 0 0x34FE0000 -m4 m41_ddr.bin 1 0x88800000 -out flash.bin
 
 flash_cm4_1_ddr: $(MKIMG) $(DCD_CFG) scfw_tcm.bin m41_ddr.bin
-	./$(MKIMG) -soc QM -c -dcd $(DCD_CFG) -scfw scfw_tcm.bin -m4 m41_ddr.bin 1 0x88800000 -out flash.bin
+	./$(MKIMG) -soc QM -c -dcd $(DCD_CFG) -scfw scfw_tcm.bin -p1 -m4 m41_ddr.bin 1 0x88800000 -out flash.bin
 
 flash_fastboot: $(MKIMG) $(DCD_CFG) scfw_tcm.bin u-boot-atf.bin
 	./$(MKIMG) -soc QM -dev emmc_fast -c -dcd $(DCD_CFG) -scfw scfw_tcm.bin -m4 m4_image.bin 0 0x34fe0000 -ap u-boot-atf.bin a53 0x80000000 -out flash.bin
@@ -149,11 +149,11 @@ flash_b0_flexspi: $(MKIMG) mx8qm-ahab-container.img scfw_tcm.bin u-boot-atf.bin
 	./$(QSPI_PACKER) $(QSPI_HEADER)
 
 flash_cm40flexspi flash_b0_cm40flexspi: $(MKIMG) mx8qm-ahab-container.img scfw_tcm.bin m4_image.bin $(QSPI_HEADER)
-	./$(MKIMG) -soc QM -rev B0 -dev flexspi -append mx8qm-ahab-container.img -c -scfw scfw_tcm.bin -fileoff 0x80000 -m4 m4_image.bin 0 0x08081000 -out flash.bin
+	./$(MKIMG) -soc QM -rev B0 -dev flexspi -append mx8qm-ahab-container.img -c -scfw scfw_tcm.bin -fileoff 0x80000 -p1 -m4 m4_image.bin 0 0x08081000 -out flash.bin
 	./$(QSPI_PACKER) $(QSPI_HEADER)
 
 flash_cm4sflexspi flash_b0_cm4sflexspi: $(MKIMG) mx8qm-ahab-container.img scfw_tcm.bin m40_flash.bin m41_flash.bin $(QSPI_HEADER)
-	./$(MKIMG) -soc QM -rev B0 -dev flexspi -append mx8qm-ahab-container.img -c -scfw scfw_tcm.bin -fileoff 0x80000 -m4 m40_flash.bin 0 0x08081000 -fileoff 0x180000 -m4 m41_flash.bin 1 0x08181000 -out flash.bin
+	./$(MKIMG) -soc QM -rev B0 -dev flexspi -append mx8qm-ahab-container.img -c -scfw scfw_tcm.bin -fileoff 0x80000 -p1 -m4 m40_flash.bin 0 0x08081000 -fileoff 0x180000 -m4 m41_flash.bin 1 0x08181000 -out flash.bin
 	./$(QSPI_PACKER) $(QSPI_HEADER)
 
 flash_flexspi_all : $(MKIMG) mx8qm-ahab-container.img scfw_tcm.bin u-boot-atf.bin m40_flash.bin m41_flash.bin $(QSPI_HEADER)
@@ -211,13 +211,13 @@ flash_b0_ca72: $(MKIMG) mx8qm-ahab-container.img scfw_tcm.bin u-boot-atf.bin
 	./$(MKIMG) -soc QM -rev B0 -append mx8qm-ahab-container.img -c -scfw scfw_tcm.bin -ap u-boot-atf.bin a72 0x80000000 -out flash.bin
 
 flash_b0_cm4_0: $(MKIMG) mx8qm-ahab-container.img scfw_tcm.bin m4_image.bin
-	./$(MKIMG) -soc QM -rev B0 -dcd skip -append mx8qm-ahab-container.img -c -scfw scfw_tcm.bin -m4 m4_image.bin 0 0x34FE0000 -out flash.bin
+	./$(MKIMG) -soc QM -rev B0 -dcd skip -append mx8qm-ahab-container.img -c -scfw scfw_tcm.bin -p1 -m4 m4_image.bin 0 0x34FE0000 -out flash.bin
 
 flash_b0_cm4_1: $(MKIMG) mx8qm-ahab-container.img scfw_tcm.bin m4_image.bin
-	./$(MKIMG) -soc QM -rev B0 -dcd skip -append mx8qm-ahab-container.img -c -scfw scfw_tcm.bin -m4 m4_image.bin 1 0x38FE0000 -out flash.bin
+	./$(MKIMG) -soc QM -rev B0 -dcd skip -append mx8qm-ahab-container.img -c -scfw scfw_tcm.bin -p1 -m4 m4_image.bin 1 0x38FE0000 -out flash.bin
 
 flash_b0_m4s_tcm: $(MKIMG) mx8qm-ahab-container.img scfw_tcm.bin m40_tcm.bin m41_tcm.bin
-	./$(MKIMG) -soc QM -rev B0 -dcd skip -append mx8qm-ahab-container.img -c -scfw scfw_tcm.bin -m4 m40_tcm.bin 0 0x34FE0000 -m4 m41_tcm.bin 1 0x38FE0000 -out flash.bin
+	./$(MKIMG) -soc QM -rev B0 -dcd skip -append mx8qm-ahab-container.img -c -scfw scfw_tcm.bin -p1 -m4 m40_tcm.bin 0 0x34FE0000 -m4 m41_tcm.bin 1 0x38FE0000 -out flash.bin
 
 flash_b0_m40_uboot: $(MKIMG) mx8qm-ahab-container.img scfw_tcm.bin m4_image.bin u-boot-atf.bin
 	./$(MKIMG) -soc QM -rev B0 -append mx8qm-ahab-container.img -c -scfw scfw_tcm.bin -m4 m4_image.bin 0 0x88000000 -ap u-boot-atf.bin a53 0x80000000 -out flash.bin

@@ -83,6 +83,15 @@ cat << __CONF_HEADER_EOF
 
 __CONF_HEADER_EOF
 
+if [ -f $BL32 ]; then
+cat << __CONF_SECTION1_EOF
+		config@1 {
+			description = "fsl-imx8qm-mek";
+			firmware = "uboot@1";
+			loadables = "atf@1", "tee@1";
+		};
+__CONF_SECTION1_EOF
+else
 cat << __CONF_SECTION1_EOF
 		config@1 {
 			description = "fsl-imx8qm-mek";
@@ -90,7 +99,7 @@ cat << __CONF_SECTION1_EOF
 			loadables = "atf@1";
 		};
 __CONF_SECTION1_EOF
-
+fi
 cat << __ITS_EOF
 	};
 };

@@ -60,6 +60,12 @@ u-boot-atf.bin: u-boot.bin bl31.bin
 u-boot-atf.itb:
 	./$(MKIMG) -commit > head.hash
 	@cat u-boot.bin head.hash > u-boot-hash.bin
+	@if [ -f "hdmitxfw.bin" ] && [ -f "hdmirxfw.bin" ]; then \
+	objcopy -I binary -O binary --pad-to 0x20000 --gap-fill=0x0 hdmitxfw.bin hdmitxfw-pad.bin; \
+	objcopy -I binary -O binary --pad-to 0x20000 --gap-fill=0x0 hdmirxfw.bin hdmirxfw-pad.bin; \
+	cat u-boot-hash.bin hdmitxfw-pad.bin hdmirxfw-pad.bin > u-boot-hash.bin.temp; \
+	mv u-boot-hash.bin.temp u-boot-hash.bin; \
+	fi
 	./mkimage_fit_atf.sh > u-boot.its;
 	./mkimage_uboot -E -p 0x3000 -f u-boot.its u-boot-atf.itb;
 	@rm -f u-boot.its
@@ -165,6 +171,14 @@ flash_b0_multi_cores_m4_1: $(MKIMG) mx8qm-ahab-container.img scfw_tcm.bin u-boot
 
 flash_b0_multi_cores_m4_1_trusty: $(MKIMG) mx8qm-ahab-container.img scfw_tcm.bin u-boot-atf.bin m41_tcm.bin tee.bin
 	./$(MKIMG) -soc QM -rev B0 -append mx8qm-ahab-container.img -c -scfw scfw_tcm.bin -m4 m41_tcm.bin 1 0x38FE0000 -ap u-boot-atf.bin a53 0x80000000 -data tee.bin 0x84000000 -out flash.bin
+
+flash_b0_spl_fit_m4_1_trusty: $(MKIMG) mx8qm-ahab-container.img scfw_tcm.bin u-boot-atf.itb m41_tcm.bin tee.bin u-boot-spl.bin
+	./$(MKIMG) -soc QM -rev B0 -dcd skip -append mx8qm-ahab-container.img -c -scfw scfw_tcm.bin -m4 m41_tcm.bin 1 0x38FE0000 -ap u-boot-spl.bin a53 0x00100000 -out flash.bin
+	@flashbin_size=`wc -c flash.bin | awk '{print $$1}'`; \
+                   pad_cnt=$$(((flashbin_size + 0x400 - 1) / 0x400)); \
+                   echo "append u-boot-atf.itb at $$pad_cnt KB"; \
+                   dd if=u-boot-atf.itb of=flash.bin bs=1K seek=$$pad_cnt; \
+		   rm -f u-boot-atf.itb;
 
 flash_b0_spl_fit: $(MKIMG) mx8qm-ahab-container.img scfw_tcm.bin u-boot-atf.itb u-boot-spl.bin
 	./$(MKIMG) -soc QM -rev B0 -dcd skip -append mx8qm-ahab-container.img -c -scfw scfw_tcm.bin -ap u-boot-spl.bin a53 0x00100000 -out flash.bin

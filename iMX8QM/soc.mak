@@ -30,6 +30,7 @@ endif
 #define the F(Q)SPI header file
 QSPI_HEADER = ../scripts/fspi_header
 QSPI_PACKER = ../scripts/fspi_packer.sh
+PAD_IMAGE = ../scripts/pad_image.sh
 
 $(DCD_CFG): FORCE
 	@echo "Converting iMX8 DCD 1.6GHz file"
@@ -66,6 +67,8 @@ u-boot-atf.itb:
 	cat u-boot-hash.bin hdmitxfw-pad.bin hdmirxfw-pad.bin > u-boot-hash.bin.temp; \
 	mv u-boot-hash.bin.temp u-boot-hash.bin; \
 	fi
+	./$(PAD_IMAGE) bl31.bin
+	./$(PAD_IMAGE) u-boot-hash.bin
 	./mkimage_fit_atf.sh > u-boot.its;
 	./mkimage_uboot -E -p 0x3000 -f u-boot.its u-boot-atf.itb;
 	@rm -f u-boot.its

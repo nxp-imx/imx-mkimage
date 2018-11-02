@@ -29,6 +29,7 @@ DIR = internal-only/Linux_IMX_Rocko_MX8/$(N)/common_bsp
 #define the F(Q)SPI header file
 QSPI_HEADER = ../scripts/fspi_header
 QSPI_PACKER = ../scripts/fspi_packer.sh
+PAD_IMAGE = ../scripts/pad_image.sh
 
 ifeq ($(DDR3_DCD), 1)
     ifeq ($(DX), 1)
@@ -61,6 +62,8 @@ u-boot-atf.bin: u-boot.bin bl31.bin
 u-boot-atf.itb:
 	./$(MKIMG) -commit > head.hash
 	@cat u-boot.bin head.hash > u-boot-hash.bin
+	./$(PAD_IMAGE) bl31.bin
+	./$(PAD_IMAGE) u-boot-hash.bin
 	./mkimage_fit_atf.sh > u-boot.its;
 	./mkimage_uboot -E -p 0x3000 -f u-boot.its u-boot-atf.itb;
 	@rm -f u-boot.its

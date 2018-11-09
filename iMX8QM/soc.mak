@@ -46,10 +46,12 @@ $(DCD_1200_CFG): FORCE
 
 FORCE:
 
-u-boot-atf.bin: u-boot.bin bl31.bin
-	@cp bl31.bin u-boot-atf.bin
+u-boot-hash.bin: u-boot.bin
 	./$(MKIMG) -commit > head.hash
 	@cat u-boot.bin head.hash > u-boot-hash.bin
+
+u-boot-atf.bin: u-boot-hash.bin bl31.bin
+	@cp bl31.bin u-boot-atf.bin
 	@dd if=u-boot-hash.bin of=u-boot-atf.bin bs=1K seek=128
 	@if [ -f "hdmitxfw.bin" ] && [ -f "hdmirxfw.bin" ]; then \
 	objcopy -I binary -O binary --pad-to 0x20000 --gap-fill=0x0 hdmitxfw.bin hdmitxfw-pad.bin; \
@@ -58,9 +60,7 @@ u-boot-atf.bin: u-boot.bin bl31.bin
 	cp u-boot-atf-hdmi.bin u-boot-atf.bin; \
 	fi
 
-u-boot-atf.itb:
-	./$(MKIMG) -commit > head.hash
-	@cat u-boot.bin head.hash > u-boot-hash.bin
+u-boot-atf.itb: u-boot-hash.bin bl31.bin
 	@if [ -f "hdmitxfw.bin" ] && [ -f "hdmirxfw.bin" ]; then \
 	objcopy -I binary -O binary --pad-to 0x20000 --gap-fill=0x0 hdmitxfw.bin hdmitxfw-pad.bin; \
 	objcopy -I binary -O binary --pad-to 0x20000 --gap-fill=0x0 hdmirxfw.bin hdmirxfw-pad.bin; \
@@ -72,6 +72,9 @@ u-boot-atf.itb:
 	./mkimage_fit_atf.sh > u-boot.its;
 	./mkimage_uboot -E -p 0x3000 -f u-boot.its u-boot-atf.itb;
 	@rm -f u-boot.its
+
+u-boot-atf-container.img: bl31.bin u-boot-hash.bin
+	./$(MKIMG) -soc QX -rev B0 -c -ap bl31.bin a35 0x80000000 -ap u-boot-hash.bin a35 0x80020000 -out u-boot-atf-container.img
 
 .PHONY: clean
 clean:
@@ -190,6 +193,14 @@ flash_b0_spl_fit: $(MKIMG) mx8qm-ahab-container.img scfw_tcm.bin u-boot-atf.itb 
                    echo "append u-boot-atf.itb at $$pad_cnt KB"; \
                    dd if=u-boot-atf.itb of=flash.bin bs=1K seek=$$pad_cnt; \
 		   rm -f u-boot-atf.itb;
+
+flash_b0_spl_container: $(MKIMG) mx8qm-ahab-container.img scfw_tcm.bin u-boot-spl.bin u-boot-atf-container.img
+	./$(MKIMG) -soc QM -rev B0 -dcd skip -append mx8qm-ahab-container.img -c -scfw scfw_tcm.bin -ap u-boot-spl.bin a53 0x00100000 -out flash.bin
+	@flashbin_size=`wc -c flash.bin | awk '{print $$1}'`; \
+                   pad_cnt=$$(((flashbin_size + 0x400 - 1) / 0x400)); \
+                   echo "append u-boot-atf-container.img at $$pad_cnt KB"; \
+                   dd if=u-boot-atf-container.img of=flash.bin bs=1K seek=$$pad_cnt;
+		   rm -f u-boot-atf-container.img;
 
 flash_b0_spl: $(MKIMG) mx8qm-ahab-container.img scfw_tcm.bin u-boot-atf.bin u-boot-spl.bin
 	./$(MKIMG) -soc QM -rev B0 -dcd skip -append mx8qm-ahab-container.img -c -scfw scfw_tcm.bin -ap u-boot-spl.bin a53 0x00100000 -out flash.bin

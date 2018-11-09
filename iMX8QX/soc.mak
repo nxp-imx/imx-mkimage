@@ -187,6 +187,15 @@ flash_spl_flexspi_fit: $(MKIMG) mx8qx-ahab-container.img scfw_tcm.bin u-boot-atf
                    rm -f u-boot-atf.itb;
 	./$(QSPI_PACKER) $(QSPI_HEADER)
 
+flash_spl_flexspi_container: $(MKIMG) mx8qx-ahab-container.img scfw_tcm.bin u-boot-spl.bin u-boot-atf-container.img
+	./$(MKIMG) -soc QX -rev B0 -dev flexspi -append mx8qx-ahab-container.img -c -scfw scfw_tcm.bin -ap u-boot-spl.bin a35 0x00100000 -out flash.bin
+	@flashbin_size=`wc -c flash.bin | awk '{print $$1}'`; \
+                   pad_cnt=$$(((flashbin_size + 0x400 - 1) / 0x400)); \
+                   echo "append u-boot-atf-container.img at $$pad_cnt KB"; \
+                   dd if=u-boot-atf-container.img of=flash.bin bs=1K seek=$$pad_cnt;
+		   rm -f u-boot-atf-container.img;
+	./$(QSPI_PACKER) $(QSPI_HEADER)
+
 flash_spl_flexspi: $(MKIMG) mx8qx-ahab-container.img scfw_tcm.bin u-boot-atf.bin u-boot-spl.bin
 	./$(MKIMG) -soc QX -rev B0 -dev flexspi -append mx8qx-ahab-container.img -c -scfw scfw_tcm.bin -ap u-boot-spl.bin a35 0x00100000 -out flash.bin
 	@flashbin_size=`wc -c flash.bin | awk '{print $$1}'`; \

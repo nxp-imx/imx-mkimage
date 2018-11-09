@@ -53,20 +53,23 @@ $(DCD_CFG): FORCE
 	$(CC) -E -Wp,-MD,.imx8dx_dcd.cfg.cfgtmp.d  -nostdinc -Iinclude -I$(INCLUDE) -DDDR_TRAIN_IN_DCD=$(DDR_TRAIN) -x c -o $(DCD_DX_DDR3_CFG) $(DCD_CFG_DX_DDR3_SRC)
 FORCE:
 
-u-boot-atf.bin: u-boot.bin bl31.bin
-	@cp bl31.bin u-boot-atf.bin
+u-boot-hash.bin: u-boot.bin
 	./$(MKIMG) -commit > head.hash
 	@cat u-boot.bin head.hash > u-boot-hash.bin
+
+u-boot-atf.bin: u-boot-hash.bin bl31.bin
+	@cp bl31.bin u-boot-atf.bin
 	@dd if=u-boot-hash.bin of=u-boot-atf.bin bs=1K seek=128
 
-u-boot-atf.itb:
-	./$(MKIMG) -commit > head.hash
-	@cat u-boot.bin head.hash > u-boot-hash.bin
+u-boot-atf.itb: u-boot-hash.bin bl31.bin
 	./$(PAD_IMAGE) bl31.bin
 	./$(PAD_IMAGE) u-boot-hash.bin
 	./mkimage_fit_atf.sh > u-boot.its;
 	./mkimage_uboot -E -p 0x3000 -f u-boot.its u-boot-atf.itb;
 	@rm -f u-boot.its
+
+u-boot-atf-container.img: bl31.bin u-boot-hash.bin
+	./$(MKIMG) -soc QX -rev B0 -c -ap bl31.bin a35 0x80000000 -ap u-boot-hash.bin a35 0x80020000 -out u-boot-atf-container.img
 
 Image0: Image
 	@dd if=Image of=Image0 bs=10M count=1
@@ -151,6 +154,14 @@ flash_spl_fit: $(MKIMG) mx8qx-ahab-container.img scfw_tcm.bin u-boot-atf.itb u-b
                    echo "append u-boot-atf.itb at $$pad_cnt KB"; \
                    dd if=u-boot-atf.itb of=flash.bin bs=1K seek=$$pad_cnt; \
 		   rm -f u-boot-atf.itb;
+
+flash_spl_container: $(MKIMG) mx8qx-ahab-container.img scfw_tcm.bin u-boot-spl.bin u-boot-atf-container.img
+	./$(MKIMG) -soc QX -rev B0 -dcd skip -append mx8qx-ahab-container.img -c -scfw scfw_tcm.bin -ap u-boot-spl.bin a35 0x00100000 -out flash.bin
+	@flashbin_size=`wc -c flash.bin | awk '{print $$1}'`; \
+                   pad_cnt=$$(((flashbin_size + 0x400 - 1) / 0x400)); \
+                   echo "append u-boot-atf-container.img at $$pad_cnt KB"; \
+                   dd if=u-boot-atf-container.img of=flash.bin bs=1K seek=$$pad_cnt;
+		   rm -f u-boot-atf-container.img;
 
 flash_all_spl_fit: $(MKIMG) mx8qx-ahab-container.img scfw_tcm.bin u-boot-atf.itb CM4.bin u-boot-spl.bin
 	./$(MKIMG) -soc QX -rev B0 -dcd skip -append mx8qx-ahab-container.img -c -scfw scfw_tcm.bin -ap u-boot-spl.bin a35 0x00100000 -m4 CM4.bin 0 0x34FE0000 -out flash.bin

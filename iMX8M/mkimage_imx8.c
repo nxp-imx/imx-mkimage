@@ -259,10 +259,16 @@ struct fdt_header {
 static void fill_zero(int ifd, int size, int offset)
 {
 	int fill_size;
+	int ret;
 	uint8_t zeros[4096];
 	memset(zeros, 0, sizeof(zeros));
 
-	lseek(ifd, offset, SEEK_SET);
+	ret = lseek(ifd, offset, SEEK_SET);
+	if (ret < 0) {
+		fprintf(stderr, "%s: lseek error %s\n",
+				__func__, strerror(errno));
+		exit(EXIT_FAILURE);
+	}
 
 	while (size) {
 
@@ -852,8 +858,14 @@ int generate_ivt_for_fit(int fd, int fit_offset, uint32_t ep, uint32_t *fit_load
 
 	uint32_t fit_size, load_addr;
 	int align_len = 64 - 1; /* 64 is cacheline size */
+	int ret;
 
-	lseek(fd, fit_offset, SEEK_SET);
+	ret = lseek(fd, fit_offset, SEEK_SET);
+	if (ret < 0) {
+		fprintf(stderr, "%s: lseek error %s\n",
+				__func__, strerror(errno));
+		exit(EXIT_FAILURE);
+	}
 
 	if (read(fd, (char *)&image_header, sizeof(uimage_header_t)) != sizeof(uimage_header_t)) {
 		fprintf (stderr, "generate_ivt_for_fit read failed: %s\n",
@@ -873,7 +885,12 @@ int generate_ivt_for_fit(int fd, int fit_offset, uint32_t ep, uint32_t *fit_load
 
 	fit_size = ALIGN(fit_size, ALIGN_SIZE);
 
-	lseek(fd, fit_offset + fit_size, SEEK_SET);
+	ret = lseek(fd, fit_offset + fit_size, SEEK_SET);
+	if (ret < 0) {
+		fprintf(stderr, "%s: lseek error %s\n",
+				__func__, strerror(errno));
+		exit(EXIT_FAILURE);
+	}
 
 	/* ep is the u-boot entry. SPL loads the FIT before the u-boot address. 0x2000 is for CSF_SIZE */
 	load_addr = (ep - (fit_size + CSF_SIZE) - 512 -

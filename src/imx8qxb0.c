@@ -518,6 +518,8 @@ int get_container_image_start_pos(image_t *image_stack, uint32_t align)
 
 			if (header.tag != IVT_HEADER_TAG_B0) {
 				printf("header tag missmatched \n");
+			} else if (header.num_images == 0) {
+				printf("image num is 0 \n");
 			} else {
 				file_off += header.img[header.num_images - 1].size;
 				file_off = ALIGN(file_off, align);

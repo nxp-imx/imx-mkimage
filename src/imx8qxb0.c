@@ -137,6 +137,7 @@ static void copy_file_aligned (int ifd, const char *datafile, int offset, int al
 	unsigned char *ptr;
 	uint8_t zeros[0x4000];
 	int size;
+	int ret;
 
 	if (align > 0x4000) {
 		fprintf (stderr, "Wrong alignment requested %d\n",
@@ -169,7 +170,13 @@ static void copy_file_aligned (int ifd, const char *datafile, int offset, int al
 	}
 
 	size = sbuf.st_size;
-	lseek(ifd, offset, SEEK_SET);
+	ret = lseek(ifd, offset, SEEK_SET);
+	if (ret < 0) {
+		fprintf(stderr, "%s: lseek error %s\n",
+			__func__, strerror(errno));
+		exit(EXIT_FAILURE);
+	}
+
 	if (write(ifd, ptr, size) != size) {
 		fprintf (stderr, "Write error %s\n",
 			strerror(errno));
@@ -545,6 +552,7 @@ int build_container_qx_qm_b0(soc_type_t soc, uint32_t sector_size, uint32_t ivt_
 	char *tmp_filename = NULL;
 	uint32_t size = 0;
 	uint32_t file_padding = 0;
+	int ret;
 
 	int container = -1;
 	int cont_img_count = 0; /* indexes to arrange the container */
@@ -679,7 +687,12 @@ int build_container_qx_qm_b0(soc_type_t soc, uint32_t sector_size, uint32_t ivt_
 	} while (img_sp->option != NO_IMG);
 
 	/* Add padding or skip appended container */
-	lseek(ofd, file_padding, SEEK_SET);
+	ret = lseek(ofd, file_padding, SEEK_SET);
+	if (ret < 0) {
+		fprintf(stderr, "%s: lseek error %s\n",
+			__func__, strerror(errno));
+		exit(EXIT_FAILURE);
+	}
 
 	/* Note: Image offset are not contained in the image */
 	uint8_t *tmp = flatten_container_header(&imx_header, container + 1, &size, file_padding);

@@ -840,6 +840,7 @@ void generate_sld_with_ivt(char * input_file, uint32_t ep, char *out_file)
 		exit(EXIT_FAILURE);
 	}
 
+	munmap((void *)file_ptr, sbuf.st_size);
 	close(ivt_fd);
 	close(input_fd);
 }

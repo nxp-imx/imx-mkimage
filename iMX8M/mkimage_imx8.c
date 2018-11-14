@@ -297,7 +297,7 @@ copy_file (int ifd, const char *datafile, int pad, int offset, int datafile_offs
 	int tail;
 	int zero = 0;
 	uint8_t zeros[4096];
-	int size;
+	int size, ret;
 
 	memset(zeros, 0, sizeof(zeros));
 
@@ -321,7 +321,12 @@ copy_file (int ifd, const char *datafile, int pad, int offset, int datafile_offs
 	}
 
 	size = sbuf.st_size - datafile_offset;
-	lseek(ifd, offset, SEEK_SET);
+	ret = lseek(ifd, offset, SEEK_SET);
+	if (ret < 0) {
+		fprintf(stderr, "%s: lseek error %s\n",
+				__func__, strerror(errno));
+		exit(EXIT_FAILURE);
+	}
 	if (write(ifd, ptr + datafile_offset, size) != size) {
 		fprintf (stderr, "Write error %s\n",
 			strerror(errno));

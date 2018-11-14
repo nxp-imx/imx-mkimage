@@ -518,8 +518,10 @@ int get_container_image_start_pos(image_t *image_stack, uint32_t align)
 				break;
 			}
 
-			if(read(ofd, &header, sizeof(header)) != sizeof(header))
+			if(read(ofd, &header, sizeof(header)) != sizeof(header)) {
 				printf("Failure Read header \n");
+				exit(EXIT_FAILURE);
+			}
 
 			close(ofd);
 

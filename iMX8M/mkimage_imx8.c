@@ -182,6 +182,9 @@ struct fdt_header {
 #define FDT_MAGIC	0xd00dfeed
 #define CSF_SIZE 0x2000
 
+#define ROM_V1 1
+#define ROM_V2 2 /* V2 ROM for iMX8MN */
+
 #define ALIGN(x,a)		__ALIGN_MASK((x),(__typeof__(x))(a)-1, a)
 #define __ALIGN_MASK(x,mask,mask2)	(((x)+(mask))/(mask2)*(mask2))
 
@@ -935,6 +938,7 @@ int main(int argc, char **argv)
 	int using_fit = 0;
 	dcd_v2_t dcd_table;
 	uimage_header_t uimage_hdr;
+	uint32_t version = ROM_V1;
 
 	static struct option long_options[] =
 	{
@@ -950,6 +954,7 @@ int main(int argc, char **argv)
 		{"dev", required_argument, NULL, 'e'},
 		{"csf", required_argument, NULL, 'c'},
 		{"second_loader", required_argument, NULL, 'u'},
+		{"version", required_argument, NULL, 'v'},
 		{NULL, 0, NULL, 0}
 	};
 
@@ -1048,6 +1053,17 @@ int main(int argc, char **argv)
 					exit(1);
 				}
 				break;
+			case 'v':
+				fprintf(stderr, "ROM VERSION:\t%s\n", optarg);
+				if (!strcmp(optarg, "v2")) {
+					version = ROM_V2; /* iMX8MN should use ROM V2 */
+				} else if (!strcmp(optarg, "v1")) {
+					version = ROM_V1;
+				} else {
+					fprintf(stderr, "\n-version option, valid versions are v1 (for iMX8MQ/8MM), v2 (for iMX8MN)\n\n");
+					exit(1);
+				}
+				break;
 			case 'u':
 				fprintf(stderr, "SECOND LOADER IMAGE:\t%s", optarg);
 				sld_img = optarg;
@@ -1084,6 +1100,16 @@ int main(int argc, char **argv)
 	{
 		fprintf(stderr, "Can't enable DCD and PLUGIN at same time! abort\n");
 		exit(1);
+	}
+
+	if (version == ROM_V2) {
+		/* V2 ROM set IVT offset to 0 for all boot devices */
+		ivt_offset = 0;
+
+		if (dcd_img || plugin_img) {
+			fprintf(stderr, "V2 ROM don't support DCD nor PLUGIN, abort\n");
+			exit(1);
+		}
 	}
 
 	file_off = 0;
@@ -1397,7 +1423,8 @@ int main(int argc, char **argv)
 			file_off += CSF_SIZE - sizeof(flash_header_v2_t);
 		}else {
 			sld_header_off = sld_src_off - rom_image_offset;
-			imx_header[IMAGE_IVT_ID].fhdr.reserved1 = sld_header_off - header_image_off; /* Record the second bootloader relative offset in image's IVT reserved1*/
+			if (version == ROM_V1)
+				imx_header[IMAGE_IVT_ID].fhdr.reserved1 = sld_header_off - header_image_off; /* Record the second bootloader relative offset in image's IVT reserved1*/
 			sld_fd = open(sld_img, O_RDONLY | O_BINARY);
 			if (sld_fd < 0) {
 				fprintf(stderr, "%s: Can't open: %s\n",

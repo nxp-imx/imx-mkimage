@@ -9,7 +9,6 @@ WGET = /usr/bin/wget
 N ?= latest
 SERVER=http://yb2.am.freescale.net
 #DIR = internal-only/Linux_IMX_Rocko_MX8/$(N)/common_bsp
-#DIR = internal-only/Linux_IMX_Rocko_MX8/$(N)/common_bsp
 #DIR = internal-only/Linux_IMX_Core/$(N)/common_bsp
 DIR = internal-only/Linux_IMX_Regression/$(N)/common_bsp
 

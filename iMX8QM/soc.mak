@@ -74,7 +74,17 @@ u-boot-atf.itb: u-boot-hash.bin bl31.bin
 	@rm -f u-boot.its
 
 u-boot-atf-container.img: bl31.bin u-boot-hash.bin
-	./$(MKIMG) -soc QX -rev B0 -c -ap bl31.bin a35 0x80000000 -ap u-boot-hash.bin a35 0x80020000 -out u-boot-atf-container.img
+	@if [ -f "hdmitxfw.bin" ] && [ -f "hdmirxfw.bin" ]; then \
+	objcopy -I binary -O binary --pad-to 0x20000 --gap-fill=0x0 hdmitxfw.bin hdmitxfw-pad.bin; \
+	objcopy -I binary -O binary --pad-to 0x20000 --gap-fill=0x0 hdmirxfw.bin hdmirxfw-pad.bin; \
+	cat u-boot-hash.bin hdmitxfw-pad.bin hdmirxfw-pad.bin > u-boot-hash.bin.temp; \
+	mv u-boot-hash.bin.temp u-boot-hash.bin; \
+	fi
+	if [ -f "tee.bin" ]; then \
+	./$(MKIMG) -soc QM -rev B0 -c -ap bl31.bin a53 0x80000000 -ap u-boot-hash.bin a53 0x80020000 -ap tee.bin a53 0xFE000000 -out u-boot-atf-container.img; \
+	else \
+	./$(MKIMG) -soc QM -rev B0 -c -ap bl31.bin a53 0x80000000 -ap u-boot-hash.bin a53 0x80020000 -out u-boot-atf-container.img; \
+	fi
 
 .PHONY: clean
 clean:
@@ -185,6 +195,14 @@ flash_b0_spl_fit_m4_1_trusty: $(MKIMG) mx8qm-ahab-container.img scfw_tcm.bin u-b
                    echo "append u-boot-atf.itb at $$pad_cnt KB"; \
                    dd if=u-boot-atf.itb of=flash.bin bs=1K seek=$$pad_cnt; \
 		   rm -f u-boot-atf.itb;
+
+flash_b0_spl_container_m4_1_trusty: $(MKIMG) mx8qm-ahab-container.img scfw_tcm.bin u-boot-atf-container.img m41_tcm.bin tee.bin u-boot-spl.bin
+	./$(MKIMG) -soc QM -rev B0 -dcd skip -append mx8qm-ahab-container.img -c -scfw scfw_tcm.bin -m4 m41_tcm.bin 1 0x38FE0000 -ap u-boot-spl.bin a53 0x00100000 -out flash.bin
+	@flashbin_size=`wc -c flash.bin | awk '{print $$1}'`; \
+                   pad_cnt=$$(((flashbin_size + 0x400 - 1) / 0x400)); \
+                   echo "append u-boot-atf-container.img at $$pad_cnt KB"; \
+                   dd if=u-boot-atf-container.img of=flash.bin bs=1K seek=$$pad_cnt; \
+                   rm -f u-boot-atf-container.img;
 
 flash_b0_spl_fit: $(MKIMG) mx8qm-ahab-container.img scfw_tcm.bin u-boot-atf.itb u-boot-spl.bin
 	./$(MKIMG) -soc QM -rev B0 -dcd skip -append mx8qm-ahab-container.img -c -scfw scfw_tcm.bin -ap u-boot-spl.bin a53 0x00100000 -out flash.bin

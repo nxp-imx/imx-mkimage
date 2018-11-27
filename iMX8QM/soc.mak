@@ -218,7 +218,6 @@ flash_b0_spl_container: $(MKIMG) mx8qm-ahab-container.img scfw_tcm.bin u-boot-sp
                    pad_cnt=$$(((flashbin_size + 0x400 - 1) / 0x400)); \
                    echo "append u-boot-atf-container.img at $$pad_cnt KB"; \
                    dd if=u-boot-atf-container.img of=flash.bin bs=1K seek=$$pad_cnt;
-		   rm -f u-boot-atf-container.img;
 
 flash_b0_spl: $(MKIMG) mx8qm-ahab-container.img scfw_tcm.bin u-boot-atf.bin u-boot-spl.bin
 	./$(MKIMG) -soc QM -rev B0 -dcd skip -append mx8qm-ahab-container.img -c -scfw scfw_tcm.bin -ap u-boot-spl.bin a53 0x00100000 -out flash.bin
@@ -242,7 +241,6 @@ flash_b0_spl_flexspi_container: $(MKIMG) mx8qm-ahab-container.img scfw_tcm.bin u
                    pad_cnt=$$(((flashbin_size + 0x400 - 1) / 0x400)); \
                    echo "append u-boot-atf-container.img at $$pad_cnt KB"; \
                    dd if=u-boot-atf-container.img of=flash.bin bs=1K seek=$$pad_cnt;
-		   rm -f u-boot-atf-container.img;
 	./$(QSPI_PACKER) $(QSPI_HEADER)
 
 flash_b0_spl_flexspi: $(MKIMG) mx8qm-ahab-container.img scfw_tcm.bin u-boot-atf.bin u-boot-spl.bin

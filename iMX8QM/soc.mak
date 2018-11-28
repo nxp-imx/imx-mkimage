@@ -88,7 +88,7 @@ u-boot-atf-container.img: bl31.bin u-boot-hash.bin
 
 .PHONY: clean
 clean:
-	@rm -f $(DCD_CFG) .imx8_dcd.cfg.cfgtmp.d $(DCD_800_CFG) $(DCD_1200_CFG) .imx8qm_dcd_800.cfg.cfgtmp.d .imx8qm_dcd.cfg.cfgtmp.d .imx8qm_dcd_1200.cfg.cfgtmp.d head.hash u-boot-hash.bin u-boot-atf.itb u-boot-atf-hdmi.bin hdmitxfw-pad.bin hdmirxfw-pad.bin
+	@rm -f $(DCD_CFG) .imx8_dcd.cfg.cfgtmp.d $(DCD_800_CFG) $(DCD_1200_CFG) .imx8qm_dcd_800.cfg.cfgtmp.d .imx8qm_dcd.cfg.cfgtmp.d .imx8qm_dcd_1200.cfg.cfgtmp.d head.hash u-boot-hash.bin u-boot-atf.itb u-boot-atf-container.img u-boot-atf-hdmi.bin hdmitxfw-pad.bin hdmirxfw-pad.bin
 
 flash_scfw: $(MKIMG) scfw_tcm.bin
 	./$(MKIMG) -soc QM -c -scfw scfw_tcm.bin -out flash.bin

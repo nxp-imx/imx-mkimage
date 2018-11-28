@@ -82,7 +82,7 @@ Image1: Image
 
 .PHONY: clean nightly
 clean:
-	@rm -f $(MKIMG) $(DCD_CFG) .imx8qx_dcd.cfg.cfgtmp.d Image0 Image1
+	@rm -f $(MKIMG) $(DCD_CFG) .imx8qx_dcd.cfg.cfgtmp.d u-boot-atf-container.img Image0 Image1
 
 flash_cm4 flash_b0_cm4: $(MKIMG) mx8qx-ahab-container.img scfw_tcm.bin m4_image.bin
 	./$(MKIMG) -soc QX -rev B0 -append mx8qx-ahab-container.img -c -scfw scfw_tcm.bin -p1 -m4 m4_image.bin 0 0x34FE0000 -out flash.bin

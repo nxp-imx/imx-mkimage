@@ -72,7 +72,11 @@ u-boot-atf.itb: u-boot-hash.bin bl31.bin
 
 u-boot-atf-container.img: bl31.bin u-boot-hash.bin
 	if [ -f tee.bin ]; then \
-	./$(MKIMG) -soc QX -rev B0 -c -ap bl31.bin a35 0x80000000 -ap u-boot-hash.bin a35 0x80020000 -ap tee.bin a35 0xFE000000 -out u-boot-atf-container.img; \
+		if [ $(shell echo $(ROLLBACK_INDEX_IN_CONTAINER)) ]; then \
+			./$(MKIMG) -soc QX -sw_version $(ROLLBACK_INDEX_IN_CONTAINER) -rev B0 -c -ap bl31.bin a35 0x80000000 -ap u-boot-hash.bin a35 0x80020000 -ap tee.bin a35 0xFE000000 -out u-boot-atf-container.img; \
+		else \
+			./$(MKIMG) -soc QX -rev B0 -c -ap bl31.bin a35 0x80000000 -ap u-boot-hash.bin a35 0x80020000 -ap tee.bin a35 0xFE000000 -out u-boot-atf-container.img; \
+		fi; \
 	else \
 	./$(MKIMG) -soc QX -rev B0 -c -ap bl31.bin a35 0x80000000 -ap u-boot-hash.bin a35 0x80020000 -out u-boot-atf-container.img; \
 	fi
@@ -178,11 +182,11 @@ flash_all_spl_fit: $(MKIMG) mx8qx-ahab-container.img scfw_tcm.bin u-boot-atf.itb
 
 flash_all_spl_container: $(MKIMG) mx8qx-ahab-container.img scfw_tcm.bin u-boot-atf-container.img CM4.bin u-boot-spl.bin
 	./$(MKIMG) -soc QX -rev B0 -append mx8qx-ahab-container.img -c -scfw scfw_tcm.bin -ap u-boot-spl.bin a35 0x00100000 -m4 CM4.bin 0 0x88000000 -out flash.bin
+	cp flash.bin boot-spl-container.img
 	@flashbin_size=`wc -c flash.bin | awk '{print $$1}'`; \
                    pad_cnt=$$(((flashbin_size + 0x400 - 1) / 0x400)); \
                    echo "append u-boot-atf-container.img at $$pad_cnt KB"; \
                    dd if=u-boot-atf-container.img of=flash.bin bs=1K seek=$$pad_cnt; \
-                   rm -f u-boot-atf-container.img;
 
 flash_spl: $(MKIMG) mx8qx-ahab-container.img scfw_tcm.bin u-boot-atf.bin u-boot-spl.bin
 	./$(MKIMG) -soc QX -rev B0 -dcd skip -append mx8qx-ahab-container.img -c -scfw scfw_tcm.bin -ap u-boot-spl.bin a35 0x00100000 -out flash.bin

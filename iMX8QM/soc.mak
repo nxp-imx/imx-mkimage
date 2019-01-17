@@ -182,8 +182,8 @@ flash_flexspi_all : $(MKIMG) mx8qm-ahab-container.img scfw_tcm.bin u-boot-atf.bi
 	./$(MKIMG) -soc QM -rev B0 -dev flexspi -append mx8qm-ahab-container.img -c -scfw scfw_tcm.bin -fileoff 0x80000 -m4 m40_flash.bin 0 0x08081000 -fileoff 0x180000 -m4 m41_flash.bin 1 0x08181000 -ap u-boot-atf.bin a35 0x80000000 -out flash.bin
 	./$(QSPI_PACKER) $(QSPI_HEADER)
 
-flash_b0_multi_cores_m4_1: $(MKIMG) mx8qm-ahab-container.img scfw_tcm.bin u-boot-atf.bin m41_tcm.bin
-	./$(MKIMG) -soc QM -rev B0 -append mx8qm-ahab-container.img -c -scfw scfw_tcm.bin -m4 m41_tcm.bin 1 0x38FE0000 -ap u-boot-atf.bin a53 0x80000000 -out flash.bin
+flash_b0_multi_cores_m4_1: $(MKIMG) mx8qm-ahab-container.img scfw_tcm.bin u-boot-atf.bin CM41.bin
+	./$(MKIMG) -soc QM -rev B0 -append mx8qm-ahab-container.img -c -scfw scfw_tcm.bin -m4 CM41.bin 1 0x88800000 -ap u-boot-atf.bin a53 0x80000000 -out flash.bin
 
 flash_b0_multi_cores_m4_1_trusty: $(MKIMG) mx8qm-ahab-container.img scfw_tcm.bin u-boot-atf.bin m41_tcm.bin tee.bin
 	./$(MKIMG) -soc QM -rev B0 -append mx8qm-ahab-container.img -c -scfw scfw_tcm.bin -m4 m41_tcm.bin 1 0x38FE0000 -ap u-boot-atf.bin a53 0x80000000 -data tee.bin 0x84000000 -out flash.bin
@@ -196,8 +196,8 @@ flash_b0_spl_fit_m4_1_trusty: $(MKIMG) mx8qm-ahab-container.img scfw_tcm.bin u-b
                    dd if=u-boot-atf.itb of=flash.bin bs=1K seek=$$pad_cnt; \
 		   rm -f u-boot-atf.itb;
 
-flash_b0_spl_container_m4_1_trusty: $(MKIMG) mx8qm-ahab-container.img scfw_tcm.bin u-boot-atf-container.img m41_tcm.bin tee.bin u-boot-spl.bin
-	./$(MKIMG) -soc QM -rev B0 -dcd skip -append mx8qm-ahab-container.img -c -scfw scfw_tcm.bin -m4 m41_tcm.bin 1 0x38FE0000 -ap u-boot-spl.bin a53 0x00100000 -out flash.bin
+flash_b0_spl_container_m4_1_trusty: $(MKIMG) mx8qm-ahab-container.img scfw_tcm.bin u-boot-atf-container.img CM41.bin tee.bin u-boot-spl.bin
+	./$(MKIMG) -soc QM -rev B0 -append mx8qm-ahab-container.img -c -scfw scfw_tcm.bin -m4 CM41.bin 1 0x88800000 -ap u-boot-spl.bin a53 0x00100000 -out flash.bin
 	@flashbin_size=`wc -c flash.bin | awk '{print $$1}'`; \
                    pad_cnt=$$(((flashbin_size + 0x400 - 1) / 0x400)); \
                    echo "append u-boot-atf-container.img at $$pad_cnt KB"; \

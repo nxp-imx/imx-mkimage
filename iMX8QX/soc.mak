@@ -177,7 +177,7 @@ flash_all_spl_fit: $(MKIMG) mx8qx-ahab-container.img scfw_tcm.bin u-boot-atf.itb
 		   rm -f u-boot-atf.itb;
 
 flash_all_spl_container: $(MKIMG) mx8qx-ahab-container.img scfw_tcm.bin u-boot-atf-container.img CM4.bin u-boot-spl.bin
-	./$(MKIMG) -soc QX -rev B0 -dcd skip -append mx8qx-ahab-container.img -c -scfw scfw_tcm.bin -ap u-boot-spl.bin a35 0x00100000 -m4 CM4.bin 0 0x34FE0000 -out flash.bin
+	./$(MKIMG) -soc QX -rev B0 -append mx8qx-ahab-container.img -c -scfw scfw_tcm.bin -ap u-boot-spl.bin a35 0x00100000 -m4 CM4.bin 0 0x88000000 -out flash.bin
 	@flashbin_size=`wc -c flash.bin | awk '{print $$1}'`; \
                    pad_cnt=$$(((flashbin_size + 0x400 - 1) / 0x400)); \
                    echo "append u-boot-atf-container.img at $$pad_cnt KB"; \

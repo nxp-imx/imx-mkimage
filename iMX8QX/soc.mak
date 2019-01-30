@@ -270,6 +270,9 @@ flash_test_build flash_b0_test_build: $(MKIMG) mx8qx-ahab-container.img scfw_tcm
 flash_scfw flash_b0_scfw: $(MKIMG) mx8qx-ahab-container.img scfw_tcm.bin
 	./$(MKIMG) -soc QX -rev B0 -dcd skip -append mx8qx-ahab-container.img -c -scfw scfw_tcm.bin -out flash.bin
 
+flash_scfw_test flash_b0_scfw_test: $(MKIMG) mx8qx-ahab-container.img scfw_tcm.bin scfw_tests.bin
+	./$(MKIMG) -soc QX -rev B0 -dcd skip -append mx8qx-ahab-container.img -c -scfw scfw_tcm.bin --data scfw_tests.bin 0x100000 -out flash.bin
+
 flash_secofw flash_b0_secofw: $(MKIMG) ahabfw.bin
 	./$(MKIMG) -soc QX -rev B0 -c -seco ahabfw.bin -out flash.bin
 

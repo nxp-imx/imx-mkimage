@@ -167,6 +167,9 @@ flash_aprom_ddr_unsigned: $(MKIMG) $(DCD_CFG) scfw_tcm.bin u-boot-atf.bin aprom_
 flash_b0_scfw: $(MKIMG) mx8qm-ahab-container.img scfw_tcm.bin
 	./$(MKIMG) -soc QM -rev B0 -dcd skip -append mx8qm-ahab-container.img -c -scfw scfw_tcm.bin -out flash.bin
 
+flash_b0_scfw_test: $(MKIMG) mx8qm-ahab-container.img scfw_tcm.bin scfw_tests.bin
+	./$(MKIMG) -soc QM -rev B0 -dcd skip -append mx8qm-ahab-container.img -c -scfw scfw_tcm.bin --data scfw_tests.bin 0x100000 -out flash.bin
+
 flash_b0: $(MKIMG) mx8qm-ahab-container.img scfw_tcm.bin u-boot-atf.bin
 	./$(MKIMG) -soc QM -rev B0 -append mx8qm-ahab-container.img -c -scfw scfw_tcm.bin -ap u-boot-atf.bin a53 0x80000000 -out flash.bin
 

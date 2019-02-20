@@ -31,50 +31,50 @@ $(DCD_CFG): FORCE
 	$(CC) -E -Wp,-MD,.imx8qx_dcd.cfg.cfgtmp.d  -nostdinc -Iinclude -I$(INCLUDE) -DDDR_TRAIN_IN_DCD=$(DDR_TRAIN) -x c -o $(DCD_DDR3_CFG) $(DCD_CFG_DDR3_SRC)
 	$(CC) -E -Wp,-MD,.imx8dx_dcd.cfg.cfgtmp.d  -nostdinc -Iinclude -I$(INCLUDE) -DDDR_TRAIN_IN_DCD=$(DDR_TRAIN) -x c -o $(DCD_DX_DDR3_CFG) $(DCD_CFG_DX_DDR3_SRC)
 
-flash_scfw_a0: $(MKIMG) scfw_tcm.bin
+flash_a0_scfw: $(MKIMG) scfw_tcm.bin
 	./$(MKIMG) -soc QX -c -scfw scfw_tcm.bin -out flash.bin
 
-flash_dcd_a0: $(MKIMG) $(DCD_CFG) scfw_tcm.bin u-boot-atf.bin
+flash_a0_dcd: $(MKIMG) $(DCD_CFG) scfw_tcm.bin u-boot-atf.bin
 	./$(MKIMG) -soc QX -c -dcd $(DCD_CFG) -scfw scfw_tcm.bin -c -ap u-boot-atf.bin a35 0x80000000 -out flash.bin
 
-flash_16bit_dcd_a0: $(MKIMG) $(DCD_CFG) scfw_tcm.bin u-boot-atf.bin
+flash_a0_16bit_dcd: $(MKIMG) $(DCD_CFG) scfw_tcm.bin u-boot-atf.bin
 	./$(MKIMG) -soc QX -c -dcd $(DCD_16BIT_CFG) -scfw scfw_tcm.bin -c -ap u-boot-atf.bin a35 0x80000000 -out flash.bin
 
-flash_ddr3_dcd_a0: $(MKIMG) $(DCD_CFG) scfw_tcm.bin u-boot-atf.bin
+flash_a0_ddr3_dcd: $(MKIMG) $(DCD_CFG) scfw_tcm.bin u-boot-atf.bin
 	./$(MKIMG) -soc QX -c -dcd $(DCD_DDR3_CFG) -scfw scfw_tcm.bin -c -ap u-boot-atf.bin a35 0x80000000 -out flash.bin
 
-flash_dx_ddr3_dcd_a0: $(MKIMG) $(DCD_CFG) scfw_tcm.bin u-boot-atf.bin
+flash_a0_dx_ddr3_dcd: $(MKIMG) $(DCD_CFG) scfw_tcm.bin u-boot-atf.bin
 	./$(MKIMG) -soc QX -c -dcd $(DCD_DX_DDR3_CFG) -scfw scfw_tcm.bin -c -ap u-boot-atf.bin a35 0x80000000 -out flash.bin
 
 flash_a0: $(MKIMG) scfw_tcm.bin u-boot-atf.bin
 	./$(MKIMG) -soc QX -c -scfw scfw_tcm.bin -c -ap u-boot-atf.bin a35 0x80000000 -out flash.bin
 
-flash_cm4_a0: $(MKIMG) $(DCD_CFG) scfw_tcm.bin m4_image.bin
+flash_a0_cm4: $(MKIMG) $(DCD_CFG) scfw_tcm.bin m4_image.bin
 	./$(MKIMG) -soc QX -c -dcd $(DCD_CFG) -scfw scfw_tcm.bin -p1 -m4 m4_image.bin 0 0x34FE0000 -out flash.bin
 
-flash_early_a0: $(MKIMG) scfw_tcm.bin u-boot-atf.bin
+flash_a0_early: $(MKIMG) scfw_tcm.bin u-boot-atf.bin
 	./$(MKIMG) -soc QX -c -flags 0x00400000 -scfw scfw_tcm.bin -c -ap u-boot-atf.bin a35 0x80000000 -out flash.bin
 
-flash_flexspi_a0: $(MKIMG) $(DCD_CFG) scfw_tcm.bin u-boot-atf.bin
+flash_a0_flexspi: $(MKIMG) $(DCD_CFG) scfw_tcm.bin u-boot-atf.bin
 	./$(MKIMG) -soc QX -dev flexspi -c -dcd $(DCD_CFG) -scfw scfw_tcm.bin -c -ap u-boot-atf.bin a35 0x80000000 -out flash.bin
 
-flash_multi_cores_a0: $(MKIMG) $(DCD_CFG) scfw_tcm.bin m40_tcm.bin u-boot-atf.bin
+flash_a0_multi_cores: $(MKIMG) $(DCD_CFG) scfw_tcm.bin m40_tcm.bin u-boot-atf.bin
 	./$(MKIMG) -soc QX -c -dcd $(DCD_CFG) -scfw scfw_tcm.bin -m4 m40_tcm.bin 0 0x34FE0000 -c -ap u-boot-atf.bin a35 0x80000000 -out flash.bin
 
-flash_nand_a0: $(MKIMG) $(DCD_CFG) scfw_tcm.bin u-boot-atf.bin
+flash_a0_nand: $(MKIMG) $(DCD_CFG) scfw_tcm.bin u-boot-atf.bin
 	./$(MKIMG) -soc QX -dev nand -c -dcd $(DCD_CFG) -scfw scfw_tcm.bin -c -ap u-boot-atf.bin a35 0x80000000 -out flash.bin
 
-flash_all_a0: $(MKIMG) $(DCD_CFG) scfw_tcm.bin m4_image.bin u-boot-atf.bin scd.bin csf.bin csf_ap.bin
+flash_a0_all: $(MKIMG) $(DCD_CFG) scfw_tcm.bin m4_image.bin u-boot-atf.bin scd.bin csf.bin csf_ap.bin
 	./$(MKIMG) -soc QX -c -dcd $(DCD_CFG) -scfw scfw_tcm.bin -m4 m4_image.bin 0 0x34FE0000 -scd scd.bin -csf csf.bin -c -ap u-boot-atf.bin a35 0x80000000 -csf csf_ap.bin -out flash.bin
 
-flash_ca35_ddrstress_a0: $(MKIMG) scfw_tcm.bin mx8qx_ddr_stress_test.bin
+flash_a0_ca35_ddrstress: $(MKIMG) scfw_tcm.bin mx8qx_ddr_stress_test.bin
 	./$(MKIMG) -soc QX -c -flags 0x00800000 -scfw scfw_tcm.bin -c -ap mx8qx_ddr_stress_test.bin a35 0x00112000 -out flash.bin
 
-flash_ca35_ddrstress_dcd_a0: $(MKIMG) $(DCD_CFG) scfw_tcm.bin mx8qx_ddr_stress_test.bin
+flash_a0_ca35_ddrstress_dcd: $(MKIMG) $(DCD_CFG) scfw_tcm.bin mx8qx_ddr_stress_test.bin
 	./$(MKIMG) -soc QX -c -flags 0x00800000 -dcd $(DCD_CFG) -scfw scfw_tcm.bin -c -ap mx8qx_ddr_stress_test.bin a35 0x00112000 -out flash.bin
 
-flash_cm4ddr_a0: $(MKIMG) $(DCD_CFG) scfw_tcm.bin m4_image.bin
+flash_a0_cm4ddr: $(MKIMG) $(DCD_CFG) scfw_tcm.bin m4_image.bin
 	./$(MKIMG) -soc QX -c -dcd $(DCD_CFG) -scfw scfw_tcm.bin -p1 -m4 m4_image.bin 0 0x88000000 -out flash.bin
 
-flash_fastboot_a0: $(MKIMG) $(DCD_CFG) scfw_tcm.bin u-boot-atf.bin
+flash_a0_fastboot: $(MKIMG) $(DCD_CFG) scfw_tcm.bin u-boot-atf.bin
 	./$(MKIMG) -soc QX -dev emmc_fast -c -dcd $(DCD_CFG) -scfw scfw_tcm.bin -ap u-boot-atf.bin a35 0x80000000 -out flash.bin

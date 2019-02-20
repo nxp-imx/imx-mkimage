@@ -147,7 +147,7 @@ typedef struct {
 #define SC_R_M4_0_MU_1A 297
 #define SC_R_M4_1_PID0  298
 #define SC_R_M4_1_MU_1A 317
-#define PARTITION_ID_M4 1
+#define PARTITION_ID_M4 0
 #define PARTITION_ID_AP 1
 
 /* Command tags and parameters */

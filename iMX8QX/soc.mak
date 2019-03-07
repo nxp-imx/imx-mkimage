@@ -52,7 +52,7 @@ Image1: Image
 
 .PHONY: clean nightly
 clean:
-	@rm -f $(MKIMG) $(DCD_CFG) .imx8qx_dcd.cfg.cfgtmp.d u-boot-atf-container.img Image0 Image1
+	@rm -f $(MKIMG) $(DCD_CFG) .imx8qx_dcd.cfg.cfgtmp.d u-boot-atf-container.img Image0 Image1 u-boot-atf-container-android.img
 	@echo "imx8qx clean done"
 
 flash: $(MKIMG) mx8qx-ahab-container.img scfw_tcm.bin u-boot-atf.bin

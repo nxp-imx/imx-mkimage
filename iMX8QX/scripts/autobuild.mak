@@ -17,6 +17,8 @@ nightly :
 	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qx/mx8qx-val-scfw-tcm.bin -O scfw_tcm.bin
 	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qx/bl31-imx8qx.bin -O bl31.bin
 	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qx/u-boot-imx8qxplpddr4arm2.bin-sd -O u-boot.bin
+	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qx/u-boot-spl.bin-imx8qxpmek-sd -O u-boot-spl.bin
+	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qx/u-boot-spl.bin-imx8qxpmek-fspi -O u-boot-spl-fspi.bin
 	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qx/m4_image.bin -O m4_image.bin
 	@$(WGET) -qr -nd -l1 -np $(SERVER)/$(DIR) -P boot -A "fsl-imx8qxp-*.dtb"
 	@$(WGET) -q $(SERVER)/$(DIR)/Image-imx8_all.bin -O Image
@@ -30,6 +32,8 @@ nightly_mek :
 	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qx/mx8qx-mek-scfw-tcm.bin -O scfw_tcm.bin
 	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qx/bl31-imx8qx.bin -O bl31.bin
 	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qx/u-boot-imx8qxpmek.bin-sd -O u-boot.bin
+	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qx/u-boot-spl.bin-imx8qxpmek-sd -O u-boot-spl.bin
+	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qx/u-boot-spl.bin-imx8qxpmek-fspi -O u-boot-spl-fspi.bin
 	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qx/m4_image.bin -O m4_image.bin
 	@$(WGET) -qr -nd -l1 -np $(SERVER)/$(DIR) -P boot -A "fsl-imx8qxp-*.dtb"
 	@$(WGET) -q $(SERVER)/$(DIR)/Image-imx8_all.bin -O Image

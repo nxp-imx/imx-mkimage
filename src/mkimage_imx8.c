@@ -762,6 +762,8 @@ int main(int argc, char **argv)
 						param_stack[p_idx].ext = SC_R_DEBUG;
 					else if (!strncmp(argv[optind], "field", 5))
 						param_stack[p_idx].ext = SC_R_ROM_0;
+					else if (!strncmp(argv[optind], "patch", 5))
+						param_stack[p_idx].ext = SC_R_SNVS;
 					else {
 						fprintf(stderr, "ERROR: MSG type not found %s\n", argv[optind+2]);
 						exit(EXIT_FAILURE);
@@ -772,7 +774,7 @@ int main(int argc, char **argv)
 
 					fprintf(stdout, " addr: 0x%08" PRIx64 "\n", param_stack[p_idx++].entry);
 				} else {
-					fprintf(stderr, "\nmsg block option require THREE arguments: filename, debug/fuse/field, start address in hex\n\n");
+					fprintf(stderr, "\nmsg block option require THREE arguments: filename, debug/fuse/field/patch, start address in hex\n\n");
 					exit(EXIT_FAILURE);
 				}
 				break;

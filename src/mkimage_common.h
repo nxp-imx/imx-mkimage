@@ -112,10 +112,12 @@ typedef struct {
 #define SC_R_OTP                  357U
 #define SC_R_DEBUG                354U
 #define SC_R_ROM_0                236U
+#define SC_R_SNVS                 356U
 
 #define MSG_DEBUG_EN    SC_R_DEBUG
 #define MSG_FUSE        SC_R_OTP
 #define MSG_FIELD       SC_R_ROM_0
+#define MSG_PATCH       SC_R_SNVS
 
 #define IMG_TYPE_CSF     0x01   /* CSF image type */
 #define IMG_TYPE_SCD     0x02   /* SCD image type */

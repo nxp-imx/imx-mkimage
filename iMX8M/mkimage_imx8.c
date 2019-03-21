@@ -1580,15 +1580,27 @@ int main(int argc, char **argv)
 		fprintf(stderr, "\nSIGNED HDMI FW:\n");
 		fprintf(stderr, " header_hdmi_off \t0x%x\n",
 			header_hdmi_off);
-	} else {
+	} else if (hdmi_img) {
 		fprintf(stderr, "\nHDMI FW:\n");
 		fprintf(stderr, " header_hdmi_off \t0x%x\n hdmi_off \t\t0x%x\n header_hdmi_2_off \t0x%x\n csf_hdmi_off \t\t0x%x\n",
 			header_hdmi_off, hdmi_off, header_hdmi_2_off, csf_hdmi_off);
 	}
 
-	fprintf(stderr, "\nPLUGIN:\n");
-	fprintf(stderr, " header_plugin_off \t0x%x\n plugin_off \t\t0x%x\n csf_plugin_off \t0x%x\n",
-		header_plugin_off, plugin_off, csf_plugin_off);
+	if (plugin_img) {
+		fprintf(stderr, "\nPLUGIN:\n");
+		fprintf(stderr, " header_plugin_off \t0x%x\n plugin_off \t\t0x%x\n csf_plugin_off \t0x%x\n",
+			header_plugin_off, plugin_off, csf_plugin_off);
+	}
+
+	/* The FLEXSPI configuration parameters will add to flash.bin by script, so need add 0x1000 offset to every offset prints */
+	if (ivt_offset == IVT_OFFSET_FLEXSPI) {
+		header_image_off += ivt_offset;
+		dcd_off += ivt_offset;
+		image_off += ivt_offset;
+		csf_off += ivt_offset;
+		sld_header_off += ivt_offset;
+		sld_csf_off += ivt_offset;
+	}
 
 	fprintf(stderr, "\nLoader IMAGE:\n");
 	fprintf(stderr, " header_image_off \t0x%x\n dcd_off \t\t0x%x\n image_off \t\t0x%x\n csf_off \t\t0x%x\n",

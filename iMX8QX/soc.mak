@@ -53,6 +53,7 @@ Image1: Image
 .PHONY: clean nightly
 clean:
 	@rm -f $(MKIMG) $(DCD_CFG) .imx8qx_dcd.cfg.cfgtmp.d u-boot-atf-container.img Image0 Image1
+	@rm -rf extracted_imgs
 	@echo "imx8qx clean done"
 
 flash: $(MKIMG) mx8qx-ahab-container.img scfw_tcm.bin u-boot-atf.bin
@@ -128,6 +129,13 @@ flash_scfw: $(MKIMG) mx8qx-ahab-container.img scfw_tcm.bin
 
 flash_kernel: $(MKIMG) Image fsl-imx8qxp-mek.dtb
 	./$(MKIMG) -soc QX -rev B0 -c -ap Image a35 0x80280000 --data fsl-imx8qxp-mek.dtb 0x83000000 -out flash.bin
+
+parse_container: $(MKIMG) flash.bin
+	./$(MKIMG) -soc QX -rev B0 -parse flash.bin
+
+extract: $(MKIMG) flash.bin
+	./$(MKIMG) -soc QX -rev B0 -extract flash.bin
+
 
 ifneq ($(wildcard scripts/misc.mak),)
 $(info include misc.mak)

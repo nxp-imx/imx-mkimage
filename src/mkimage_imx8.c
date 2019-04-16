@@ -503,9 +503,12 @@ int main(int argc, char **argv)
 {
 	int c;
 	char *ofname = NULL;
+	char *ifname = NULL;
 	bool output = false;
 	bool dcd_skip = false;
 	bool emmc_fastboot = false;
+	bool extract = false;
+	bool parse = false;
 
 	int container = -1;
 	image_t param_stack[IMG_STACK_SIZE];/* stack of input images */
@@ -544,6 +547,8 @@ int main(int argc, char **argv)
 		{"fuse_version", required_argument, NULL, 'u'},
 		{"sw_version", required_argument, NULL, 'v'},
 		{"images_hash", required_argument, NULL, 'h'},
+		{"extract", required_argument, NULL, 'X'},
+		{"parse", required_argument, NULL, 'R'},
 		{NULL, 0, NULL, 0}
 	};
 
@@ -787,6 +792,16 @@ int main(int argc, char **argv)
 			case 'h':
 				images_hash = optarg;
 				break;
+			case 'X':
+				fprintf(stdout, "Input container binary to be deconstructed: %s\n", optarg);
+				ifname = optarg;
+				extract = true;
+				break;
+			case 'R':
+				fprintf(stdout, "Input container binary to be parsed: %s\n", optarg);
+				ifname = optarg;
+				parse = true;
+				break;
 			case '?':
 			default:
 				/* invalid option */
@@ -804,6 +819,11 @@ int main(int argc, char **argv)
 	if(soc == NONE){
 		fprintf(stderr, " No SOC defined");
 		exit(EXIT_FAILURE);
+	}
+
+	if (parse || extract) {
+		parse_container_hdrs_qx_qm_b0(ifname, extract, soc);
+		return 0;
 	}
 
 	if(container < 0)

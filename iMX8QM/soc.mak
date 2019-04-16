@@ -63,6 +63,7 @@ u-boot-atf-container.img: bl31.bin u-boot-hash.bin
 .PHONY: clean
 clean:
 	@rm -f $(DCD_CFG) .imx8_dcd.cfg.cfgtmp.d $(DCD_800_CFG) $(DCD_1200_CFG) .imx8qm_dcd_800.cfg.cfgtmp.d .imx8qm_dcd.cfg.cfgtmp.d .imx8qm_dcd_1200.cfg.cfgtmp.d head.hash u-boot-hash.bin u-boot-atf.itb u-boot-atf-container.img u-boot-atf-hdmi.bin hdmitxfw-pad.bin hdmirxfw-pad.bin
+	@rm -rf extracted_imgs
 	@echo "imx8qm clean done"
 
 flash: $(MKIMG) mx8qm-ahab-container.img scfw_tcm.bin u-boot-atf.bin
@@ -142,6 +143,12 @@ flash_kernel: $(MKIMG) Image fsl-imx8qm-mek.dtb
 
 flash_ca72: $(MKIMG) mx8qm-ahab-container.img scfw_tcm.bin u-boot-atf.bin
 	./$(MKIMG) -soc QM -rev B0 -append mx8qm-ahab-container.img -c -scfw scfw_tcm.bin -ap u-boot-atf.bin a72 0x80000000 -out flash.bin
+
+parse_container: $(MKIMG) flash.bin
+	./$(MKIMG) -soc QM -rev B0 -parse flash.bin
+
+extract: $(MKIMG) flash.bin
+	./$(MKIMG) -soc QM -rev B0 -extract flash.bin
 
 ifneq ($(wildcard scripts/misc.mak),)
 $(info include misc.mak)

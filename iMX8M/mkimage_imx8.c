@@ -1104,6 +1104,11 @@ int main(int argc, char **argv)
 	}
 
 	if (version == ROM_V2) {
+
+		/* On V2, flexspi IVT offset is 0, image offset is 0x1000 */
+		if (ivt_offset == IVT_OFFSET_FLEXSPI)
+			rom_image_offset = IVT_OFFSET_FLEXSPI;
+
 		/* V2 ROM set IVT offset to 0 for all boot devices */
 		ivt_offset = 0;
 

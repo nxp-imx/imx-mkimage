@@ -175,6 +175,10 @@ flash_evk_flexspi: $(MKIMG) u-boot-spl-ddr.bin u-boot.itb
 	./mkimage_imx8 -version $(VERSION) -dev flexspi -fit -loader u-boot-spl-ddr.bin $(SPL_FSPI_LOAD_ADDR) -second_loader u-boot.itb 0x40200000 0x60000 -out $(OUTIMG)
 	./$(QSPI_PACKER) $(QSPI_HEADER)
 
+flash_ddr4_evk_flexspi: $(MKIMG) u-boot-spl-ddr4.bin u-boot-ddr4-evk.itb
+	./mkimage_imx8 -version $(VERSION) -dev flexspi -fit -loader u-boot-spl-ddr4.bin $(SPL_FSPI_LOAD_ADDR) -second_loader u-boot-ddr4-evk.itb 0x40200000 0x60000 -out $(OUTIMG)
+	./$(QSPI_PACKER) $(QSPI_HEADER)
+
 flash_hdmi_spl_uboot: flash_evk
 
 flash_dp_spl_uboot: flash_dp_evk

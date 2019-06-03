@@ -12,12 +12,18 @@ if [ -z "$ATF_LOAD_ADDR" ]; then
 	exit 0
 fi
 
+if [ "$VERSION" = "v1" ]; then
+	let ivt_off=0x400
+else
+	let ivt_off=0x0
+fi
+
 if [ "$BOOT_DEV" = "flexspi" ]; then
 	# We dd flash.bin to 0 offset for flexspi
 	let uboot_sign_off=$((fit_off + 0x3000))
 else
 	# We dd flash.bin to 33KB "0x8400" offset, so need minus 0x8400
-	let uboot_sign_off=$((fit_off - 0x8400 + 0x3000))
+	let uboot_sign_off=$((fit_off - 0x8000 - ivt_off + 0x3000))
 fi
 
 let uboot_size=$(ls -lct u-boot-nodtb.bin | awk '{print $5}')

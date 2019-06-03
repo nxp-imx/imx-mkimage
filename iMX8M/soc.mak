@@ -187,11 +187,15 @@ flash_spl_uboot: flash_evk_no_hdmi
 
 print_fit_hab: u-boot-nodtb.bin bl31.bin $(dtbs)
 	./$(PAD_IMAGE) bl31.bin
-	TEE_LOAD_ADDR=$(TEE_LOAD_ADDR) ATF_LOAD_ADDR=$(ATF_LOAD_ADDR) ./print_fit_hab.sh 0x60000 $(dtbs)
+	TEE_LOAD_ADDR=$(TEE_LOAD_ADDR) ATF_LOAD_ADDR=$(ATF_LOAD_ADDR) VERSION=$(VERSION) ./print_fit_hab.sh 0x60000 $(dtbs)
+
+print_fit_hab_ddr4: u-boot-nodtb.bin bl31.bin $(dtbs_ddr4_evk)
+	./$(PAD_IMAGE) bl31.bin
+	TEE_LOAD_ADDR=$(TEE_LOAD_ADDR) ATF_LOAD_ADDR=$(ATF_LOAD_ADDR) VERSION=$(VERSION) ./print_fit_hab.sh 0x60000 $(dtbs_ddr4_evk)
 
 print_fit_hab_flexspi: u-boot-nodtb.bin bl31.bin $(dtbs)
 	./$(PAD_IMAGE) bl31.bin
-	TEE_LOAD_ADDR=$(TEE_LOAD_ADDR) ATF_LOAD_ADDR=$(ATF_LOAD_ADDR) BOOT_DEV="flexspi" ./print_fit_hab.sh 0x60000 $(dtbs)
+	TEE_LOAD_ADDR=$(TEE_LOAD_ADDR) ATF_LOAD_ADDR=$(ATF_LOAD_ADDR) VERSION=$(VERSION) BOOT_DEV="flexspi" ./print_fit_hab.sh 0x60000 $(dtbs)
 
 nightly :
 	@echo "Pulling nightly for $(PLAT) evk board from $(SERVER)/$(DIR)"

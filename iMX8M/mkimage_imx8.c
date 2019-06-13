@@ -937,6 +937,7 @@ int main(int argc, char **argv)
 	uint32_t header_hdmi_off = 0, header_hdmi_2_off = 0, header_plugin_off = 0, header_image_off = 0, dcd_off = 0;
 	uint32_t sld_header_off = 0;
 	int using_fit = 0;
+	int gen_fit_ivt = 0;
 	dcd_v2_t dcd_table;
 	uimage_header_t uimage_hdr;
 	uint32_t version = ROM_V1;
@@ -956,6 +957,7 @@ int main(int argc, char **argv)
 		{"csf", required_argument, NULL, 'c'},
 		{"second_loader", required_argument, NULL, 'u'},
 		{"version", required_argument, NULL, 'v'},
+		{"fit_ivt", required_argument, NULL, 't'},
 		{NULL, 0, NULL, 0}
 	};
 
@@ -968,7 +970,7 @@ int main(int argc, char **argv)
 		/* getopt_long stores the option index here. */
 		int option_index = 0;
 
-		c = getopt_long_only (argc, argv, ":i:f:d:o:p:h:q:m:e:b:",
+		c = getopt_long_only (argc, argv, ":i:f:d:o:p:h:q:m:e:b:t:",
 			long_options, &option_index);
 
 		/* Detect the end of the options. */
@@ -1079,6 +1081,21 @@ int main(int argc, char **argv)
 					exit(1);
 				}
 				break;
+			case 't':
+				fprintf(stderr, "FIT IMAGE:\t%s", optarg);
+				sld_img = optarg;
+				if ((optind < argc && *argv[optind] != '-') && (optind+1 < argc &&*argv[optind+1] != '-' )) {
+					sld_start_addr = (uint32_t) strtoll(argv[optind++], NULL, 0);
+					sld_src_off = (uint32_t) strtoll(argv[optind++], NULL, 0);
+					gen_fit_ivt = 1;
+
+					fprintf(stderr, " start addr: 0x%08x", sld_start_addr);
+					fprintf(stderr, " offset: 0x%08x\n", sld_src_off);
+				} else {
+					fprintf(stderr, "\n-fit_ivt option require TWO arguments: filename, start address in hex\n\n");
+					exit(1);
+				}
+				break;
 			case ':':
 				fprintf(stderr, "option %c missing arguments\n", optopt);
 				break;
@@ -1089,6 +1106,31 @@ int main(int argc, char **argv)
 					optopt);
 				exit(1);
 		}
+	}
+
+	if (gen_fit_ivt) {
+		/* Open output file */
+		ofd = open (ofname, O_RDWR|O_CREAT|O_TRUNC|O_BINARY, 0666);
+		if (ofd < 0) {
+			fprintf(stderr, "%s: Can't open: %s\n",
+	                                ofname, strerror(errno));
+			exit(EXIT_FAILURE);
+		}
+
+		/* Write image header */
+		copy_file(ofd, sld_img, 0, sld_src_off, 0);
+		sld_csf_off = generate_ivt_for_fit(ofd, sld_src_off, sld_start_addr, &sld_load_addr) + 0x20;
+
+		/* Close output file */
+		close(ofd);
+
+		fprintf(stderr, "\nFIT IVT IMAGE:\n");
+		fprintf(stderr, " fit_csf_off \t\t0x%x\n",
+			sld_csf_off);
+		fprintf(stderr, " fit hab block: \t0x%x 0x%x 0x%x\n",
+			sld_load_addr, sld_src_off, sld_csf_off - sld_src_off);
+
+		exit(0);
 	}
 
 	if((ap_img == NULL) || (ofname == NULL))

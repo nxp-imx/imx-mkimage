@@ -1598,13 +1598,14 @@ int main(int argc, char **argv)
 	}
 
 	/* The FLEXSPI configuration parameters will add to flash.bin by script, so need add 0x1000 offset to every offset prints */
-	if (ivt_offset == IVT_OFFSET_FLEXSPI) {
-		header_image_off += ivt_offset;
-		dcd_off += ivt_offset;
-		image_off += ivt_offset;
-		csf_off += ivt_offset;
-		sld_header_off += ivt_offset;
-		sld_csf_off += ivt_offset;
+	if ((version == ROM_V2 && rom_image_offset == IVT_OFFSET_FLEXSPI) || 
+        (version == ROM_V1 && ivt_offset == IVT_OFFSET_FLEXSPI)) {
+		header_image_off += IVT_OFFSET_FLEXSPI;
+		dcd_off += IVT_OFFSET_FLEXSPI;
+		image_off += IVT_OFFSET_FLEXSPI;
+		csf_off += IVT_OFFSET_FLEXSPI;
+		sld_header_off += IVT_OFFSET_FLEXSPI;
+		sld_csf_off += IVT_OFFSET_FLEXSPI;
 	}
 
 	fprintf(stderr, "\nLoader IMAGE:\n");

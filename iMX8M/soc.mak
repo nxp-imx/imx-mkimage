@@ -29,7 +29,7 @@ TEE_LOAD_ADDR = 0xbe000000
 ATF_LOAD_ADDR = 0x00920000
 VAL_BOARD = val
 #define the F(Q)SPI header file
-QSPI_HEADER = ../scripts/fspi_header
+QSPI_HEADER = ../scripts/fspi_header 0
 QSPI_PACKER = ../scripts/fspi_packer.sh
 VERSION = v1
 else ifeq ($(SOC),iMX8MN)

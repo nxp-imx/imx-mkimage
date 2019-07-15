@@ -48,6 +48,19 @@ QSPI_HEADER = ../scripts/fspi_header
 QSPI_PACKER = ../scripts/fspi_packer.sh
 VERSION = v2
 DDR_FW_VERSION = _201810
+else ifeq ($(SOC),iMX8MP)
+PLAT = imx8mp
+HDMI = no
+SPL_LOAD_ADDR = 0x920000
+SPL_FSPI_LOAD_ADDR = 0x920000
+TEE_LOAD_ADDR = 0xfe000000
+ATF_LOAD_ADDR = 0x00960000
+VAL_BOARD = val
+#define the F(Q)SPI header file
+QSPI_HEADER = ../scripts/fspi_header
+QSPI_PACKER = ../scripts/fspi_packer.sh
+VERSION = v2
+DDR_FW_VERSION = _201810
 else
 PLAT = imx8mq
 HDMI = yes

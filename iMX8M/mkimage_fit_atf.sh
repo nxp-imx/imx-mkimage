@@ -115,6 +115,17 @@ cnt=1
 for dtname in $*
 do
 if [ -f $BL32 ]; then
+if [ $ROLLBACK_INDEX_IN_FIT ]; then
+cat << __CONF_SECTION_EOF
+		config@$cnt {
+			description = "$(basename $dtname .dtb)";
+			firmware = "uboot@1";
+			loadables = "atf@1", "tee@1";
+			fdt = "fdt@$cnt";
+			rbindex = "$ROLLBACK_INDEX_IN_FIT";
+		};
+__CONF_SECTION_EOF
+else
 cat << __CONF_SECTION_EOF
 		config@$cnt {
 			description = "$(basename $dtname .dtb)";
@@ -123,6 +134,7 @@ cat << __CONF_SECTION_EOF
 			fdt = "fdt@$cnt";
 		};
 __CONF_SECTION_EOF
+fi
 else
 cat << __CONF_SECTION1_EOF
 		config@$cnt {

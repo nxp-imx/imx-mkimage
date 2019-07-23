@@ -18,7 +18,7 @@ else
 	let ivt_off=0x0
 fi
 
-if [ "$BOOT_DEV" = "flexspi" ]; then
+if [ "$BOOT_DEV" = "flexspi" ] || [ ${fit_off} == 0 ]; then
 	# We dd flash.bin to 0 offset for flexspi
 	let uboot_sign_off=$((fit_off + 0x3000))
 else

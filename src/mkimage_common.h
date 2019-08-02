@@ -69,7 +69,8 @@ typedef enum REVISION_TYPE {
 typedef enum SOC_TYPE {
     NONE = 0,
     QX,
-    QM
+    QM,
+    DXL,
 } soc_type_t;
 
 typedef struct {

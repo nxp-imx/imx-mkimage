@@ -588,6 +588,10 @@ int main(int argc, char **argv)
 					soc = QX;
 				else if (!strncmp(optarg, "QM", 2))
 					soc = QM;
+				else if (!strncmp(optarg, "DXL", 3)) {
+					soc = DXL;
+					sector_size = 0x400;
+				}
 				else{
 					fprintf(stdout, "unrecognized SOC: %s \n",optarg);
 					exit(EXIT_FAILURE);
@@ -620,7 +624,7 @@ int main(int argc, char **argv)
 				break;
 			case 'd':
 				fprintf(stdout, "DCD:\t%s\n", optarg);
-				if (rev == B0) {
+				if ((rev == B0) || (soc == DXL)) {
 					if (!strncmp(optarg, "skip", 4)) {
 						dcd_skip = true;
 					} else {
@@ -634,7 +638,7 @@ int main(int argc, char **argv)
 				}
 				break;
 			case 'D':
-				if (rev == B0) {
+				if ((rev == B0) || (soc == DXL)) {
 					fprintf(stdout, "Data:\t%s\n", optarg);
 					param_stack[p_idx].option = DATA;
 					param_stack[p_idx].filename = optarg;
@@ -717,7 +721,7 @@ int main(int argc, char **argv)
 					ivt_offset = IVT_OFFSET_SD;
 				} else if (!strcmp(optarg, "nand")) {
 					sector_size = 0x8000;/* sector size for NAND */
-					if (rev == B0) {
+					if ((rev == B0) || (soc == DXL)) {
 						if (optind < argc && *argv[optind] != '-') {
 							if (!strcmp(argv[optind], "4K")) {
 								sector_size = 0x1000;
@@ -861,6 +865,9 @@ int main(int argc, char **argv)
 				build_container_qx_qm_b0(soc, sector_size, ivt_offset, ofname, emmc_fastboot, (image_t *) param_stack, dcd_skip, fuse_version, sw_version, images_hash);
 			else
 				build_container_qm(sector_size, ivt_offset, ofname, emmc_fastboot, (image_t *) param_stack);
+			break;
+		case DXL:
+			build_container_qx_qm_b0(soc, sector_size, ivt_offset, ofname, emmc_fastboot, (image_t *) param_stack, dcd_skip, fuse_version, sw_version, images_hash);
 			break;
 		default:
 			fprintf(stderr, " unrecognized SOC defined");

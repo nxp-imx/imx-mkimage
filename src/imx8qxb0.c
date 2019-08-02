@@ -56,8 +56,6 @@
 
 #define MAX_NUM_OF_CONTAINER		2
 
-#define FIRST_CONTAINER_HEADER_LENGTH	0x400
-
 #define BOOT_IMG_META_MU_RID_SHIFT	10
 #define BOOT_IMG_META_PART_ID_SHIFT	20
 
@@ -427,7 +425,7 @@ void set_image_array_entry(flash_header_v3_t *container, soc_type_t soc,
 		img->entry = 0x20000000;
 		break;
 	case AP:
-		if (soc == QX && core == CORE_CA35)
+		if ((soc == QX || soc == DXL) && core == CORE_CA35)
 			meta = IMAGE_A35_DEFAULT_META(custom_partition);
 		else if (soc == QM && core == CORE_CA53)
 			meta = IMAGE_A53_DEFAULT_META(custom_partition);
@@ -523,7 +521,7 @@ void set_container(flash_header_v3_t *container,  uint16_t sw_version,
 	printf("flags: 0x%x\n", container->flags);
 }
 
-int get_container_image_start_pos(image_t *image_stack, uint32_t align)
+int get_container_image_start_pos(image_t *image_stack, uint32_t align, soc_type_t soc, uint32_t *scu_cont_hdr_off)
 {
 	image_t *img_sp = image_stack;
     /*8K total container header*/
@@ -539,6 +537,14 @@ int get_container_image_start_pos(image_t *image_stack, uint32_t align)
 				break;
 			}
 
+			if (soc == DXL) {
+				/* Skip SECO container, jump to V2X container */
+				if(lseek(ofd, CONTAINER_ALIGNMENT, SEEK_SET) < 0) {
+					printf("Failure Skip SECO header \n");
+					exit(EXIT_FAILURE);
+				}
+			}
+
 			if(read(ofd, &header, sizeof(header)) != sizeof(header)) {
 				printf("Failure Read header \n");
 				exit(EXIT_FAILURE);
@@ -551,7 +557,14 @@ int get_container_image_start_pos(image_t *image_stack, uint32_t align)
 			} else if (header.num_images == 0) {
 				printf("image num is 0 \n");
 			} else {
-				file_off += header.img[header.num_images - 1].size;
+				file_off = header.img[header.num_images - 1].offset + header.img[header.num_images - 1].size;
+				if (soc == DXL) {
+					file_off += CONTAINER_ALIGNMENT;
+					*scu_cont_hdr_off = CONTAINER_ALIGNMENT + ALIGN(header.length, CONTAINER_ALIGNMENT);
+				}
+				else {
+					*scu_cont_hdr_off = CONTAINER_ALIGNMENT;
+				}
 				file_off = ALIGN(file_off, align);
 			}
 		}
@@ -592,13 +605,15 @@ int build_container_qx_qm_b0(soc_type_t soc, uint32_t sector_size, uint32_t ivt_
 		fprintf(stdout, "Platform:\ti.MX8QXP B0\n");
 	else if (soc == QM)
 		fprintf(stdout, "Platform:\ti.MX8QM B0\n");
+	else if (soc == DXL)
+		fprintf(stdout, "Platform:\ti.MX8DXL A0\n");
 
 	set_imx_hdr_v3(&imx_header, dcd_len, ivt_offset, INITIAL_LOAD_ADDR_SCU_ROM, 0);
 	set_imx_hdr_v3(&imx_header, 0, ivt_offset, INITIAL_LOAD_ADDR_AP_ROM, 1);
 
 	printf("ivt_offset:\t%d\n", ivt_offset);
 
-	file_off = get_container_image_start_pos(image_stack, sector_size);
+	file_off = get_container_image_start_pos(image_stack, sector_size, soc, &file_padding);
 	printf("container image offset (aligned):%x\n", file_off);
 
 	/* step through image stack and generate the header */
@@ -705,7 +720,6 @@ int build_container_qx_qm_b0(soc_type_t soc, uint32_t sector_size, uint32_t ivt_
 	do {
 		if (img_sp->option == APPEND) {
 			copy_file(ofd, img_sp->filename, 0, 0);
-			file_padding += FIRST_CONTAINER_HEADER_LENGTH;
 		}
 		img_sp++;
 	} while (img_sp->option != NO_IMG);

@@ -182,6 +182,7 @@ struct fdt_header {
 
 #define FDT_MAGIC	0xd00dfeed
 #define CSF_SIZE 0x2000
+#define DEK_BLOB_MAX_SIZE 0x60
 
 #define ROM_V1 1
 #define ROM_V2 2 /* V2 ROM for iMX8MN */
@@ -1418,10 +1419,10 @@ int main(int argc, char **argv)
 	} else {
 		imx_header[IMAGE_IVT_ID].fhdr.csf = imx_header[IMAGE_IVT_ID].boot_data.start + imx_header[IMAGE_IVT_ID].boot_data.size;
 
-		imx_header[IMAGE_IVT_ID].boot_data.size += CSF_SIZE; /* 8K region dummy CSF */
+		imx_header[IMAGE_IVT_ID].boot_data.size += CSF_SIZE + DEK_BLOB_MAX_SIZE; /* 8K region dummy CSF */
 
 		csf_off = file_off;
-		file_off += CSF_SIZE;
+		file_off += CSF_SIZE + DEK_BLOB_MAX_SIZE;
 	}
 
 	/* Second boot loader image */

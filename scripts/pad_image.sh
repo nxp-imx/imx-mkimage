@@ -2,7 +2,7 @@
 
 if [ -f $1 ]; then
 	let size=$(wc -c $1 | awk '{print $1}')
-	let padded_size=$(((size + 7) & ~7))
+	let padded_size=$(((size + 15) & ~15))
 
 	if [ ${size} != ${padded_size} ]
 	then

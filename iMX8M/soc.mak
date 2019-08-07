@@ -113,11 +113,7 @@ clean:
 dtbs = fsl-$(PLAT)-evk.dtb
 u-boot.itb: $(dtbs)
 	./$(PAD_IMAGE) bl31.bin
-	if [ $(shell echo $(ROLLBACK_INDEX_IN_FIT)) ]; then \
-		TEE_LOAD_ADDR=$(TEE_LOAD_ADDR) ATF_LOAD_ADDR=$(ATF_LOAD_ADDR) ROLLBACK_INDEX_IN_FIT=$(ROLLBACK_INDEX_IN_FIT) ./mkimage_fit_atf.sh $(dtbs) > u-boot.its; \
-	else \
-		TEE_LOAD_ADDR=$(TEE_LOAD_ADDR) ATF_LOAD_ADDR=$(ATF_LOAD_ADDR) ./mkimage_fit_atf.sh $(dtbs) > u-boot.its; \
-	fi;
+	TEE_LOAD_ADDR=$(TEE_LOAD_ADDR) ATF_LOAD_ADDR=$(ATF_LOAD_ADDR) ./mkimage_fit_atf.sh $(dtbs) > u-boot.its
 	./mkimage_uboot -E -p 0x3000 -f u-boot.its u-boot.itb
 	@rm -f u-boot.its
 
@@ -136,11 +132,7 @@ u-boot-ddr4.itb: $(dtbs_ddr4)
 dtbs_ddr4_evk = fsl-$(PLAT)-ddr4-evk.dtb
 u-boot-ddr4-evk.itb: $(dtbs_ddr4_evk)
 	./$(PAD_IMAGE) bl31.bin
-	if [ $(shell echo $(ROLLBACK_INDEX_IN_FIT)) ]; then \
-		TEE_LOAD_ADDR=$(TEE_LOAD_ADDR) ATF_LOAD_ADDR=$(ATF_LOAD_ADDR) ./mkimage_fit_atf.sh $(dtbs_ddr4_evk) > u-boot-ddr4-evk.its; \
-	else \
-		TEE_LOAD_ADDR=$(TEE_LOAD_ADDR) ATF_LOAD_ADDR=$(ATF_LOAD_ADDR) ROLLBACK_INDEX_IN_FIT=$(ROLLBACK_INDEX_IN_FIT) ./mkimage_fit_atf.sh $(dtbs_ddr4_evk) > u-boot-ddr4-evk.its; \
-	fi;
+	TEE_LOAD_ADDR=$(TEE_LOAD_ADDR) ATF_LOAD_ADDR=$(ATF_LOAD_ADDR) ./mkimage_fit_atf.sh $(dtbs_ddr4_evk) > u-boot-ddr4-evk.its
 	./mkimage_uboot -E -p 0x3000 -f u-boot-ddr4-evk.its u-boot-ddr4-evk.itb
 
 ifeq ($(HDMI),yes)

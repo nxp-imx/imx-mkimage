@@ -65,6 +65,23 @@ cat << __HEADER_EOF
 			compression = "none";
 			load = <0x40200000>;
 		};
+__HEADER_EOF
+
+cnt=1
+for dtname in $*
+do
+	cat << __FDT_IMAGE_EOF
+		fdt@$cnt {
+			description = "$(basename $dtname .dtb)";
+			data = /incbin/("$dtname");
+			type = "flat_dt";
+			compression = "none";
+		};
+__FDT_IMAGE_EOF
+cnt=$((cnt+1))
+done
+
+cat << __HEADER_EOF
 		atf@1 {
 			description = "ARM Trusted Firmware";
 			data = /incbin/("$BL31");
@@ -89,20 +106,6 @@ cat << __HEADER_EOF
 		};
 __HEADER_EOF
 fi
-
-cnt=1
-for dtname in $*
-do
-	cat << __FDT_IMAGE_EOF
-		fdt@$cnt {
-			description = "$(basename $dtname .dtb)";
-			data = /incbin/("$dtname");
-			type = "flat_dt";
-			compression = "none";
-		};
-__FDT_IMAGE_EOF
-cnt=$((cnt+1))
-done
 
 cat << __CONF_HEADER_EOF
 	};

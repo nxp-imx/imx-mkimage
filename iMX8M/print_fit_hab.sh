@@ -29,43 +29,14 @@ fi
 let uboot_size=$(ls -lct u-boot-nodtb.bin | awk '{print $5}')
 let uboot_load_addr=0x40200000
 
-let atf_sign_off=$(((uboot_sign_off + uboot_size + 3) & ~3))
-let atf_load_addr=$ATF_LOAD_ADDR
-let atf_size=$(ls -lct bl31.bin | awk '{print $5}')
-
-if [ ! -f $BL32 ]; then
-	let tee_size=0x0
-	let tee_sign_off=$((atf_sign_off + atf_size))
-else
-	let tee_size=$(ls -lct tee.bin | awk '{print $5}')
-
-	let tee_sign_off=$(((atf_sign_off + atf_size + 3) & ~3))
-	let tee_load_addr=$TEE_LOAD_ADDR
-fi
-
-let last_sign_off=$(((tee_sign_off + tee_size + 3) & ~3))
-let last_size=$((tee_size))
+let last_sign_off=$(((uboot_sign_off + uboot_size + 3) & ~3))
 let last_load_addr=$((uboot_load_addr + uboot_size))
 
 uboot_size=`printf "0x%X" ${uboot_size}`
 uboot_sign_off=`printf "0x%X" ${uboot_sign_off}`
 uboot_load_addr=`printf "0x%X" ${uboot_load_addr}`
 
-tee_size=`printf "0x%X" ${tee_size}`
-tee_sign_off=`printf "0x%X" ${tee_sign_off}`
-tee_load_addr=`printf "0x%X" ${tee_load_addr}`
-
-atf_size=`printf "0x%X" ${atf_size}`
-atf_sign_off=`printf "0x%X" ${atf_sign_off}`
-atf_load_addr=`printf "0x%X" ${atf_load_addr}`
-
 echo ${uboot_load_addr} ${uboot_sign_off} ${uboot_size}
-echo ${atf_load_addr} ${atf_sign_off} ${atf_size}
-
-if [ ${tee_size} != 0x0 ]
-then
-	echo ${tee_load_addr} ${tee_sign_off} ${tee_size}
-fi
 
 cnt=0
 for dtname in $*
@@ -90,3 +61,32 @@ do
 
 	cnt=$((cnt+1))
 done
+
+let atf_sign_off=$((last_sign_off))
+let atf_load_addr=$ATF_LOAD_ADDR
+let atf_size=$(ls -lct bl31.bin | awk '{print $5}')
+
+if [ ! -f $BL32 ]; then
+	let tee_size=0x0
+	let tee_sign_off=$((atf_sign_off + atf_size))
+else
+	let tee_size=$(ls -lct tee.bin | awk '{print $5}')
+
+	let tee_sign_off=$(((atf_sign_off + atf_size + 3) & ~3))
+	let tee_load_addr=$TEE_LOAD_ADDR
+fi
+
+tee_size=`printf "0x%X" ${tee_size}`
+tee_sign_off=`printf "0x%X" ${tee_sign_off}`
+tee_load_addr=`printf "0x%X" ${tee_load_addr}`
+
+atf_size=`printf "0x%X" ${atf_size}`
+atf_sign_off=`printf "0x%X" ${atf_sign_off}`
+atf_load_addr=`printf "0x%X" ${atf_load_addr}`
+
+echo ${atf_load_addr} ${atf_sign_off} ${atf_size}
+
+if [ ${tee_size} != 0x0 ]
+then
+	echo ${tee_load_addr} ${tee_sign_off} ${tee_size}
+fi

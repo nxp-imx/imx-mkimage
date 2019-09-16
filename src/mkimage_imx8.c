@@ -536,6 +536,7 @@ int main(int argc, char **argv)
 		{"csf", required_argument, NULL, 'z'},
 		{"dev", required_argument, NULL, 'e'},
 		{"soc", required_argument, NULL, 's'},
+		{"dummy",required_argument, NULL, 'y'},
 		{"rev", required_argument, NULL, 'r'},
 		{"container", no_argument, NULL, 'c'},
 		{"partition", required_argument, NULL, 'p'},
@@ -805,6 +806,11 @@ int main(int argc, char **argv)
 				fprintf(stdout, "Input container binary to be parsed: %s\n", optarg);
 				ifname = optarg;
 				parse = true;
+				break;
+			case 'y':
+				fprintf(stdout, "Dummy V2X image at:\t%s\n", optarg);
+				param_stack[p_idx].option = DUMMY_V2X;
+				param_stack[p_idx++].entry = (uint64_t) strtoll(optarg, NULL, 0);
 				break;
 			case '?':
 			default:

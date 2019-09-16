@@ -54,7 +54,7 @@
 
 #define SIGNATURE_BLOCK_HEADER_LENGTH	0x10
 
-#define MAX_NUM_OF_CONTAINER		2
+#define MAX_NUM_OF_CONTAINER		3
 
 #define BOOT_IMG_META_MU_RID_SHIFT	10
 #define BOOT_IMG_META_PART_ID_SHIFT	20
@@ -418,7 +418,9 @@ void set_image_array_entry(flash_header_v3_t *container, soc_type_t soc,
 	img->offset = offset;  /* Is re-adjusted later */
 	img->size = size;
 
-	set_image_hash(img, tmp_filename, get_hash_algo(images_hash));
+	if (type != DUMMY_V2X) { /* skip hash generation here if dummy image */
+		set_image_hash(img, tmp_filename, get_hash_algo(images_hash));
+	}
 
 	switch(type) {
 	case SECO:
@@ -509,6 +511,15 @@ void set_image_array_entry(flash_header_v3_t *container, soc_type_t soc,
 			img->dst = img->entry - 1;
 		}
 		break;
+	case DUMMY_V2X:
+		img->hab_flags |= IMG_TYPE_V2X_DUMMY;
+		img->hab_flags |= CORE_SC << BOOT_IMG_FLAGS_CORE_SHIFT;
+		tmp_name = "V2X Dummy";
+		set_image_hash(img, "/dev/null", IMAGE_HASH_ALGO_DEFAULT);
+		img->dst = entry;
+		img->entry = entry;
+		img->size = 0; /* dummy image has no size */
+		break;
 	default:
 		fprintf(stderr, "unrecognized image type (%d)\n", type);
 		exit(EXIT_FAILURE);
@@ -563,7 +574,7 @@ int get_container_image_start_pos(image_t *image_stack, uint32_t align, soc_type
 			close(ofd);
 
 			if (header.tag != IVT_HEADER_TAG_B0) {
-				printf("header tag missmatched \n");
+				printf("header tag missmatched %x\n", header.tag);
 			} else if (header.num_images == 0) {
 				printf("image num is 0 \n");
 			} else {
@@ -653,6 +664,25 @@ int build_container_qx_qm_b0(soc_type_t soc, uint32_t sector_size, uint32_t ivt_
 			img_sp->src = file_off;
 
 			file_off += ALIGN(sbuf.st_size, sector_size);
+			cont_img_count++;
+			break;
+
+		case DUMMY_V2X:
+			if (container < 0) {
+				fprintf(stderr, "No container found\n");
+				exit(EXIT_FAILURE);
+			}
+			tmp_filename = "dummy";
+			set_image_array_entry(&imx_header.fhdr[container],
+						soc,
+						img_sp,
+						file_off,
+						0,
+						tmp_filename,
+						dcd_skip,
+						images_hash);
+			img_sp->src = file_off;
+
 			cont_img_count++;
 			break;
 
@@ -801,6 +831,18 @@ img_flags_t parse_image_flags(uint32_t flags, char *flag_list)
 	case 0x8:
 		strcat(flag_list, "DEK validation");
 		break;
+	case 0xB:
+		strcat(flag_list, "Primary V2X FW image");
+		break;
+	case 0xC:
+		strcat(flag_list, "Secondary V2X FW image");
+		break;
+	case 0xD:
+		strcat(flag_list, "V2X ROM Patch image");
+		break;
+	case 0xE:
+		strcat(flag_list, "V2X Dummy image");
+		break;
 	default:
 		strcat(flag_list, "Invalid img type");
 		break;
@@ -830,6 +872,12 @@ img_flags_t parse_image_flags(uint32_t flags, char *flag_list)
 		break;
 	case CORE_SECO:
 		strcat(flag_list, "CORE_SECO");
+		break;
+	case CORE_V2X_P:
+		strcat(flag_list, "CORE_V2X_P");
+		break;
+	case CORE_V2X_S:
+		strcat(flag_list, "CORE_V2X_S");
 		break;
 	default:
 		strcat(flag_list, "Invalid core id");
@@ -921,6 +969,18 @@ void print_image_array_fields(flash_header_v3_t *container_hdrs)
 		case 0x8:
 			strcpy(img_name, "DEK Validation");
 			break;
+		case 0xB:
+			strcpy(img_name, "Primary V2X FW image");
+			break;
+		case 0xC:
+			strcpy(img_name, "Secondary V2X FW image");
+			break;
+		case 0xD:
+			strcpy(img_name, "V2X ROM Patch image");
+			break;
+		case 0xE:
+			strcpy(img_name, "V2X Dummy image");
+			break;
 		default:
 			strcpy(img_name, "Unknown image");
 			break;
@@ -1010,8 +1070,9 @@ int extract_container_images(flash_header_v3_t *container_hdr, char *ifname, int
 	uint32_t img_size = 0; /* image size */
 	uint32_t file_off = 0; /* current offset within container binary */
 	const uint32_t pad = 0;
-	int ofd;
+	int ofd = 0;
 	int ret = 0;
+	uint32_t seco_off = 0, seco_size = 0;
 	char dd_cmd[512]; /* dd cmd to extract each image from container binary */
 	struct stat buf;
 	FILE *f_ptr = NULL; /* file pointer to the dd process */
@@ -1040,7 +1101,7 @@ int extract_container_images(flash_header_v3_t *container_hdr, char *ifname, int
 			if (!img_size) { /* check for images with zero size (DDR Init) */
 				continue;
 
-			} else if (i == 0) { /* first container is always SECO FW */
+			} else if ((i == 0) && (soc != DXL)) { /* first container is always SECO FW */
 
 
 				/* open output file */
@@ -1064,9 +1125,57 @@ int extract_container_images(flash_header_v3_t *container_hdr, char *ifname, int
 
 				/* close output file and unmap input file */
 				close(ofd);
-				munmap((void *)mem_ptr, buf.st_size);
 
 				fprintf(stdout, "Container %d Image %d -> extracted_imgs/ahab-container.img\n", i+1, j+1);
+
+			} else if ((i < 2 ) && (soc == DXL)) { /* Second Container is Always V2X for DXL */
+
+				if (i == 0)
+				{
+					/* open output file */
+					ofd = open("extracted_imgs/ahab-container.img", O_CREAT|O_WRONLY, S_IRWXU|S_IRWXG|S_IRWXO);
+
+					/* first copy container header to output image */
+					ret = write(ofd, (void *)mem_ptr, 0x400);
+					if (ret < 0)
+						fprintf(stderr, "Error writing to output file1\n");
+
+					/* For DXL go to next container to copy header */
+					seco_off = img_offset;
+					seco_size = img_size;
+					continue;
+				}
+				else if (i == 1 && j == 0)
+				{ /* copy v2x container header and seco fw */
+					ret = write(ofd,(void *) mem_ptr + file_off, container_hdr->length);
+					if (ret < 0)
+						fprintf(stderr, "Error writing to output file2\n");
+
+
+					/* next, pad the output with zeros until the start of SECO image */
+					for (int i = 0; i < (seco_off - (file_off + container_hdr->length))/4; i++)
+						ret = write(ofd, (void *)&pad, 4);
+
+					/* now write the SECO fw image to the output file */
+					ret = write(ofd, (void *)(mem_ptr+seco_off), seco_size);
+					if (ret < 0)
+						fprintf(stderr, "Error writing to output file3: %x\n",ret);
+				}
+
+				/* now write the next image to the output file */
+				ret = write(ofd, (void *)(mem_ptr + file_off + img_offset), img_size);
+				if (ret < 0)
+					fprintf(stderr, "Error writing to output file4: %x\n",ret);
+
+				/* Iterate through V2X container for other images */
+				if(j < (container_hdr->num_images - 1))
+					continue;
+
+				/* close output file and unmap input file */
+				close(ofd);
+
+
+				fprintf(stdout, "Container %d Image %d -> extracted_imgs/v2x-container.img\n", i+1, j+1);
 
 			} else {
 				sprintf(dd_cmd, "dd if=%s of=extracted_imgs/container%d_img%d.bin ibs=1 skip=%d count=%d conv=notrunc > /dev/null 2>&1", \
@@ -1089,6 +1198,7 @@ int extract_container_images(flash_header_v3_t *container_hdr, char *ifname, int
 		container_hdr++;
 	}
 
+	munmap((void *)mem_ptr, buf.st_size);
 	fprintf(stdout, "Done\n\n");
 	return 0;
 }
@@ -1096,6 +1206,7 @@ int extract_container_images(flash_header_v3_t *container_hdr, char *ifname, int
 int parse_container_hdrs_qx_qm_b0(char *ifname, bool extract, soc_type_t soc)
 {
 	int ifd; /* container file descriptor */
+	int max_containers = (soc == DXL) ? 3 : 2;
 	int cntr_num = 0; /* number of containers in binary */
 	int file_off = 0; /* offset within container binary */
 	int img_array_entries = 0; /* number of images in container */
@@ -1108,7 +1219,7 @@ int parse_container_hdrs_qx_qm_b0(char *ifname, bool extract, soc_type_t soc)
 	/* open container binary */
 	ifd = open(ifname, O_RDONLY|O_BINARY);
 
-	while (cntr_num < MAX_NUM_OF_CONTAINER) {
+	while (cntr_num < max_containers) {
 
 		/* read in next container header up to the image array */
 		rd_err = read(ifd, (void *)&container_headers[cntr_num], 16);

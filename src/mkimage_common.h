@@ -47,7 +47,8 @@ typedef enum option_type {
     DATA,
     PARTITION,
     FILEOFF,
-    MSG_BLOCK
+    MSG_BLOCK,
+    DUMMY_V2X
 } option_type_t;
 
 
@@ -102,13 +103,15 @@ typedef struct {
         struct dcd_v2_cmd dcd_cmd; /*2876*/
 } __attribute__((packed)) dcd_v2_t;                     /*2880*/
 
-#define CORE_SC         1
-#define CORE_CM4_0      2
-#define CORE_CM4_1      3
-#define CORE_CA53       4
-#define CORE_CA35       4
-#define CORE_CA72       5
-#define CORE_SECO       6
+#define CORE_SC         0x1
+#define CORE_CM4_0      0x2
+#define CORE_CM4_1      0x3
+#define CORE_CA53       0x4
+#define CORE_CA35       0x4
+#define CORE_CA72       0x5
+#define CORE_SECO       0x6
+#define CORE_V2X_P      0x9
+#define CORE_V2X_S      0xA
 
 #define SC_R_OTP                  357U
 #define SC_R_DEBUG                354U
@@ -120,14 +123,18 @@ typedef struct {
 #define MSG_FIELD       SC_R_ROM_0
 #define MSG_PATCH       SC_R_SNVS
 
-#define IMG_TYPE_CSF     0x01   /* CSF image type */
-#define IMG_TYPE_SCD     0x02   /* SCD image type */
-#define IMG_TYPE_EXEC    0x03   /* Executable image type */
-#define IMG_TYPE_DATA    0x04   /* Data image type */
-#define IMG_TYPE_DCD_DDR 0x05   /* DCD/DDR image type */
-#define IMG_TYPE_SECO    0x06   /* SECO image type */
-#define IMG_TYPE_PROV    0x07   /* Provisioning image type */
-#define IMG_TYPE_DEK     0x08   /* DEK validation type */
+#define IMG_TYPE_CSF            0x01   /* CSF image type */
+#define IMG_TYPE_SCD            0x02   /* SCD image type */
+#define IMG_TYPE_EXEC           0x03   /* Executable image type */
+#define IMG_TYPE_DATA           0x04   /* Data image type */
+#define IMG_TYPE_DCD_DDR        0x05   /* DCD/DDR image type */
+#define IMG_TYPE_SECO           0x06   /* SECO image type */
+#define IMG_TYPE_PROV           0x07   /* Provisioning image type */
+#define IMG_TYPE_DEK            0x08   /* DEK validation type */
+#define IMG_TYPE_PRIM_V2X       0x0B   /* Primary V2X FW image */
+#define IMG_TYPE_SEC_V2X        0x0C   /* Secondary V2X FW image*/
+#define IMG_TYPE_V2X_ROM        0x0D   /* V2X ROM Patch image */
+#define IMG_TYPE_V2X_DUMMY      0x0E   /* V2X Dummy image */
 
 #define IMG_TYPE_SHIFT   0
 #define IMG_TYPE_MASK    0x1f

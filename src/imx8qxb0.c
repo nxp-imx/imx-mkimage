@@ -16,7 +16,7 @@
 
 #define IV_MAX_LEN			32
 #define HASH_MAX_LEN			64
-#define MAX_NUM_IMGS			6
+#define MAX_NUM_IMGS			8
 #define MAX_NUM_SRK_RECORDS		4
 
 #define IVT_HEADER_TAG_B0		0x87
@@ -410,6 +410,10 @@ void set_image_array_entry(flash_header_v3_t *container, soc_type_t soc,
 	option_type_t type = image_stack->option;
 	boot_img_t *img = &container->img[container->num_images];
 
+	if (container->num_images >= MAX_NUM_IMGS) {
+		fprintf(stderr, "Error: Container allows 8 images at most\n");
+		exit(EXIT_FAILURE);
+	}
 
 	img->offset = offset;  /* Is re-adjusted later */
 	img->size = size;
@@ -418,11 +422,17 @@ void set_image_array_entry(flash_header_v3_t *container, soc_type_t soc,
 
 	switch(type) {
 	case SECO:
+		if (container->num_images > 0) {
+			fprintf(stderr, "Error: SECO container only allows 1 image\n");
+			exit(EXIT_FAILURE);
+		}
+
 		img->hab_flags |= IMG_TYPE_SECO;
 		img->hab_flags |= CORE_SECO << BOOT_IMG_FLAGS_CORE_SHIFT;
 		tmp_name = "SECO";
 		img->dst = 0x20C00000;
 		img->entry = 0x20000000;
+
 		break;
 	case AP:
 		if ((soc == QX || soc == DXL) && core == CORE_CA35)
@@ -1110,6 +1120,12 @@ int parse_container_hdrs_qx_qm_b0(char *ifname, bool extract, soc_type_t soc)
 		/* check that the current container has a valid tag */
 		if (container_headers[cntr_num].tag != IVT_HEADER_TAG_B0)
 			break;
+
+		if (container_headers[cntr_num].num_images > MAX_NUM_IMGS) {
+			fprintf(stderr, "This container includes %d images, beyond max 8 images\n",
+				container_headers[cntr_num].num_images);
+			exit(EXIT_FAILURE);
+		}
 
 		/* compute the size of the image array */
 		img_array_entries = container_headers[cntr_num].num_images * sizeof(boot_img_t);

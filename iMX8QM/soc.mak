@@ -14,6 +14,8 @@ QSPI_HEADER = ../scripts/fspi_header
 QSPI_PACKER = ../scripts/fspi_packer.sh
 PAD_IMAGE = ../scripts/pad_image.sh
 
+AHAB_IMG = mx8qmb0-ahab-container.img
+
 FORCE:
 
 u-boot-hash.bin: u-boot.bin
@@ -66,48 +68,23 @@ clean:
 	@rm -rf extracted_imgs
 	@echo "imx8qm clean done"
 
-flash: $(MKIMG) mx8qm-ahab-container.img scfw_tcm.bin u-boot-atf.bin
-	./$(MKIMG) -soc QM -rev B0 -append mx8qm-ahab-container.img -c -scfw scfw_tcm.bin -ap u-boot-atf.bin a53 0x80000000 -out flash.bin
+flash: $(MKIMG) $(AHAB_IMG) scfw_tcm.bin u-boot-atf.bin
+	./$(MKIMG) -soc QM -rev B0 -append $(AHAB_IMG) -c -scfw scfw_tcm.bin -ap u-boot-atf.bin a53 0x80000000 -out flash.bin
 
-flash_flexspi: $(MKIMG) mx8qm-ahab-container.img scfw_tcm.bin u-boot-atf.bin
-	./$(MKIMG) -soc QM -rev B0 -dev flexspi -append mx8qm-ahab-container.img -c -scfw scfw_tcm.bin -ap u-boot-atf.bin a53 0x80000000 -out flash.bin
+flash_flexspi: $(MKIMG) $(AHAB_IMG) scfw_tcm.bin u-boot-atf.bin
+	./$(MKIMG) -soc QM -rev B0 -dev flexspi -append $(AHAB_IMG) -c -scfw scfw_tcm.bin -ap u-boot-atf.bin a53 0x80000000 -out flash.bin
 	./$(QSPI_PACKER) $(QSPI_HEADER)
 
-flash_spl: $(MKIMG) mx8qm-ahab-container.img scfw_tcm.bin u-boot-spl.bin u-boot-atf-container.img
-	./$(MKIMG) -soc QM -rev B0 -dcd skip -append mx8qm-ahab-container.img -c -scfw scfw_tcm.bin -ap u-boot-spl.bin a53 0x00100000 -out flash.bin
+flash_spl: $(MKIMG) $(AHAB_IMG) scfw_tcm.bin u-boot-spl.bin u-boot-atf-container.img
+	./$(MKIMG) -soc QM -rev B0 -dcd skip -append $(AHAB_IMG) -c -scfw scfw_tcm.bin -ap u-boot-spl.bin a53 0x00100000 -out flash.bin
 	cp flash.bin boot-spl-container.img
 	@flashbin_size=`wc -c flash.bin | awk '{print $$1}'`; \
                    pad_cnt=$$(((flashbin_size + 0x400 - 1) / 0x400)); \
                    echo "append u-boot-atf-container.img at $$pad_cnt KB"; \
                    dd if=u-boot-atf-container.img of=flash.bin bs=1K seek=$$pad_cnt;
 
-flash_spl_flexspi: $(MKIMG) mx8qm-ahab-container.img scfw_tcm.bin u-boot-spl.bin u-boot-atf-container.img
-	./$(MKIMG) -soc QM -rev B0 -dcd skip  -dev flexspi -append mx8qm-ahab-container.img -c -scfw scfw_tcm.bin -ap u-boot-spl.bin a53 0x00100000 -out flash.bin
-	cp flash.bin boot-spl-container.img
-	@flashbin_size=`wc -c flash.bin | awk '{print $$1}'`; \
-                   pad_cnt=$$(((flashbin_size + 0x400 - 1) / 0x400)); \
-                   echo "append u-boot-atf-container.img at $$pad_cnt KB"; \
-                   dd if=u-boot-atf-container.img of=flash.bin bs=1K seek=$$pad_cnt;
-	./$(QSPI_PACKER) $(QSPI_HEADER)
-
-flash_linux_m4: $(MKIMG) mx8qm-ahab-container.img scfw_tcm.bin u-boot-spl.bin m4_image.bin m4_1_image.bin u-boot-atf-container.img
-	./$(MKIMG) -soc QM -rev B0 -dcd skip -append mx8qm-ahab-container.img -c -flags 0x00200000 -scfw scfw_tcm.bin -ap u-boot-spl.bin a53 0x00100000 -p3 -m4 m4_image.bin 0 0x34FE0000 -p4 -m4 m4_1_image.bin 1 0x38FE0000 -out flash.bin
-	cp flash.bin boot-spl-container.img
-	@flashbin_size=`wc -c flash.bin | awk '{print $$1}'`; \
-                   pad_cnt=$$(((flashbin_size + 0x400 - 1) / 0x400)); \
-                   echo "append u-boot-atf-container.img at $$pad_cnt KB"; \
-                   dd if=u-boot-atf-container.img of=flash.bin bs=1K seek=$$pad_cnt;
-
-flash_linux_m4_ddr: $(MKIMG) mx8qm-ahab-container.img scfw_tcm.bin u-boot-spl.bin m4_image.bin m4_1_image.bin u-boot-atf-container.img
-	./$(MKIMG) -soc QM -rev B0 -append mx8qm-ahab-container.img -c -flags 0x00200000 -scfw scfw_tcm.bin -ap u-boot-spl.bin a53 0x00100000 -p3 -m4 m4_image.bin 0 0x88000000 -p4 -m4 m4_1_image.bin 1 0x88800000 -out flash.bin
-	cp flash.bin boot-spl-container.img
-	@flashbin_size=`wc -c flash.bin | awk '{print $$1}'`; \
-                   pad_cnt=$$(((flashbin_size + 0x400 - 1) / 0x400)); \
-                   echo "append u-boot-atf-container.img at $$pad_cnt KB"; \
-                   dd if=u-boot-atf-container.img of=flash.bin bs=1K seek=$$pad_cnt;
-
-flash_linux_m4_xip: $(MKIMG) mx8qm-ahab-container.img scfw_tcm.bin u-boot-spl.bin u-boot-atf-container.img m4_image.bin m4_1_image.bin
-	./$(MKIMG) -soc QM -rev B0 -dcd skip -dev flexspi -append mx8qm-ahab-container.img -c -flags 0x00200000 -scfw scfw_tcm.bin -fileoff 0x80000 -p3 -m4 m4_image.bin 0 0x08081000 -fileoff 0x180000 -p4 -m4 m4_1_image.bin 1 0x08181000 -fileoff 0x280000 -ap u-boot-spl.bin a53 0x00100000 -out flash.bin
+flash_spl_flexspi: $(MKIMG) $(AHAB_IMG) scfw_tcm.bin u-boot-spl.bin u-boot-atf-container.img
+	./$(MKIMG) -soc QM -rev B0 -dcd skip  -dev flexspi -append $(AHAB_IMG) -c -scfw scfw_tcm.bin -ap u-boot-spl.bin a53 0x00100000 -out flash.bin
 	cp flash.bin boot-spl-container.img
 	@flashbin_size=`wc -c flash.bin | awk '{print $$1}'`; \
                    pad_cnt=$$(((flashbin_size + 0x400 - 1) / 0x400)); \
@@ -115,34 +92,59 @@ flash_linux_m4_xip: $(MKIMG) mx8qm-ahab-container.img scfw_tcm.bin u-boot-spl.bi
                    dd if=u-boot-atf-container.img of=flash.bin bs=1K seek=$$pad_cnt;
 	./$(QSPI_PACKER) $(QSPI_HEADER)
 
-flash_regression_linux_m4: $(MKIMG) mx8qm-ahab-container.img scfw_tcm.bin u-boot-atf.bin m4_image.bin m4_1_image.bin
-	./$(MKIMG) -soc QM -rev B0 -append mx8qm-ahab-container.img -c -flags 0x00200000 -scfw scfw_tcm.bin -ap u-boot-atf.bin a53 0x80000000 -p3 -m4 m4_image.bin 0 0x34FE0000 -p4 -m4 m4_1_image.bin 1 0x38FE0000 -out flash.bin
+flash_linux_m4: $(MKIMG) $(AHAB_IMG) scfw_tcm.bin u-boot-spl.bin m4_image.bin m4_1_image.bin u-boot-atf-container.img
+	./$(MKIMG) -soc QM -rev B0 -dcd skip -append $(AHAB_IMG) -c -flags 0x00200000 -scfw scfw_tcm.bin -ap u-boot-spl.bin a53 0x00100000 -p3 -m4 m4_image.bin 0 0x34FE0000 -p4 -m4 m4_1_image.bin 1 0x38FE0000 -out flash.bin
+	cp flash.bin boot-spl-container.img
+	@flashbin_size=`wc -c flash.bin | awk '{print $$1}'`; \
+                   pad_cnt=$$(((flashbin_size + 0x400 - 1) / 0x400)); \
+                   echo "append u-boot-atf-container.img at $$pad_cnt KB"; \
+                   dd if=u-boot-atf-container.img of=flash.bin bs=1K seek=$$pad_cnt;
 
-flash_regression_linux_m4_ddr: $(MKIMG) mx8qm-ahab-container.img scfw_tcm.bin u-boot-atf.bin m4_image.bin m4_1_image.bin
-	./$(MKIMG) -soc QM -rev B0 -append mx8qm-ahab-container.img -c -flags 0x00200000 -scfw scfw_tcm.bin -ap u-boot-atf.bin a53 0x80000000 -p3 -m4 m4_image.bin 0 0x88000000 -p4 -m4 m4_1_image.bin 1 0x88800000 -out flash.bin
+flash_linux_m4_ddr: $(MKIMG) $(AHAB_IMG) scfw_tcm.bin u-boot-spl.bin m4_image.bin m4_1_image.bin u-boot-atf-container.img
+	./$(MKIMG) -soc QM -rev B0 -append $(AHAB_IMG) -c -flags 0x00200000 -scfw scfw_tcm.bin -ap u-boot-spl.bin a53 0x00100000 -p3 -m4 m4_image.bin 0 0x88000000 -p4 -m4 m4_1_image.bin 1 0x88800000 -out flash.bin
+	cp flash.bin boot-spl-container.img
+	@flashbin_size=`wc -c flash.bin | awk '{print $$1}'`; \
+                   pad_cnt=$$(((flashbin_size + 0x400 - 1) / 0x400)); \
+                   echo "append u-boot-atf-container.img at $$pad_cnt KB"; \
+                   dd if=u-boot-atf-container.img of=flash.bin bs=1K seek=$$pad_cnt;
 
-flash_regression_linux_m4_xip: $(MKIMG) mx8qm-ahab-container.img scfw_tcm.bin u-boot-atf.bin m4_image.bin m4_1_image.bin $(QSPI_HEADER)
-	./$(MKIMG) -soc QM -rev B0 -dev flexspi -append mx8qm-ahab-container.img -c -flags 0x00200000 -scfw scfw_tcm.bin -fileoff 0x80000 -p3 -m4 m4_image.bin 0 0x08081000 -fileoff 0x180000 -p4 -m4 m4_1_image.bin 1 0x08181000 -fileoff 0x280000 -ap u-boot-atf.bin a35 0x80000000 -out flash.bin
+flash_linux_m4_xip: $(MKIMG) $(AHAB_IMG) scfw_tcm.bin u-boot-spl.bin u-boot-atf-container.img m4_image.bin m4_1_image.bin
+	./$(MKIMG) -soc QM -rev B0 -dcd skip -dev flexspi -append $(AHAB_IMG) -c -flags 0x00200000 -scfw scfw_tcm.bin -fileoff 0x80000 -p3 -m4 m4_image.bin 0 0x08081000 -fileoff 0x180000 -p4 -m4 m4_1_image.bin 1 0x08181000 -fileoff 0x280000 -ap u-boot-spl.bin a53 0x00100000 -out flash.bin
+	cp flash.bin boot-spl-container.img
+	@flashbin_size=`wc -c flash.bin | awk '{print $$1}'`; \
+                   pad_cnt=$$(((flashbin_size + 0x400 - 1) / 0x400)); \
+                   echo "append u-boot-atf-container.img at $$pad_cnt KB"; \
+                   dd if=u-boot-atf-container.img of=flash.bin bs=1K seek=$$pad_cnt;
 	./$(QSPI_PACKER) $(QSPI_HEADER)
 
-flash_regression_linux_m41: $(MKIMG) mx8qm-ahab-container.img scfw_tcm.bin u-boot-atf.bin m4_1_image.bin
-	./$(MKIMG) -soc QM -rev B0 -append mx8qm-ahab-container.img -c -flags 0x00200000 -scfw scfw_tcm.bin -ap u-boot-atf.bin a53 0x80000000 -p4 -m4 m4_1_image.bin 1 0x38FE0000 -out flash.bin
+flash_regression_linux_m4: $(MKIMG) $(AHAB_IMG) scfw_tcm.bin u-boot-atf.bin m4_image.bin m4_1_image.bin
+	./$(MKIMG) -soc QM -rev B0 -append $(AHAB_IMG) -c -flags 0x00200000 -scfw scfw_tcm.bin -ap u-boot-atf.bin a53 0x80000000 -p3 -m4 m4_image.bin 0 0x34FE0000 -p4 -m4 m4_1_image.bin 1 0x38FE0000 -out flash.bin
 
-flash_regression_linux_m41_ddr: $(MKIMG) mx8qm-ahab-container.img scfw_tcm.bin u-boot-atf.bin m4_1_image.bin
-	./$(MKIMG) -soc QM -rev B0 -append mx8qm-ahab-container.img -c -flags 0x00200000 -scfw scfw_tcm.bin -ap u-boot-atf.bin a53 0x80000000 -p4 -m4 m4_1_image.bin 1 0x88800000 -out flash.bin
+flash_regression_linux_m4_ddr: $(MKIMG) $(AHAB_IMG) scfw_tcm.bin u-boot-atf.bin m4_image.bin m4_1_image.bin
+	./$(MKIMG) -soc QM -rev B0 -append $(AHAB_IMG) -c -flags 0x00200000 -scfw scfw_tcm.bin -ap u-boot-atf.bin a53 0x80000000 -p3 -m4 m4_image.bin 0 0x88000000 -p4 -m4 m4_1_image.bin 1 0x88800000 -out flash.bin
 
-flash_regression_linux_m41_xip: $(MKIMG) mx8qm-ahab-container.img scfw_tcm.bin u-boot-atf.bin m4_1_image.bin $(QSPI_HEADER)
-	./$(MKIMG) -soc QM -rev B0 -dev flexspi -append mx8qm-ahab-container.img -c -flags 0x00200000 -scfw scfw_tcm.bin -fileoff 0x180000 -p4 -m4 m4_1_image.bin 1 0x08181000 -fileoff 0x280000 -ap u-boot-atf.bin a35 0x80000000 -out flash.bin
+flash_regression_linux_m4_xip: $(MKIMG) $(AHAB_IMG) scfw_tcm.bin u-boot-atf.bin m4_image.bin m4_1_image.bin $(QSPI_HEADER)
+	./$(MKIMG) -soc QM -rev B0 -dev flexspi -append $(AHAB_IMG) -c -flags 0x00200000 -scfw scfw_tcm.bin -fileoff 0x80000 -p3 -m4 m4_image.bin 0 0x08081000 -fileoff 0x180000 -p4 -m4 m4_1_image.bin 1 0x08181000 -fileoff 0x280000 -ap u-boot-atf.bin a35 0x80000000 -out flash.bin
 	./$(QSPI_PACKER) $(QSPI_HEADER)
 
-flash_scfw: $(MKIMG) mx8qm-ahab-container.img scfw_tcm.bin
-	./$(MKIMG) -soc QM -rev B0 -dcd skip -append mx8qm-ahab-container.img -c -scfw scfw_tcm.bin -out flash.bin
+flash_regression_linux_m41: $(MKIMG) $(AHAB_IMG) scfw_tcm.bin u-boot-atf.bin m4_1_image.bin
+	./$(MKIMG) -soc QM -rev B0 -append $(AHAB_IMG) -c -flags 0x00200000 -scfw scfw_tcm.bin -ap u-boot-atf.bin a53 0x80000000 -p4 -m4 m4_1_image.bin 1 0x38FE0000 -out flash.bin
+
+flash_regression_linux_m41_ddr: $(MKIMG) $(AHAB_IMG) scfw_tcm.bin u-boot-atf.bin m4_1_image.bin
+	./$(MKIMG) -soc QM -rev B0 -append $(AHAB_IMG) -c -flags 0x00200000 -scfw scfw_tcm.bin -ap u-boot-atf.bin a53 0x80000000 -p4 -m4 m4_1_image.bin 1 0x88800000 -out flash.bin
+
+flash_regression_linux_m41_xip: $(MKIMG) $(AHAB_IMG) scfw_tcm.bin u-boot-atf.bin m4_1_image.bin $(QSPI_HEADER)
+	./$(MKIMG) -soc QM -rev B0 -dev flexspi -append $(AHAB_IMG) -c -flags 0x00200000 -scfw scfw_tcm.bin -fileoff 0x180000 -p4 -m4 m4_1_image.bin 1 0x08181000 -fileoff 0x280000 -ap u-boot-atf.bin a35 0x80000000 -out flash.bin
+	./$(QSPI_PACKER) $(QSPI_HEADER)
+
+flash_scfw: $(MKIMG) $(AHAB_IMG) scfw_tcm.bin
+	./$(MKIMG) -soc QM -rev B0 -dcd skip -append $(AHAB_IMG) -c -scfw scfw_tcm.bin -out flash.bin
 
 flash_kernel: $(MKIMG) Image fsl-imx8qm-mek.dtb
 	./$(MKIMG) -soc QM -rev B0 -c -ap Image a53 0x80280000 --data fsl-imx8qm-mek.dtb 0x83000000 -out flash.bin
 
-flash_ca72: $(MKIMG) mx8qm-ahab-container.img scfw_tcm.bin u-boot-atf.bin
-	./$(MKIMG) -soc QM -rev B0 -append mx8qm-ahab-container.img -c -scfw scfw_tcm.bin -ap u-boot-atf.bin a72 0x80000000 -out flash.bin
+flash_ca72: $(MKIMG) $(AHAB_IMG) scfw_tcm.bin u-boot-atf.bin
+	./$(MKIMG) -soc QM -rev B0 -append $(AHAB_IMG) -c -scfw scfw_tcm.bin -ap u-boot-atf.bin a72 0x80000000 -out flash.bin
 
 parse_container: $(MKIMG) flash.bin
 	./$(MKIMG) -soc QM -rev B0 -parse flash.bin

@@ -12,7 +12,7 @@ nightly :
 	@rm -rf boot
 	@echo "Pulling nightly for Validation board from $(SERVER)/$(DIR)"
 	@echo $(BUILD)-$(N)-iMX8QM-val > nightly.txt
-	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qm/mx8qm-ahab-container.img -O mx8qm-ahab-container.img
+	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qm/$(AHAB_IMG) -O $(AHAB_IMG)
 	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qm/mx8qm-val-scfw-tcm.bin -O scfw_tcm.bin
 	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qm/bl31-imx8qm.bin -O bl31.bin
 	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qm/u-boot-imx8qmlpddr4arm2.bin-sd -O u-boot.bin
@@ -28,7 +28,7 @@ nightly_mek :
 	@rm -rf boot
 	@echo "Pulling nightly for MEK board from $(SERVER)/$(DIR)"
 	@echo $(BUILD)-$(N)-iMX8QM-mek > nightly.txt
-	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qm/mx8qm-ahab-container.img -O mx8qm-ahab-container.img
+	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qm/$(AHAB_IMG) -O $(AHAB_IMG)
 	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qm/mx8qm-mek-scfw-tcm.bin -O scfw_tcm.bin
 	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qm/bl31-imx8qm.bin -O bl31.bin
 	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qm/u-boot-imx8qmmek.bin-sd -O u-boot.bin

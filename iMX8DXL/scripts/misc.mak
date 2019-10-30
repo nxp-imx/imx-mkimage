@@ -2,10 +2,10 @@ flash_secofw flash_b0_secofw: $(MKIMG) ahabfw.bin
 	./$(MKIMG) -soc DXL -rev A0 -c -seco ahabfw.bin -out flash.bin
 
 flash_msg_block:
-	./$(MKIMG) -soc DXL -rev A0 -append mx8dxl-ahab-container.img -c -scfw scfw_tcm.bin -msg_blk test_block.bin field 0x83000000 -dummy 0x87f00000 -out flash.bin
+	./$(MKIMG) -soc DXL -rev A0 -dcd skip -append mx8dxl-ahab-container.img -c -scfw scfw_tcm.bin -msg_blk test_block.bin field 0x00100000 -dummy 0x87f00000 -out flash.bin
 
 flash_flexspi_msg_block: $(MKIMG) mx8qx-ahab-container.img scfw_tcm.bin u-boot-atf.bin $(QSPI_HEADER)
-	./$(MKIMG) -soc QX -rev B0 -dev flexspi -append mx8qx-ahab-container.img -c -scfw scfw_tcm.bin -msg_blk test_block.bin field 0x83000000 -dummy 0x87f00000 -out flash.bin
+	./$(MKIMG) -soc QX -rev B0 -dcd skip -dev flexspi -append mx8qx-ahab-container.img -c -scfw scfw_tcm.bin -msg_blk test_block.bin field 0x00100000 -dummy 0x87f00000 -out flash.bin
 	./$(QSPI_PACKER) $(QSPI_HEADER)
 
 flash_nand_fw: $(MKIMG) mx8qx-ahab-container.img scfw_tcm.bin u-boot-atf.bin

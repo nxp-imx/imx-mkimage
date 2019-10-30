@@ -1,4 +1,4 @@
-flash_ddrstress flash_b0_ddrstress: $(MKIMG) $(AHAB_IMG) scfw_tcm.bin mx8qx_ddr_stress_test.bin
+flash_ddrstress flash_b0_ddrstress: $(MKIMG) $(AHAB_IMG) scfw_tcm.bin mx8qxb0_ddr_stress_test.bin
 	./$(MKIMG) -soc QX -rev B0 -append $(AHAB_IMG) -c  -flags 0x00800000 -scfw scfw_tcm.bin -ap mx8qxb0_ddr_stress_test.bin a35 0x00100000 -out flash.bin
 
 flash_test_build_nand_4K flash_b0_test_build_nand_4K: $(MKIMG) $(AHAB_IMG) scfw_tcm.bin u-boot.bin m4_image.bin

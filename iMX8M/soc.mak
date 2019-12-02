@@ -75,8 +75,9 @@ u-boot-spl-ddr.bin: u-boot-spl.bin lpddr4_pmu_train_1d_imem.bin lpddr4_pmu_train
 	@objcopy -I binary -O binary --pad-to 0x8000 --gap-fill=0x0 lpddr4_pmu_train_2d_imem.bin lpddr4_pmu_train_2d_imem_pad.bin
 	@cat lpddr4_pmu_train_1d_imem_pad.bin lpddr4_pmu_train_1d_dmem_pad.bin > lpddr4_pmu_train_1d_fw.bin
 	@cat lpddr4_pmu_train_2d_imem_pad.bin lpddr4_pmu_train_2d_dmem.bin > lpddr4_pmu_train_2d_fw.bin
-	@cat u-boot-spl.bin lpddr4_pmu_train_1d_fw.bin lpddr4_pmu_train_2d_fw.bin > u-boot-spl-ddr.bin
-	@rm -f lpddr4_pmu_train_1d_fw.bin lpddr4_pmu_train_2d_fw.bin lpddr4_pmu_train_1d_imem_pad.bin lpddr4_pmu_train_1d_dmem_pad.bin lpddr4_pmu_train_2d_imem_pad.bin
+	@dd if=u-boot-spl.bin of=u-boot-spl-pad.bin bs=4 conv=sync
+	@cat u-boot-spl-pad.bin lpddr4_pmu_train_1d_fw.bin lpddr4_pmu_train_2d_fw.bin > u-boot-spl-ddr.bin
+	@rm -f u-boot-spl-pad.bin lpddr4_pmu_train_1d_fw.bin lpddr4_pmu_train_2d_fw.bin lpddr4_pmu_train_1d_imem_pad.bin lpddr4_pmu_train_1d_dmem_pad.bin lpddr4_pmu_train_2d_imem_pad.bin
 
 ddr4_imem_1d = ddr4_imem_1d$(DDR_FW_VERSION).bin
 ddr4_dmem_1d = ddr4_dmem_1d$(DDR_FW_VERSION).bin
@@ -89,14 +90,16 @@ u-boot-spl-ddr4.bin: u-boot-spl.bin $(ddr4_imem_1d) $(ddr4_dmem_1d) $(ddr4_imem_
 	@objcopy -I binary -O binary --pad-to 0x8000 --gap-fill=0x0 $(ddr4_imem_2d) ddr4_imem_2d_pad.bin
 	@cat ddr4_imem_1d_pad.bin ddr4_dmem_1d_pad.bin > ddr4_1d_fw.bin
 	@cat ddr4_imem_2d_pad.bin $(ddr4_dmem_2d) > ddr4_2d_fw.bin
-	@cat u-boot-spl.bin ddr4_1d_fw.bin ddr4_2d_fw.bin > u-boot-spl-ddr4.bin
-	@rm -f ddr4_1d_fw.bin ddr4_2d_fw.bin ddr4_imem_1d_pad.bin ddr4_dmem_1d_pad.bin ddr4_imem_2d_pad.bin
+	@dd if=u-boot-spl.bin of=u-boot-spl-pad.bin bs=4 conv=sync
+	@cat u-boot-spl-pad.bin ddr4_1d_fw.bin ddr4_2d_fw.bin > u-boot-spl-ddr4.bin
+	@rm -f u-boot-spl-pad.bin ddr4_1d_fw.bin ddr4_2d_fw.bin ddr4_imem_1d_pad.bin ddr4_dmem_1d_pad.bin ddr4_imem_2d_pad.bin
 
 u-boot-spl-ddr3l.bin: u-boot-spl.bin ddr3_imem_1d.bin ddr3_dmem_1d.bin
 	@objcopy -I binary -O binary --pad-to 0x8000 --gap-fill=0x0 ddr3_imem_1d.bin ddr3_imem_1d.bin_pad.bin
 	@cat ddr3_imem_1d.bin_pad.bin ddr3_dmem_1d.bin > ddr3_pmu_train_fw.bin
-	@cat u-boot-spl.bin ddr3_pmu_train_fw.bin > u-boot-spl-ddr3l.bin
-	@rm -f ddr3_pmu_train_fw.bin ddr3_imem_1d.bin_pad.bin
+	@dd if=u-boot-spl.bin of=u-boot-spl-pad.bin bs=4 conv=sync
+	@cat u-boot-spl-pad.bin ddr3_pmu_train_fw.bin > u-boot-spl-ddr3l.bin
+	@rm -f u-boot-spl-pad.bin ddr3_pmu_train_fw.bin ddr3_imem_1d.bin_pad.bin
 
 u-boot-atf.bin: u-boot.bin bl31.bin
 	@cp bl31.bin u-boot-atf.bin

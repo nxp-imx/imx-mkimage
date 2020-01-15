@@ -1,6 +1,7 @@
 MKIMG = ../mkimage_imx8
 
 CC ?= gcc
+V2X ?= YES
 REVISION ?= A0
 CFLAGS ?= -O2 -Wall -std=c99 -static
 INCLUDE = ./lib
@@ -16,6 +17,10 @@ else
     RENAME = rename
 endif
 
+ifeq ($(V2X),YES)
+    V2X_DUMMY_DDR = -dummy 0x87fc0000
+    V2X_DUMMY_OCRAM = -dummy 0x120000
+endif
 
 FORCE:
 
@@ -54,24 +59,24 @@ Image1: Image
 clean:
 	@rm -f $(MKIMG) $(DCD_CFG) .imx8qx_dcd.cfg.cfgtmp.d u-boot-atf-container.img Image0 Image1
 	@rm -rf extracted_imgs
-	@echo "imx8qx clean done"
+	@echo "imx8dxl clean done"
 
 flash: $(MKIMG) mx8dxla0-ahab-container.img scfw_tcm.bin u-boot-atf.bin
-	./$(MKIMG) -soc DXL -rev A0  -append mx8dxla0-ahab-container.img -c -scfw scfw_tcm.bin -ap u-boot-atf.bin a35 0x80000000 -dummy 0x87fc0000 --out flash.bin
+	./$(MKIMG) -soc DXL -rev A0  -append mx8dxla0-ahab-container.img -c -scfw scfw_tcm.bin -ap u-boot-atf.bin a35 0x80000000 $(V2X_DUMMY_DDR) -out flash.bin
 
 flash_flexspi: $(MKIMG) mx8dxla0-ahab-container.img scfw_tcm.bin u-boot-atf.bin $(QSPI_HEADER)
-	./$(MKIMG) -soc DXL -rev A0  -dev flexspi -append mx8dxla0-ahab-container.img -c -scfw scfw_tcm.bin -ap u-boot-atf.bin a35 0x80000000 -dummy 0x87fc0000 -out flash.bin
+	./$(MKIMG) -soc DXL -rev A0  -dev flexspi -append mx8dxla0-ahab-container.img -c -scfw scfw_tcm.bin -ap u-boot-atf.bin a35 0x80000000 -out flash.bin
 	./$(QSPI_PACKER) $(QSPI_HEADER)
 
 flash_spl: $(MKIMG) mx8dxla0-ahab-container.img scfw_tcm.bin u-boot-spl.bin u-boot-atf-container.img
-	./$(MKIMG) -soc DXL -rev A0  -dcd skip -append mx8dxla0-ahab-container.img -c -scfw scfw_tcm.bin -ap u-boot-spl.bin a35 0x00100000 -dummy 0x87fc0000 -out flash.bin
+	./$(MKIMG) -soc DXL -rev A0  -dcd skip -append mx8dxla0-ahab-container.img -c -scfw scfw_tcm.bin -ap u-boot-spl.bin a35 0x00100000 $(V2X_DUMMY_OCRAM) -out flash.bin
 	@flashbin_size=`wc -c flash.bin | awk '{print $$1}'`; \
                    pad_cnt=$$(((flashbin_size + 0x400 - 1) / 0x400)); \
                    echo "append u-boot-atf-container.img at $$pad_cnt KB"; \
                    dd if=u-boot-atf-container.img of=flash.bin bs=1K seek=$$pad_cnt;
 
 flash_spl_flexspi: $(MKIMG) mx8dxla0-ahab-container.img scfw_tcm.bin u-boot-spl.bin u-boot-atf-container.img
-	./$(MKIMG) -soc DXL -rev A0  -dcd skip -dev flexspi -append mx8dxla0-ahab-container.img -c -scfw scfw_tcm.bin -ap u-boot-spl.bin a35 0x00100000 -dummy 0x87fc0000 -out flash.bin
+	./$(MKIMG) -soc DXL -rev A0  -dcd skip -dev flexspi -append mx8dxla0-ahab-container.img -c -scfw scfw_tcm.bin -ap u-boot-spl.bin a35 0x00100000 $(V2X_DUMMY_OCRAM) -out flash.bin
 	@flashbin_size=`wc -c flash.bin | awk '{print $$1}'`; \
                    pad_cnt=$$(((flashbin_size + 0x400 - 1) / 0x400)); \
                    echo "append u-boot-atf-container.img at $$pad_cnt KB"; \
@@ -79,14 +84,14 @@ flash_spl_flexspi: $(MKIMG) mx8dxla0-ahab-container.img scfw_tcm.bin u-boot-spl.
 	./$(QSPI_PACKER) $(QSPI_HEADER)
 
 flash_spl_nand: $(MKIMG) mx8dxla0-ahab-container.img scfw_tcm.bin u-boot-spl.bin u-boot-atf-container.img
-	./$(MKIMG) -soc DXL -rev A0  -dcd skip -dev nand 16K -dcd skip -append mx8dxla0-ahab-container.img -c -scfw scfw_tcm.bin -ap u-boot-spl.bin a35 0x00100000 -dummy 0x87fc0000 -out flash.bin
+	./$(MKIMG) -soc DXL -rev A0  -dcd skip -dev nand 16K -dcd skip -append mx8dxla0-ahab-container.img -c -scfw scfw_tcm.bin -ap u-boot-spl.bin a35 0x00100000 $(V2X_DUMMY_OCRAM) -out flash.bin
 	@flashbin_size=`wc -c flash.bin | awk '{print $$1}'`; \
                    pad_cnt=$$(((flashbin_size + 0x4000 - 1) / 0x4000)); page=16;\
                    echo "append u-boot-atf-container.img at $$((pad_cnt * page))  a $$pad_cnt b $$page KB"; \
                    dd if=u-boot-atf-container.img of=flash.bin bs=1K seek=$$((pad_cnt * page))
 
 flash_linux_m4: $(MKIMG) mx8dxla0-ahab-container.img scfw_tcm.bin u-boot-atf-container.img m4_image.bin u-boot-spl.bin
-	./$(MKIMG) -soc DXL -rev A0  -dcd skip -append mx8dxla0-ahab-container.img -c -flags 0x00200000 -scfw scfw_tcm.bin -ap u-boot-spl.bin a35 0x00100000 -p3 -m4 m4_image.bin 0 0x34FE0000 -dummy 0x87fc0000 -out flash.bin
+	./$(MKIMG) -soc DXL -rev A0  -dcd skip -append mx8dxla0-ahab-container.img -c -flags 0x00200000 -scfw scfw_tcm.bin -ap u-boot-spl.bin a35 0x00100000 -p3 -m4 m4_image.bin 0 0x34FE0000 $(V2X_DUMMY_OCRAM) -out flash.bin
 	cp flash.bin boot-spl-container.img
 	@flashbin_size=`wc -c flash.bin | awk '{print $$1}'`; \
                    pad_cnt=$$(((flashbin_size + 0x400 - 1) / 0x400)); \
@@ -94,7 +99,7 @@ flash_linux_m4: $(MKIMG) mx8dxla0-ahab-container.img scfw_tcm.bin u-boot-atf-con
                    dd if=u-boot-atf-container.img of=flash.bin bs=1K seek=$$pad_cnt; \
 
 flash_linux_m4_ddr: $(MKIMG) mx8dxla0-ahab-container.img scfw_tcm.bin u-boot-atf-container.img m4_image.bin u-boot-spl.bin
-	./$(MKIMG) -soc DXL -rev A0  -append mx8dxla0-ahab-container.img -c -flags 0x00200000 -scfw scfw_tcm.bin -ap u-boot-spl.bin a35 0x00100000 -p3 -m4 m4_image.bin 0 0x88000000 -dummy 0x87fc0000 -out flash.bin
+	./$(MKIMG) -soc DXL -rev A0  -append mx8dxla0-ahab-container.img -c -flags 0x00200000 -scfw scfw_tcm.bin -ap u-boot-spl.bin a35 0x00100000 -p3 -m4 m4_image.bin 0 0x88000000 $(V2X_DUMMY_DDR) -out flash.bin
 	cp flash.bin boot-spl-container.img
 	@flashbin_size=`wc -c flash.bin | awk '{print $$1}'`; \
                    pad_cnt=$$(((flashbin_size + 0x400 - 1) / 0x400)); \
@@ -111,17 +116,17 @@ flash_linux_m4_xip: $(MKIMG) mx8dxla0-ahab-container.img scfw_tcm.bin u-boot-atf
 	./$(QSPI_PACKER) $(QSPI_HEADER)
 
 flash_regression_linux_m4: $(MKIMG) mx8dxla0-ahab-container.img scfw_tcm.bin u-boot-atf.bin m4_image.bin
-	./$(MKIMG) -soc DXL -rev A0  -append mx8dxla0-ahab-container.img -c -flags 0x00200000 -scfw scfw_tcm.bin -ap u-boot-atf.bin a35 0x80000000 -p3 -m4 m4_image.bin 0 0x34FE0000 -dummy 0x87fc0000 -out flash.bin
+	./$(MKIMG) -soc DXL -rev A0  -append mx8dxla0-ahab-container.img -c -flags 0x00200000 -scfw scfw_tcm.bin -ap u-boot-atf.bin a35 0x80000000 -p3 -m4 m4_image.bin 0 0x34FE0000 $(V2X_DUMMY_DDR) -out flash.bin
 
 flash_regression_linux_m4_ddr: $(MKIMG) mx8dxla0-ahab-container.img scfw_tcm.bin u-boot-atf.bin m4_image.bin
-	./$(MKIMG) -soc DXL -rev A0  -append mx8dxla0-ahab-container.img -c -flags 0x00200000 -scfw scfw_tcm.bin -ap u-boot-atf.bin a35 0x80000000 -p3 -m4 m4_image.bin 0 0x88000000 -dummy 0x87fc0000 -out flash.bin
+	./$(MKIMG) -soc DXL -rev A0  -append mx8dxla0-ahab-container.img -c -flags 0x00200000 -scfw scfw_tcm.bin -ap u-boot-atf.bin a35 0x80000000 -p3 -m4 m4_image.bin 0 0x88000000 $(V2X_DUMMY_DDR) -out flash.bin
 
 flash_regression_linux_m4_xip : $(MKIMG) mx8dxla0-ahab-container.img scfw_tcm.bin u-boot-atf.bin m4_image.bin $(QSPI_HEADER)
 	./$(MKIMG) -soc DXL -rev A0  -dev flexspi -append mx8dxla0-ahab-container.img -c -flags 0x00200000 -scfw scfw_tcm.bin -fileoff 0x80000 -p3 -m4 m4_image.bin 0 0x08081000 -fileoff 0x180000 -ap u-boot-atf.bin a35 0x80000000 -out flash.bin
 	./$(QSPI_PACKER) $(QSPI_HEADER)
 
 flash_scfw: $(MKIMG) mx8dxla0-ahab-container.img scfw_tcm.bin
-	./$(MKIMG) -soc DXL -rev A0 -dcd skip -append mx8dxla0-ahab-container.img -c -scfw scfw_tcm.bin -dummy 0x00100000 --out flash.bin
+	./$(MKIMG) -soc DXL -rev A0 -dcd skip -append mx8dxla0-ahab-container.img -c -scfw scfw_tcm.bin $(V2X_DUMMY_OCRAM) --out flash.bin
 
 flash_kernel: $(MKIMG) Image fsl-imx8qxp-mek.dtb
 	./$(MKIMG) -soc DXL -rev A0  -c -ap Image a35 0x80280000 --data fsl-imx8qxp-mek.dtb 0x83000000 -out flash.bin

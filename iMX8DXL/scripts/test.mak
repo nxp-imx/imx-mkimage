@@ -1,5 +1,5 @@
-flash_ddrstress flash_b0_ddrstress: $(MKIMG) mx8qx-ahab-container.img scfw_tcm.bin mx8qx_ddr_stress_test.bin
-	./$(MKIMG) -soc DXL -rev A0 -append mx8dxl-ahab-container.img -c  -flags 0x00800000 -scfw scfw_tcm.bin -ap mx8qxb0_ddr_stress_test.bin a35 0x00100000 -dummy 0x87fc0000 -out flash.bin
+flash_ddrstress flash_b0_ddrstress: $(MKIMG) mx8dxla0-ahab-container.img scfw_tcm.bin mx8dxl_ddr_stress_test.bin
+	./$(MKIMG) -soc DXL -rev A0 -append mx8dxla0-ahab-container.img -c  -flags 0x00800000 -scfw scfw_tcm.bin -ap mx8dxl_ddr_stress_test.bin a35 0x00100000 -dummy 0x87fc0000 -out flash.bin
 
 flash_test_build_nand_4K flash_b0_test_build_nand_4K: $(MKIMG) mx8qx-ahab-container.img scfw_tcm.bin u-boot.bin m4_image.bin
 	./$(MKIMG) -soc DXL -rev A0 -dev nand 4K -append mx8dxl-ahab-container.img -c -scfw scfw_tcm.bin -ap u-boot.bin a35 0x80000000 -m4 m4_image.bin 0 0x34FE0000 -dummy 0x87fc0000 -out flash.bin

@@ -121,7 +121,7 @@ flash_regression_linux_m4_xip : $(MKIMG) mx8dxla0-ahab-container.img scfw_tcm.bi
 	./$(QSPI_PACKER) $(QSPI_HEADER)
 
 flash_scfw: $(MKIMG) mx8dxla0-ahab-container.img scfw_tcm.bin
-	./$(MKIMG) -soc DXL -rev A0  -dcd skip -append mx8dxla0-ahab-container.img -c -scfw scfw_tcm.bin -dummy 0x87fc0000 --out flash.bin
+	./$(MKIMG) -soc DXL -rev A0 -dcd skip -append mx8dxla0-ahab-container.img -c -scfw scfw_tcm.bin -dummy 0x00100000 --out flash.bin
 
 flash_kernel: $(MKIMG) Image fsl-imx8qxp-mek.dtb
 	./$(MKIMG) -soc DXL -rev A0  -c -ap Image a35 0x80280000 --data fsl-imx8qxp-mek.dtb 0x83000000 -out flash.bin

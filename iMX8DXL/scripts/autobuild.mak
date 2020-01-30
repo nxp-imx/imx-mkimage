@@ -1,41 +1,29 @@
 WGET = /usr/bin/wget
 N ?= latest
 SERVER=http://yb2.am.freescale.net
-BUILD ?= Linux_IMX_Regression
+BUILD ?= Linux_IMX_Core
 #DIR = internal-only/Linux_IMX_Rocko_MX8/$(N)/common_bsp
 #DIR = internal-only/Linux_IMX_Core/$(N)/common_bsp
 DIR = internal-only/$(BUILD)/$(N)/common_bsp
 ARCHIVE_PATH ?= ~
 ARCHIVE_NAME ?= $(shell cat nightly.txt).tar
 
-nightly :
-	ls
-	@rm -rf boot
-	@echo "Pulling nightly for Validation board from $(SERVER)/$(DIR)"
-	@echo $(BUILD)-$(N)-iMX8QX-val > nightly.txt
-	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qx/mx8qx-ahab-container.img -O mx8qx-ahab-container.img
-	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qx/mx8qx-val-scfw-tcm.bin -O scfw_tcm.bin
-	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qx/bl31-imx8qx.bin -O bl31.bin
-	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qx/u-boot-imx8qxplpddr4arm2.bin-sd -O u-boot.bin
-	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qx/u-boot-spl.bin-imx8qxpmek-sd -O u-boot-spl.bin
-	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qx/u-boot-spl.bin-imx8qxpmek-fspi -O u-boot-spl-fspi.bin
-	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qx/m4_image.bin -O m4_image.bin
-	@$(WGET) -qr -nd -l1 -np $(SERVER)/$(DIR) -P boot -A "fsl-imx8qxp-*.dtb"
-	@$(WGET) -q $(SERVER)/$(DIR)/Image-imx8_all.bin -O Image
-	@mv -f Image boot
+nightly : nightly_mek
+
+nightly_evk : nightly_mek
 
 nightly_mek :
 	@rm -rf boot
 	@echo "Pulling nightly for MEK board from $(SERVER)/$(DIR)"
-	@echo $(BUILD)-$(N)-iMX8QX-mek > nightly.txt
-	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qx/mx8qx-ahab-container.img -O mx8qx-ahab-container.img
-	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qx/mx8qx-mek-scfw-tcm.bin -O scfw_tcm.bin
-	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qx/bl31-imx8qx.bin -O bl31.bin
-	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qx/u-boot-imx8qxpmek.bin-sd -O u-boot.bin
-	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qx/u-boot-spl.bin-imx8qxpmek-sd -O u-boot-spl.bin
-	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qx/u-boot-spl.bin-imx8qxpmek-fspi -O u-boot-spl-fspi.bin
-	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qx/m4_image.bin -O m4_image.bin
-	@$(WGET) -qr -nd -l1 -np $(SERVER)/$(DIR) -P boot -A "fsl-imx8qxp-*.dtb"
+	@echo $(BUILD)-$(N)-iMX8DXL-evk > nightly.txt
+	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8dx/mx8dxla0-ahab-container.img -O mx8dxla0-ahab-container.img
+	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8dx/mx8dx-mek-scfw-tcm.bin -O scfw_tcm.bin
+	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8dx/bl31-imx8dxl.bin -O bl31.bin
+	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8dx/u-boot-imx8dxlevk.bin-sd -O u-boot.bin
+	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8dx/u-boot-spl.bin-imx8dxlevk-sd -O u-boot-spl.bin
+#	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8dx/u-boot-spl.bin-imx8dxlevk-fspi -O u-boot-spl-fspi.bin
+	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8dx/m4_image.bin -O m4_image.bin
+	@$(WGET) -qr -nd -l1 -np $(SERVER)/$(DIR)/imx_dtbs -P boot -A "imx8dxl-*.dtb"
 	@$(WGET) -q $(SERVER)/$(DIR)/Image-imx8_all.bin -O Image
 	@mv -f Image boot
 

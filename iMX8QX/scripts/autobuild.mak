@@ -1,7 +1,7 @@
 WGET = /usr/bin/wget
 N ?= latest
 SERVER=http://yb2.am.freescale.net
-BUILD ?= Linux_IMX_Regression
+BUILD ?= Linux_IMX_Core
 #DIR = internal-only/Linux_IMX_Rocko_MX8/$(N)/common_bsp
 #DIR = internal-only/Linux_IMX_Core/$(N)/common_bsp
 DIR = internal-only/$(BUILD)/$(N)/common_bsp
@@ -20,7 +20,7 @@ nightly :
 	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qx/u-boot-spl.bin-imx8qxpmek-sd -O u-boot-spl.bin
 	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qx/u-boot-spl.bin-imx8qxpmek-fspi -O u-boot-spl-fspi.bin
 	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qx/m4_image.bin -O m4_image.bin
-	@$(WGET) -qr -nd -l1 -np $(SERVER)/$(DIR) -P boot -A "fsl-imx8qxp-*.dtb"
+	@$(WGET) -qr -nd -l1 -np $(SERVER)/$(DIR)/imx_dtbs -P boot -A "imx8qxp-*.dtb"
 	@$(WGET) -q $(SERVER)/$(DIR)/Image-imx8_all.bin -O Image
 	@mv -f Image boot
 
@@ -35,7 +35,7 @@ nightly_mek :
 	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qx/u-boot-spl.bin-imx8qxpmek-sd -O u-boot-spl.bin
 	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qx/u-boot-spl.bin-imx8qxpmek-fspi -O u-boot-spl-fspi.bin
 	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qx/m4_image.bin -O m4_image.bin
-	@$(WGET) -qr -nd -l1 -np $(SERVER)/$(DIR) -P boot -A "fsl-imx8qxp-*.dtb"
+	@$(WGET) -qr -nd -l1 -np $(SERVER)/$(DIR)/imx_dtbs -P boot -A "imx8qxp-*.dtb"
 	@$(WGET) -q $(SERVER)/$(DIR)/Image-imx8_all.bin -O Image
 	@mv -f Image boot
 

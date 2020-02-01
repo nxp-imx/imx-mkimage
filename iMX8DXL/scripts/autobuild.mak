@@ -16,14 +16,14 @@ nightly_mek :
 	@rm -rf boot
 	@echo "Pulling nightly for MEK board from $(SERVER)/$(DIR)"
 	@echo $(BUILD)-$(N)-iMX8DXL-evk > nightly.txt
-	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8dx/mx8dxla0-ahab-container.img -O mx8dxla0-ahab-container.img
-	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8dx/mx8dx-mek-scfw-tcm.bin -O scfw_tcm.bin
-	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8dx/bl31-imx8dxl.bin -O bl31.bin
-	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8dx/u-boot-imx8dxlevk.bin-sd -O u-boot.bin
-	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8dx/u-boot-spl.bin-imx8dxlevk-sd -O u-boot-spl.bin
-#	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8dx/u-boot-spl.bin-imx8dxlevk-fspi -O u-boot-spl-fspi.bin
-	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8dx/m4_image.bin -O m4_image.bin
-	@$(WGET) -qr -nd -l1 -np $(SERVER)/$(DIR)/imx_dtbs -P boot -A "imx8dxl-*.dtb"
+	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8dxlevk/mx8dxla0-ahab-container.img -O mx8dxla0-ahab-container.img
+	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8dxlevk/mx8dxl-evk-scfw-tcm.bin -O scfw_tcm.bin
+	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8dxlevk/bl31-imx8dxl.bin -O bl31.bin
+	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8dxlevk/u-boot-imx8dxlevk.bin-sd -O u-boot.bin
+	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8dxlevk/u-boot-spl.bin-imx8dxlevk-sd -O u-boot-spl.bin
+#	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8dxlevk/u-boot-spl.bin-imx8dxlevk-fspi -O u-boot-spl-fspi.bin
+	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8dxlevk/m4_image.bin -O m4_image.bin
+	@$(WGET) -qr -nd -l1 -np $(SERVER)/$(DIR)/imx_dtbs -P boot -A "imx8dxl-evk*.dtb"
 	@$(WGET) -q $(SERVER)/$(DIR)/Image-imx8_all.bin -O Image
 	@mv -f Image boot
 

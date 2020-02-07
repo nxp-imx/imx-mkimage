@@ -1,7 +1,7 @@
 WGET = /usr/bin/wget
 N ?= latest
 SERVER=http://yb2.am.freescale.net
-BUILD ?= Linux_IMX_Core
+BUILD ?= Linux_IMX_Full
 #DIR = internal-only/Linux_IMX_Rocko_MX8/$(N)/common_bsp
 #DIR = internal-only/Linux_IMX_Core/$(N)/common_bsp
 DIR = internal-only/$(BUILD)/$(N)/common_bsp

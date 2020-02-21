@@ -23,7 +23,7 @@ AHAB_IMG = mx8qxc0-ahab-container.img
 endif
 
 ifeq ($(SOC),iMX8DX)
-TEE_LOAD_ADDR ?= 0xBE000000
+TEE_LOAD_ADDR ?= 0x96000000
 else ifeq ($(SOC),iMX8QX)
 TEE_LOAD_ADDR ?=  0xFE000000
 endif

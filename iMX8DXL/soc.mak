@@ -22,6 +22,8 @@ ifeq ($(V2X),YES)
     V2X_DUMMY_OCRAM = -dummy 0x120000
 endif
 
+TEE_LOAD_ADDR ?= 0x96000000
+
 FORCE:
 
 u-boot-hash.bin: u-boot.bin
@@ -35,16 +37,16 @@ u-boot-atf.bin: u-boot-hash.bin bl31.bin
 u-boot-atf.itb: u-boot-hash.bin bl31.bin
 	./$(PAD_IMAGE) bl31.bin
 	./$(PAD_IMAGE) u-boot-hash.bin
-	./mkimage_fit_atf.sh > u-boot.its;
+	TEE_LOAD_ADDR=$(TEE_LOAD_ADDR) ./mkimage_fit_atf.sh > u-boot.its;
 	./mkimage_uboot -E -p 0x3000 -f u-boot.its u-boot-atf.itb;
 	@rm -f u-boot.its
 
 u-boot-atf-container.img: bl31.bin u-boot-hash.bin
 	if [ -f tee.bin ]; then \
 		if [ $(shell echo $(ROLLBACK_INDEX_IN_CONTAINER)) ]; then \
-			./$(MKIMG) -soc DXL -rev A0 -sw_version $(ROLLBACK_INDEX_IN_CONTAINER)  -c -ap bl31.bin a35 0x80000000 -ap u-boot-hash.bin a35 0x80020000 -ap tee.bin a35 0xFE000000 -out u-boot-atf-container.img; \
+			./$(MKIMG) -soc DXL -rev A0 -sw_version $(ROLLBACK_INDEX_IN_CONTAINER)  -c -ap bl31.bin a35 0x80000000 -ap u-boot-hash.bin a35 0x80020000 -ap tee.bin a35 $(TEE_LOAD_ADDR) -out u-boot-atf-container.img; \
 		else \
-			./$(MKIMG) -soc DXL -rev A0  -c -ap bl31.bin a35 0x80000000 -ap u-boot-hash.bin a35 0x80020000 -ap tee.bin a35 0xFE000000 -out u-boot-atf-container.img; \
+			./$(MKIMG) -soc DXL -rev A0  -c -ap bl31.bin a35 0x80000000 -ap u-boot-hash.bin a35 0x80020000 -ap tee.bin a35 $(TEE_LOAD_ADDR) -out u-boot-atf-container.img; \
 		fi; \
 	else \
 	./$(MKIMG) -soc DXL -rev A0  -c -ap bl31.bin a35 0x80000000 -ap u-boot-hash.bin a35 0x80020000 -out u-boot-atf-container.img; \

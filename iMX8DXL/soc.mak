@@ -66,6 +66,10 @@ clean:
 flash: $(MKIMG) mx8dxla0-ahab-container.img scfw_tcm.bin u-boot-atf.bin
 	./$(MKIMG) -soc DXL -rev A0  -append mx8dxla0-ahab-container.img -c -scfw scfw_tcm.bin -ap u-boot-atf.bin a35 0x80000000 $(V2X_DUMMY_DDR) -out flash.bin
 
+flash_nand: $(MKIMG) mx8dxla0-ahab-container.img scfw_tcm.bin u-boot-atf.bin
+	./$(MKIMG) -soc DXL -rev A0 -dev nand 16K -append mx8dxla0-ahab-container.img -c -scfw scfw_tcm.bin -ap u-boot-atf.bin a35 0x80000000 $(V2X_DUMMY_DDR) -out flash.bin
+	./$(MKIMG) -soc DXL -rev A0 -append mx8dxla0-ahab-container.img -c -scfw scfw_tcm.bin -ap u-boot-atf.bin a35 0x80000000 $(V2X_DUMMY_DDR) -out flash_fw.bin
+
 flash_flexspi: $(MKIMG) mx8dxla0-ahab-container.img scfw_tcm.bin u-boot-atf.bin $(QSPI_HEADER)
 	./$(MKIMG) -soc DXL -rev A0  -dev flexspi -append mx8dxla0-ahab-container.img -c -scfw scfw_tcm.bin -ap u-boot-atf.bin a35 0x80000000 -out flash.bin
 	./$(QSPI_PACKER) $(QSPI_HEADER)

@@ -32,9 +32,21 @@ OPTIONS:
 		Specifies flags for the new container.
 		The value needs to be a 32bit value in hex.
 
+	-fuse_version [value]
+		Specifies fuse version field for the new container.
+
+	-sw_version [value]
+		Specifies SW version field for the new container.
+
 	-dcd [filename]
 		Specifies the DCD image to be appended to the new container.
 		Not applicable for socs QX and QM revision B0.
+
+	-dummy [address]
+		Specifies address used to store V2X firmware for non-flexspi booting.
+		If the address is not specified in non-flexspi booting, ROM won't load
+		V2X firwmware.
+		When setting this address to DDR, must ensure DDR is initialized by ROM.
 
 	-scfw [filename]
 		Specifies the SCFW image to be appended to the new container.
@@ -42,6 +54,13 @@ OPTIONS:
 	-scd [filename]
 		Specifies the SCD image to be appended to the new container.
 		Applicable only for non B0 revisions.
+
+	-seco [filename]
+		Specifies the SECO container to be appended to the final image.
+
+	-partition [partition index]
+		Specifies the partition index for boot core.
+		Default AP is 1 and M4 is 0 for a shared partition .
 
 	-csf [filename]
 		Specifies the CSF image to be appended to the new container.
@@ -51,6 +70,13 @@ OPTIONS:
 		Specifies the AP image to be appended to the new container.
 		Valid core values for this image are 'a35', 'a53' and 'a72'.
 		The address represents the start address and needs to be a 32bit value in hex.
+
+	-images_hash [sha256|sha384|sha512]
+		Specifies the image hash type used in the new container.
+
+	-msg_blk [filename] [fuse|field|debug|patch] [address]
+		Specifies a special A core data image used to pass a message block to SCFW for debug,
+		secure fuse programming, field return, and patch.
 
 	-m4 [filename] [core] [address]
 		Specifies the M4 image to be appended to the new container.

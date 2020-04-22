@@ -11,6 +11,7 @@ fi
 dd if=qspi-flash of=qspi-flash.off bs=1k seek=4
 dd if=qspi-header.off of=qspi-flash.off conv=notrunc
 mv qspi-flash.off flash.bin
+cp qspi-header.off imx-fspi-header.bin
 rm qspi-tmp qspi-header* qspi-flash*
 echo "F(Q)SPI IMAGE PACKED"
 

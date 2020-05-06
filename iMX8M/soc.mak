@@ -68,7 +68,7 @@ HDMI = yes
 SPL_LOAD_ADDR = 0x7E1000
 TEE_LOAD_ADDR = 0xfe000000
 ATF_LOAD_ADDR = 0x00910000
-VAL_BOARD = arm2
+VAL_BOARD = val
 #define the F(Q)SPI header file
 QSPI_HEADER = ../scripts/qspi_header
 QSPI_PACKER = ../scripts/fspi_packer.sh

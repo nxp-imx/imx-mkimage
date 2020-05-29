@@ -1,0 +1,10 @@
+#! /usr/bin/perl -w
+use strict;
+
+open(my $out, '>:raw', 'sit.bin') or die "Unable to open: $!";
+print $out pack("V", 0x0);	# chipnum
+print $out pack("V", 0x0);	# driver type
+print $out pack("V", 0x00112233);	# tag
+print $out pack("V", %sectornum%);	# firstSectorNumber
+print $out pack("V", 0x0);	# Sector count, not used
+close($out);

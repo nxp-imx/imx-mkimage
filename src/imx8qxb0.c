@@ -436,6 +436,19 @@ void set_image_array_entry(flash_header_v3_t *container, soc_type_t soc,
 		img->entry = 0x20000000;
 
 		break;
+	case SENTINEL:
+		if (container->num_images > 0) {
+			fprintf(stderr, "Error: SENTINEL container only allows 1 image\n");
+			exit(EXIT_FAILURE);
+		}
+
+		img->hab_flags |= IMG_TYPE_SENTINEL;
+		img->hab_flags |= CORE_ULP_SENTINEL << BOOT_IMG_FLAGS_CORE_SHIFT;
+		tmp_name = "SENTINEL";
+		img->dst = 0xe4000000; /* S400 IRAM base */
+		img->entry = 0xe4000000;
+
+		break;
 	case AP:
 		if ((soc == QX || soc == DXL) && core == CORE_CA35)
 			meta = IMAGE_A35_DEFAULT_META(custom_partition);
@@ -443,12 +456,17 @@ void set_image_array_entry(flash_header_v3_t *container, soc_type_t soc,
 			meta = IMAGE_A53_DEFAULT_META(custom_partition);
 		else if (soc == QM && core == CORE_CA72)
 			meta = IMAGE_A72_DEFAULT_META(custom_partition);
+		else if (soc == ULP && core == CORE_CA35)
+			meta = 0;
 		else {
 			fprintf(stderr, "Error: invalid AP core id: %" PRIi64 "\n", core);
 			exit(EXIT_FAILURE);
 		}
 		img->hab_flags |= IMG_TYPE_EXEC;
-		img->hab_flags |= CORE_CA53 << BOOT_IMG_FLAGS_CORE_SHIFT; /* On B0, only core id = 4 is valid */
+		if (soc == ULP)
+			img->hab_flags |= CORE_ULP_CA35 << BOOT_IMG_FLAGS_CORE_SHIFT;
+		else
+			img->hab_flags |= CORE_CA53 << BOOT_IMG_FLAGS_CORE_SHIFT; /* On B0, only core id = 4 is valid */
 		tmp_name = "AP";
 		img->dst = entry;
 		img->entry = entry;
@@ -456,15 +474,20 @@ void set_image_array_entry(flash_header_v3_t *container, soc_type_t soc,
 		custom_partition = 0;
 		break;
 	case M4:
-		if (core == 0) {
-			core = CORE_CM4_0;
-			meta = IMAGE_M4_0_DEFAULT_META(custom_partition);
-		} else if (core == 1) {
-			core = CORE_CM4_1;
-			meta = IMAGE_M4_1_DEFAULT_META(custom_partition);
+		if (soc == ULP) {
+			core = CORE_ULP_CM33;
+			meta = 0;
 		} else {
-			fprintf(stderr, "Error: invalid m4 core id: %" PRIi64 "\n", core);
-			exit(EXIT_FAILURE);
+			if (core == 0) {
+				core = CORE_CM4_0;
+				meta = IMAGE_M4_0_DEFAULT_META(custom_partition);
+			} else if (core == 1) {
+				core = CORE_CM4_1;
+				meta = IMAGE_M4_1_DEFAULT_META(custom_partition);
+			} else {
+				fprintf(stderr, "Error: invalid m4 core id: %" PRIi64 "\n", core);
+				exit(EXIT_FAILURE);
+			}
 		}
 		img->hab_flags |= IMG_TYPE_EXEC;
 		img->hab_flags |= core << BOOT_IMG_FLAGS_CORE_SHIFT;
@@ -480,7 +503,10 @@ void set_image_array_entry(flash_header_v3_t *container, soc_type_t soc,
 		break;
 	case DATA:
 		img->hab_flags |= IMG_TYPE_DATA;
-		img->hab_flags |= CORE_CA35 << BOOT_IMG_FLAGS_CORE_SHIFT;
+		if (soc == ULP)
+			img->hab_flags |= CORE_ULP_CA35 << BOOT_IMG_FLAGS_CORE_SHIFT;
+		else
+			img->hab_flags |= CORE_CA35 << BOOT_IMG_FLAGS_CORE_SHIFT;
 		tmp_name = "DATA";
 		img->dst = entry;
 		break;
@@ -510,6 +536,15 @@ void set_image_array_entry(flash_header_v3_t *container, soc_type_t soc,
 			img->entry = read_dcd_offset(tmp_filename);
 			img->dst = img->entry - 1;
 		}
+		break;
+	case UPOWER:
+		img->hab_flags |= IMG_TYPE_EXEC;
+		img->hab_flags |= CORE_ULP_UPOWER << BOOT_IMG_FLAGS_CORE_SHIFT;
+		tmp_name = "UPOWER";
+		//img->dst = 0x28300000; /* UPOWER code RAM */
+		//img->entry = 0x28300000;
+		img->dst = 0x20001000;
+		img->entry = 0x20001000; /*temp address in RAM */
 		break;
 	case DUMMY_V2X:
 		img->hab_flags |= IMG_TYPE_V2X_DUMMY;
@@ -584,7 +619,7 @@ int get_container_image_start_pos(image_t *image_stack, uint32_t align, soc_type
 					*scu_cont_hdr_off = CONTAINER_ALIGNMENT + ALIGN(header.length, CONTAINER_ALIGNMENT);
 				}
 				else {
-					*scu_cont_hdr_off = CONTAINER_ALIGNMENT;
+					*scu_cont_hdr_off = ALIGN(header.length, CONTAINER_ALIGNMENT);
 				}
 				file_off = ALIGN(file_off, align);
 			}
@@ -628,6 +663,8 @@ int build_container_qx_qm_b0(soc_type_t soc, uint32_t sector_size, uint32_t ivt_
 		fprintf(stdout, "Platform:\ti.MX8QM B0\n");
 	else if (soc == DXL)
 		fprintf(stdout, "Platform:\ti.MX8DXL A0\n");
+	else if (soc == ULP)
+		fprintf(stdout, "Platform:\ti.MX8ULP A0\n");
 
 	set_imx_hdr_v3(&imx_header, dcd_len, ivt_offset, INITIAL_LOAD_ADDR_SCU_ROM, 0);
 	set_imx_hdr_v3(&imx_header, 0, ivt_offset, INITIAL_LOAD_ADDR_AP_ROM, 1);
@@ -646,6 +683,7 @@ int build_container_qx_qm_b0(soc_type_t soc, uint32_t sector_size, uint32_t ivt_
 		case M4:
 		case SCFW:
 		case DATA:
+		case UPOWER:
 		case MSG_BLOCK:
 			if (container < 0) {
 				fprintf(stderr, "No container found\n");
@@ -687,6 +725,7 @@ int build_container_qx_qm_b0(soc_type_t soc, uint32_t sector_size, uint32_t ivt_
 			break;
 
 		case SECO:
+		case SENTINEL:
 			if (container < 0) {
 				fprintf(stderr, "No container found\n");
 				exit(EXIT_FAILURE);
@@ -790,7 +829,8 @@ int build_container_qx_qm_b0(soc_type_t soc, uint32_t sector_size, uint32_t ivt_
 	img_sp = image_stack;
 	while (img_sp->option != NO_IMG) { /* stop once we reach null terminator */
 		if (img_sp->option == M4 || img_sp->option == AP || img_sp->option == DATA || img_sp->option == SCD ||
-				img_sp->option == SCFW || img_sp->option == SECO || img_sp->option == MSG_BLOCK) {
+				img_sp->option == SCFW || img_sp->option == SECO || img_sp->option == MSG_BLOCK ||
+				img_sp->option == UPOWER || img_sp->option == SENTINEL) {
 			copy_file_aligned(ofd, img_sp->filename, img_sp->src, sector_size);
 		}
 		img_sp++;
@@ -801,7 +841,7 @@ int build_container_qx_qm_b0(soc_type_t soc, uint32_t sector_size, uint32_t ivt_
 	return 0;
 }
 
-img_flags_t parse_image_flags(uint32_t flags, char *flag_list)
+img_flags_t parse_image_flags(uint32_t flags, char *flag_list, soc_type_t soc)
 {
 	img_flags_t img_flags;
 
@@ -823,7 +863,10 @@ img_flags_t parse_image_flags(uint32_t flags, char *flag_list)
 		strcat(flag_list, "DDR Init");
 		break;
 	case 0x6:
-		strcat(flag_list, "SECO");
+		if (soc == ULP)
+			strcat(flag_list, "SENTINEL");
+		else
+			strcat(flag_list, "SECO");
 		break;
 	case 0x7:
 		strcat(flag_list, "Provisioning");
@@ -853,36 +896,57 @@ img_flags_t parse_image_flags(uint32_t flags, char *flag_list)
 	strcat(flag_list, "CORE ID: ");
 	img_flags.core_id = (flags >> CORE_ID_SHIFT) & CORE_ID_MASK;
 
-	switch (img_flags.core_id) {
+	if (soc == ULP) {
+		switch (img_flags.core_id) {
 
-	case CORE_SC:
-		strcat(flag_list, "CORE_SC");
-		break;
-	case CORE_CM4_0:
-		strcat(flag_list, "CORE_CM4_0");
-		break;
-	case CORE_CM4_1:
-		strcat(flag_list, "CORE_CM4_1");
-		break;
-	case CORE_CA53:
-		strcat(flag_list, "CORE_CA53");
-		break;
-	case CORE_CA72:
-		strcat(flag_list, "CORE_CA72");
-		break;
-	case CORE_SECO:
-		strcat(flag_list, "CORE_SECO");
-		break;
-	case CORE_V2X_P:
-		strcat(flag_list, "CORE_V2X_P");
-		break;
-	case CORE_V2X_S:
-		strcat(flag_list, "CORE_V2X_S");
-		break;
-	default:
-		strcat(flag_list, "Invalid core id");
-		break;
+		case CORE_ULP_CM33:
+			strcat(flag_list, "CORE_CM33");
+			break;
+		case CORE_ULP_SENTINEL:
+			strcat(flag_list, "CORE_SENTINEL");
+			break;
+		case CORE_ULP_UPOWER:
+			strcat(flag_list, "CORE_UPOWER");
+			break;
+		case CORE_ULP_CA35:
+			strcat(flag_list, "CORE_CA35");
+			break;
+		default:
+			strcat(flag_list, "Invalid core id");
+			break;
+		}
+	} else {
+		switch (img_flags.core_id) {
 
+		case CORE_SC:
+			strcat(flag_list, "CORE_SC");
+			break;
+		case CORE_CM4_0:
+			strcat(flag_list, "CORE_CM4_0");
+			break;
+		case CORE_CM4_1:
+			strcat(flag_list, "CORE_CM4_1");
+			break;
+		case CORE_CA53:
+			strcat(flag_list, "CORE_CA53");
+			break;
+		case CORE_CA72:
+			strcat(flag_list, "CORE_CA72");
+			break;
+		case CORE_SECO:
+			strcat(flag_list, "CORE_SECO");
+			break;
+		case CORE_V2X_P:
+			strcat(flag_list, "CORE_V2X_P");
+			break;
+		case CORE_V2X_S:
+			strcat(flag_list, "CORE_V2X_S");
+			break;
+		default:
+			strcat(flag_list, "Invalid core id");
+			break;
+
+		}
 	}
 	strcat(flag_list, " | ");
 
@@ -921,7 +985,7 @@ img_flags_t parse_image_flags(uint32_t flags, char *flag_list)
 	return img_flags;
 }
 
-void print_image_array_fields(flash_header_v3_t *container_hdrs)
+void print_image_array_fields(flash_header_v3_t *container_hdrs, soc_type_t soc)
 {
 	boot_img_t img; /* image array entry */
 	img_flags_t img_flags; /* image hab flags */
@@ -939,20 +1003,30 @@ void print_image_array_fields(flash_header_v3_t *container_hdrs)
 		img = container_hdrs->img[i];
 
 		/* get the image flags */
-		img_flags = parse_image_flags(img.hab_flags, flag_string);
+		img_flags = parse_image_flags(img.hab_flags, flag_string, soc);
 
 		/* determine the type of image */
 		switch (img_flags.type) {
 
 		case 0x3:
-			if (img_flags.core_id == CORE_SC)
-				strcpy(img_name, "SCFW");
-			else if ((img_flags.core_id == CORE_CA53) || (img_flags.core_id == CORE_CA72))
-				strcpy(img_name, "Bootloader");
-			else if (img_flags.core_id == CORE_CM4_0)
-				strcpy(img_name, "M4_0");
-			else if (img_flags.core_id == CORE_CM4_1)
-				strcpy(img_name, "M4_1");
+			if (soc == ULP) {
+				if (img_flags.core_id == CORE_ULP_UPOWER)
+					strcpy(img_name, "uPower FW");
+				else if ((img_flags.core_id == CORE_ULP_CA35))
+					strcpy(img_name, "Bootloader");
+				else if ((img_flags.core_id == CORE_ULP_CM33))
+					strcpy(img_name, "M33");
+
+			} else {
+				if (img_flags.core_id == CORE_SC)
+					strcpy(img_name, "SCFW");
+				else if ((img_flags.core_id == CORE_CA53) || (img_flags.core_id == CORE_CA72))
+					strcpy(img_name, "Bootloader");
+				else if (img_flags.core_id == CORE_CM4_0)
+					strcpy(img_name, "M4_0");
+				else if (img_flags.core_id == CORE_CM4_1)
+					strcpy(img_name, "M4_1");
+			}
 			break;
 		case 0x4:
 			strcpy(img_name, "Data");
@@ -961,7 +1035,10 @@ void print_image_array_fields(flash_header_v3_t *container_hdrs)
 			strcpy(img_name, "DDR Init");
 			break;
 		case 0x6:
-			strcpy(img_name, "SECO FW");
+			if (soc == ULP)
+				strcpy(img_name, "SENTINEL FW");
+			else
+				strcpy(img_name, "SECO FW");
 			break;
 		case 0x7:
 			strcpy(img_name, "Provisioning");
@@ -1030,7 +1107,7 @@ void print_image_array_fields(flash_header_v3_t *container_hdrs)
 	}
 }
 
-void print_container_hdr_fields(flash_header_v3_t *container_hdrs, int num_cntrs)
+void print_container_hdr_fields(flash_header_v3_t *container_hdrs, int num_cntrs, soc_type_t soc)
 {
 
 	for (int i = 0; i < num_cntrs; i++) {
@@ -1057,7 +1134,7 @@ void print_container_hdr_fields(flash_header_v3_t *container_hdrs, int num_cntrs
 		fprintf(stdout, "%16s", "Sig blk offset: ");
 		fprintf(stdout, "%#X\n\n", container_hdrs->sig_blk_offset);
 
-		print_image_array_fields(container_hdrs);
+		print_image_array_fields(container_hdrs, soc);
 
 		container_hdrs++;
 	}
@@ -1265,7 +1342,7 @@ int parse_container_hdrs_qx_qm_b0(char *ifname, bool extract, soc_type_t soc)
 	}
 
 
-	print_container_hdr_fields(container_headers, cntr_num);
+	print_container_hdr_fields(container_headers, cntr_num, soc);
 
 	if (extract)
 		extract_container_images(container_headers, ifname, cntr_num, ifd, soc);

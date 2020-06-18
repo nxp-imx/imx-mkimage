@@ -550,6 +550,8 @@ int main(int argc, char **argv)
 		{"images_hash", required_argument, NULL, 'h'},
 		{"extract", required_argument, NULL, 'X'},
 		{"parse", required_argument, NULL, 'R'},
+		{"sentinel", required_argument, NULL, 'i'},
+		{"upower", required_argument, NULL, 'w'},
 		{NULL, 0, NULL, 0}
 	};
 
@@ -560,7 +562,7 @@ int main(int argc, char **argv)
 		/* getopt_long stores the option index here. */
 		int option_index = 0;
 
-		c = getopt_long_only (argc, argv, ":f:m:a:d:o:l:x:z:e:p:cu:v:h:",
+		c = getopt_long_only (argc, argv, ":f:m:a:d:o:l:x:z:e:p:cu:v:h:i:w:",
 			long_options, &option_index);
 
 		/* Detect the end of the options. */
@@ -592,8 +594,10 @@ int main(int argc, char **argv)
 				else if (!strncmp(optarg, "DXL", 3)) {
 					soc = DXL;
 					sector_size = 0x400;
-				}
-				else{
+				} else if (!strncmp(optarg, "ULP", 3)) {
+					soc = ULP;
+					sector_size = 0x400;
+				} else{
 					fprintf(stdout, "unrecognized SOC: %s \n",optarg);
 					exit(EXIT_FAILURE);
 				}
@@ -612,6 +616,16 @@ int main(int argc, char **argv)
 					}
 					fprintf(stdout, "REVISION: %s \n",optarg);
 				}
+				break;
+			case 'i':
+				fprintf(stdout, "SENTINEL:\t%s\n", optarg);
+				param_stack[p_idx].option = SENTINEL;
+				param_stack[p_idx++].filename = optarg;
+				break;
+			case 'w':
+				fprintf(stdout, "UPOWER:\t%s\n", optarg);
+				param_stack[p_idx].option = UPOWER;
+				param_stack[p_idx++].filename = optarg;
 				break;
 			case 'f':
 				fprintf(stdout, "SCFW:\t%s\n", optarg);
@@ -632,6 +646,9 @@ int main(int argc, char **argv)
 						fprintf(stderr, "\n-dcd option requires argument skip\n\n");
 						exit(EXIT_FAILURE);
 					}
+				} else if (soc == ULP) {
+					fprintf(stderr, "\n-dcd option is not used on ULP\n\n");
+					exit(EXIT_FAILURE);
 				} else {
 					param_stack[p_idx].option = DCD;
 					param_stack[p_idx].filename = optarg;
@@ -639,7 +656,7 @@ int main(int argc, char **argv)
 				}
 				break;
 			case 'D':
-				if ((rev == B0) || (soc == DXL)) {
+				if ((rev == B0) || (soc == DXL) || (soc == ULP)) {
 					fprintf(stdout, "Data:\t%s\n", optarg);
 					param_stack[p_idx].option = DATA;
 					param_stack[p_idx].filename = optarg;
@@ -873,6 +890,7 @@ int main(int argc, char **argv)
 				build_container_qm(sector_size, ivt_offset, ofname, emmc_fastboot, (image_t *) param_stack);
 			break;
 		case DXL:
+		case ULP:
 			build_container_qx_qm_b0(soc, sector_size, ivt_offset, ofname, emmc_fastboot, (image_t *) param_stack, dcd_skip, fuse_version, sw_version, images_hash);
 			break;
 		default:

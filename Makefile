@@ -30,6 +30,7 @@ clean:
 	@rm -f src/build_info.h
 	@$(MAKE) --no-print-directory -C iMX8QM -f soc.mak clean
 	@$(MAKE) --no-print-directory -C iMX8QX -f soc.mak  clean
+	@$(MAKE) --no-print-directory -C iMX8ULP -f soc.mak  clean
 	@$(MAKE) --no-print-directory -C iMX8M -f soc.mak  clean
 	@$(MAKE) --no-print-directory -C iMX8dv -f soc.mak  clean
 

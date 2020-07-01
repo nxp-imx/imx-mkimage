@@ -19,7 +19,7 @@ endif
 
 ifeq ($(V2X),YES)
     V2X_DUMMY_DDR = -dummy 0x87fc0000
-    V2X_DUMMY_OCRAM = -dummy 0x120000
+    V2X_DUMMY_OCRAM = -dummy 0x110000
 endif
 
 TEE_LOAD_ADDR ?= 0x96000000

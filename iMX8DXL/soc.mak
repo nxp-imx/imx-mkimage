@@ -145,6 +145,9 @@ flash_regression_linux_m4_xip : $(MKIMG) mx8dxla0-ahab-container.img scfw_tcm.bi
 flash_scfw: $(MKIMG) mx8dxla0-ahab-container.img scfw_tcm.bin
 	./$(MKIMG) -soc DXL -rev A0 -dcd skip -append mx8dxla0-ahab-container.img -c -scfw scfw_tcm.bin $(V2X_DUMMY_OCRAM) --out flash.bin
 
+flash_patch: $(MKIMG) mx8dxla0-ahab-container.img scfw_tcm.bin message_signed.bin
+	./$(MKIMG) -soc DXL -rev A0 -append mx8dxla0-ahab-container.img -c -scfw scfw_tcm.bin -msg_blk message_signed.bin patch 0x80000000 $(V2X_DUMMY_OCRAM) --out flash.bin
+
 flash_kernel: $(MKIMG) Image imx8dxl-evk.dtb
 	./$(MKIMG) -soc DXL -rev A0  -c -ap Image a35 0x80280000 --data imx8dxl-evk.dtb 0x83000000 -out flash.bin
 

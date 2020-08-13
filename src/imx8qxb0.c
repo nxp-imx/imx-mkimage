@@ -541,10 +541,8 @@ void set_image_array_entry(flash_header_v3_t *container, soc_type_t soc,
 		img->hab_flags |= IMG_TYPE_EXEC;
 		img->hab_flags |= CORE_ULP_UPOWER << BOOT_IMG_FLAGS_CORE_SHIFT;
 		tmp_name = "UPOWER";
-		//img->dst = 0x28300000; /* UPOWER code RAM */
-		//img->entry = 0x28300000;
-		img->dst = 0x20001000;
-		img->entry = 0x20001000; /*temp address in RAM */
+		img->dst = 0x28300200; /* UPOWER code RAM */
+		img->entry = 0x28300200;
 		break;
 	case DUMMY_V2X:
 		img->hab_flags |= IMG_TYPE_V2X_DUMMY;

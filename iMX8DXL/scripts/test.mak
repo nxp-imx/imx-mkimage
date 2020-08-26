@@ -17,6 +17,5 @@ flash_test_build_mfg flash_a0_test_build_mfg: $(MKIMG) mx8dxla0-ahab-container.i
 	./$(MKIMG) -soc DXL -rev A0 -append mx8dxla0-ahab-container.img -c -scfw scfw_tcm.bin -ap u-boot.bin a35 0x80000000 -m4 CM4.bin 0 0x34FE0000 -data kernel.bin 0x80280000 -data initramfs.bin 0x83100000 -data board.dtb 0x83000000 $(V2X_DUMMY_DDR) -out flash.bin
 
 flash_scfw_test flash_a0_scfw_test: $(MKIMG) mx8dxla0-ahab-container.img scfw_tcm.bin scfw_tests.bin
-	SPL_CMD="$(shell cat u-boot-spl.bin_cmd)"; \
-	./$(MKIMG) -soc DXL -rev A0 -dcd skip -append mx8dxla0-ahab-container.img -c -scfw scfw_tcm.bin --data scfw_tests.bin 0x100000 $$SPL_CMD $(V2X_DUMMY_OCRAM) -out flash.bin
+	./$(MKIMG) -soc DXL -rev A0 -dcd skip -append mx8dxla0-ahab-container.img -c -scfw scfw_tcm.bin --data scfw_tests.bin 0x100000 $(V2X_DUMMY_OCRAM) -out flash.bin
 

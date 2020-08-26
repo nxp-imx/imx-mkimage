@@ -2,12 +2,10 @@ flash_secofw flash_b0_secofw: $(MKIMG) ahabfw.bin
 	./$(MKIMG) -soc DXL -rev A0 -c -seco ahabfw.bin -out flash.bin
 
 flash_msg_block:
-	SPL_CMD="$(shell cat u-boot-spl.bin_cmd)"; \
-	./$(MKIMG) -soc DXL -rev A0 -dcd skip -append mx8dxla0-ahab-container.img -c -scfw scfw_tcm.bin -msg_blk test_block.bin field 0x00100000 $$SPL_CMD $(V2X_DUMMY_OCRAM) -out flash.bin
+	./$(MKIMG) -soc DXL -rev A0 -dcd skip -append mx8dxla0-ahab-container.img -c -scfw scfw_tcm.bin -msg_blk test_block.bin field 0x00100000 $(V2X_DUMMY_OCRAM) -out flash.bin
 
 flash_flexspi_msg_block: $(MKIMG) mx8dxla0-ahab-container.img scfw_tcm.bin u-boot-atf.bin $(QSPI_HEADER)
-	SPL_CMD="$(shell cat u-boot-spl.bin_cmd)"; \
-	./$(MKIMG) -soc DXL -rev A0 -dcd skip -dev flexspi -append mx8dxla0-ahab-container.img -c -scfw scfw_tcm.bin -msg_blk test_block.bin field 0x00100000 $$SPL_CMD $(V2X_DUMMY_OCRAM) -out flash.bin
+	./$(MKIMG) -soc DXL -rev A0 -dcd skip -dev flexspi -append mx8dxla0-ahab-container.img -c -scfw scfw_tcm.bin -msg_blk test_block.bin field 0x00100000 $(V2X_DUMMY_OCRAM) -out flash.bin
 	./$(QSPI_PACKER) $(QSPI_HEADER)
 
 flash_nand_fw: $(MKIMG) mx8dxla0-ahab-container.img scfw_tcm.bin u-boot-atf.bin

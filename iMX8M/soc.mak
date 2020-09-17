@@ -61,7 +61,7 @@ VAL_BOARD = val
 QSPI_HEADER = ../scripts/fspi_header
 QSPI_PACKER = ../scripts/fspi_packer.sh
 VERSION = v2
-LPDDR_FW_VERSION = _201904
+LPDDR_FW_VERSION = _202006
 else
 PLAT = imx8mq
 HDMI = yes

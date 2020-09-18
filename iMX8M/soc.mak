@@ -113,9 +113,12 @@ u-boot-spl-ddr4.bin: u-boot-spl.bin $(ddr4_imem_1d) $(ddr4_dmem_1d) $(ddr4_imem_
 	@cat u-boot-spl-pad.bin ddr4_1d_fw.bin ddr4_2d_fw.bin > u-boot-spl-ddr4.bin
 	@rm -f u-boot-spl-pad.bin ddr4_1d_fw.bin ddr4_2d_fw.bin ddr4_imem_1d_pad.bin ddr4_dmem_1d_pad.bin ddr4_imem_2d_pad.bin
 
-u-boot-spl-ddr3l.bin: u-boot-spl.bin ddr3_imem_1d.bin ddr3_dmem_1d.bin
-	@objcopy -I binary -O binary --pad-to 0x8000 --gap-fill=0x0 ddr3_imem_1d.bin ddr3_imem_1d.bin_pad.bin
-	@cat ddr3_imem_1d.bin_pad.bin ddr3_dmem_1d.bin > ddr3_pmu_train_fw.bin
+ddr3_imem_1d = ddr3_imem_1d$(DDR_FW_VERSION).bin
+ddr3_dmem_1d = ddr3_dmem_1d$(DDR_FW_VERSION).bin
+
+u-boot-spl-ddr3l.bin: u-boot-spl.bin $(ddr3_imem_1d) $(ddr3_dmem_1d)
+	@objcopy -I binary -O binary --pad-to 0x8000 --gap-fill=0x0 $(ddr3_imem_1d) ddr3_imem_1d.bin_pad.bin
+	@cat ddr3_imem_1d.bin_pad.bin $(ddr3_dmem_1d) > ddr3_pmu_train_fw.bin
 	@dd if=u-boot-spl.bin of=u-boot-spl-pad.bin bs=4 conv=sync
 	@cat u-boot-spl-pad.bin ddr3_pmu_train_fw.bin > u-boot-spl-ddr3l.bin
 	@rm -f u-boot-spl-pad.bin ddr3_pmu_train_fw.bin ddr3_imem_1d.bin_pad.bin
@@ -156,6 +159,18 @@ u-boot-ddr3l.itb: $(dtbs_ddr3l)
 	DEK_BLOB_LOAD_ADDR=$(DEK_BLOB_LOAD_ADDR) TEE_LOAD_ADDR=$(TEE_LOAD_ADDR) ATF_LOAD_ADDR=$(ATF_LOAD_ADDR) ./mkimage_fit_atf.sh $(dtbs_ddr3l) > u-boot-ddr3l.its
 	./mkimage_uboot -E -p 0x3000 -f u-boot-ddr3l.its u-boot-ddr3l.itb
 	@rm -f u-boot.its $(dtbs_ddr3l)
+
+dtbs_ddr3l_evk = evkddr3l.dtb
+$(dtbs_ddr3l_evk):
+	./$(DTB_PREPROC) $(PLAT)-ddr3l-evk.dtb $(dtbs_ddr3l_evk)
+
+u-boot-ddr3l-evk.itb: $(dtbs_ddr3l_evk)
+	./$(PAD_IMAGE) tee.bin
+	./$(PAD_IMAGE) bl31.bin
+	./$(PAD_IMAGE) u-boot-nodtb.bin $(dtbs_ddr3l_evk)
+	DEK_BLOB_LOAD_ADDR=$(DEK_BLOB_LOAD_ADDR) TEE_LOAD_ADDR=$(TEE_LOAD_ADDR) ATF_LOAD_ADDR=$(ATF_LOAD_ADDR) ./mkimage_fit_atf.sh $(dtbs_ddr3l_evk) > u-boot-ddr3l-evk.its
+	./mkimage_uboot -E -p 0x3000 -f u-boot-ddr3l-evk.its u-boot-ddr3l-evk.itb
+	@rm -f u-boot.its $(dtbs_ddr3l_evk)
 
 dtbs_ddr4 = valddr4.dtb
 $(dtbs_ddr4):
@@ -208,6 +223,8 @@ flash_evk_emmc_fastboot: flash_evk_no_hdmi_emmc_fastboot
 
 flash_ddr4_evk: flash_ddr4_evk_no_hdmi
 
+flash_ddr3l_evk: flash_ddr3l_evk_no_hdmi
+
 flash_ddr3l_val: flash_ddr3l_val_no_hdmi
 
 flash_ddr4_val: flash_ddr4_val_no_hdmi
@@ -227,6 +244,9 @@ flash_evk_no_hdmi_emmc_fastboot: $(MKIMG) u-boot-spl-ddr.bin u-boot.itb
 flash_ddr3l_val_no_hdmi: $(MKIMG) u-boot-spl-ddr3l.bin u-boot-ddr3l.itb
 	./mkimage_imx8 -version $(VERSION) -fit -loader u-boot-spl-ddr3l.bin $(SPL_LOAD_ADDR) -second_loader u-boot-ddr3l.itb 0x40200000 0x60000 -out $(OUTIMG)
 
+flash_ddr3l_evk_no_hdmi: $(MKIMG) u-boot-spl-ddr3l.bin u-boot-ddr3l-evk.itb
+	./mkimage_imx8 -version $(VERSION) -fit -loader u-boot-spl-ddr3l.bin $(SPL_LOAD_ADDR) -second_loader u-boot-ddr3l-evk.itb 0x40200000 0x60000 -out $(OUTIMG)
+
 flash_ddr4_val_no_hdmi: $(MKIMG) u-boot-spl-ddr4.bin u-boot-ddr4.itb
 	./mkimage_imx8 -version $(VERSION) -fit -loader u-boot-spl-ddr4.bin $(SPL_LOAD_ADDR) -second_loader u-boot-ddr4.itb 0x40200000 0x60000 -out $(OUTIMG)
 
@@ -239,6 +259,10 @@ flash_ddr4_evk_no_hdmi_dual_bootloader: $(MKIMG) u-boot-spl-ddr4.bin u-boot-ddr4
 
 flash_evk_flexspi: $(MKIMG) u-boot-spl-ddr.bin u-boot.itb
 	./mkimage_imx8 -version $(VERSION) -dev flexspi -fit -loader u-boot-spl-ddr.bin $(SPL_FSPI_LOAD_ADDR) -second_loader u-boot.itb 0x40200000 0x60000 -out $(OUTIMG)
+	./$(QSPI_PACKER) $(QSPI_HEADER)
+
+flash_ddr3l_evk_flexspi: $(MKIMG) u-boot-spl-ddr3l.bin u-boot-ddr3l-evk.itb
+	./mkimage_imx8 -version $(VERSION) -dev flexspi -fit -loader u-boot-spl-ddr3l.bin $(SPL_FSPI_LOAD_ADDR) -second_loader u-boot-ddr3l-evk.itb 0x40200000 0x60000 -out $(OUTIMG)
 	./$(QSPI_PACKER) $(QSPI_HEADER)
 
 flash_ddr4_evk_flexspi: $(MKIMG) u-boot-spl-ddr4.bin u-boot-ddr4-evk.itb

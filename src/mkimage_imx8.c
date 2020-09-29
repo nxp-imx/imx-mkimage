@@ -789,6 +789,8 @@ int main(int argc, char **argv)
 						param_stack[p_idx].ext = SC_R_DEBUG;
 					else if (!strncmp(argv[optind], "field", 5))
 						param_stack[p_idx].ext = SC_R_ROM_0;
+					else if (!strncmp(argv[optind], "zero", 4))
+						param_stack[p_idx].ext = SC_R_PWM_0;
 					else if (!strncmp(argv[optind], "patch", 5))
 						param_stack[p_idx].ext = SC_R_SNVS;
 					else {

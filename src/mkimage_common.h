@@ -124,6 +124,7 @@ typedef struct {
 #define SC_R_OTP                  357U
 #define SC_R_DEBUG                354U
 #define SC_R_ROM_0                236U
+#define SC_R_PWM_0                191U
 #define SC_R_SNVS                 356U
 
 #define MSG_DEBUG_EN    SC_R_DEBUG

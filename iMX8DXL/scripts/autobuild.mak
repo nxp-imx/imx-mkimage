@@ -16,7 +16,7 @@ nightly_mek :
 	@rm -rf boot
 	@echo "Pulling nightly for MEK board from $(SERVER)/$(DIR)"
 	@echo $(BUILD)-$(N)-iMX8DXL-evk > nightly.txt
-	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8dxlevk/mx8dxla0-ahab-container.img -O mx8dxla0-ahab-container.img
+	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8dxlevk/$(SECO_FW_NAME) -O $(SECO_FW_NAME)
 	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8dxlevk/mx8dxl-evk-scfw-tcm.bin -O scfw_tcm.bin
 	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8dxlevk/bl31-imx8dxl.bin -O bl31.bin
 	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8dxlevk/u-boot-imx8dxlevk.bin-sd -O u-boot.bin

@@ -79,7 +79,7 @@ flash_nand: $(MKIMG) $(SECO_FW_NAME) scfw_tcm.bin u-boot-atf.bin
 	./$(MKIMG) -soc DXL -rev A0 -append $(SECO_FW_NAME) -c -scfw scfw_tcm.bin -ap u-boot-atf.bin a35 0x80000000 $(V2X_DUMMY_DDR) -out flash_fw.bin
 
 flash_flexspi: $(MKIMG) $(SECO_FW_NAME) scfw_tcm.bin u-boot-atf.bin $(QSPI_HEADER)
-	./$(MKIMG) -soc DXL -rev A0  -dev flexspi -append $(SECO_FW_NAME) -c -scfw scfw_tcm.bin -ap u-boot-atf.bin a35 0x80000000 -out flash.bin
+	./$(MKIMG) -soc DXL -rev A0  -dev flexspi -append $(SECO_FW_NAME) -c -scfw scfw_tcm.bin -ap u-boot-atf.bin a35 0x80000000 $(V2X_DUMMY_OCRAM) -out flash.bin
 	./$(QSPI_PACKER) $(QSPI_HEADER)
 
 flash_spl: $(MKIMG) prepare_spl $(SECO_FW_NAME) scfw_tcm.bin u-boot-atf-container.img
@@ -128,7 +128,7 @@ flash_linux_m4_ddr: $(MKIMG) prepare_spl $(SECO_FW_NAME) scfw_tcm.bin u-boot-atf
 
 flash_linux_m4_xip: $(MKIMG) prepare_spl $(SECO_FW_NAME) scfw_tcm.bin u-boot-atf-container.img m4_image.bin
 	SPL_CMD="$(shell cat u-boot-spl.bin_cmd)"; \
-	./$(MKIMG) -soc DXL -rev A0 -dcd skip -append $(SECO_FW_NAME) -c -flags 0x00200000 -scfw scfw_tcm.bin -fileoff 0x80000 -p3 -m4 m4_image.bin 0 0x08081000 -fileoff 0x180000 $$SPL_CMD -out flash.bin
+	./$(MKIMG) -soc DXL -rev A0 -dcd skip -append $(SECO_FW_NAME) -c -flags 0x00200000 -scfw scfw_tcm.bin -fileoff 0x80000 -p3 -m4 m4_image.bin 0 0x08081000 -fileoff 0x180000 $$SPL_CMD $(V2X_DUMMY_OCRAM) -out flash.bin
 	cp flash.bin boot-spl-container.img
 	@flashbin_size=`wc -c flash.bin | awk '{print $$1}'`; \
                    pad_cnt=$$(((flashbin_size + 0x400 - 1) / 0x400)); \
@@ -143,7 +143,7 @@ flash_regression_linux_m4_ddr: $(MKIMG) $(SECO_FW_NAME) scfw_tcm.bin u-boot-atf.
 	./$(MKIMG) -soc DXL -rev A0 -append $(SECO_FW_NAME) -c -flags 0x00200000 -scfw scfw_tcm.bin -ap u-boot-atf.bin a35 0x80000000 -p3 -m4 m4_image.bin 0 0x88000000 $(V2X_DUMMY_DDR) -out flash.bin
 
 flash_regression_linux_m4_xip : $(MKIMG) $(SECO_FW_NAME) scfw_tcm.bin u-boot-atf.bin m4_image.bin $(QSPI_HEADER)
-	./$(MKIMG) -soc DXL -rev A0 -dev flexspi -append $(SECO_FW_NAME) -c -flags 0x00200000 -scfw scfw_tcm.bin -fileoff 0x80000 -p3 -m4 m4_image.bin 0 0x08081000 -fileoff 0x180000 -ap u-boot-atf.bin a35 0x80000000 -out flash.bin
+	./$(MKIMG) -soc DXL -rev A0 -dev flexspi -append $(SECO_FW_NAME) -c -flags 0x00200000 -scfw scfw_tcm.bin -fileoff 0x80000 -p3 -m4 m4_image.bin 0 0x08081000 -fileoff 0x180000 -ap u-boot-atf.bin a35 0x80000000 $(V2X_DUMMY_OCRAM) -out flash.bin
 	./$(QSPI_PACKER) $(QSPI_HEADER)
 
 flash_scfw: $(MKIMG) $(SECO_FW_NAME) scfw_tcm.bin

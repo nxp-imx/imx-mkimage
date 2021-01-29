@@ -67,7 +67,7 @@ Image1: Image
 
 .PHONY: clean nightly
 clean:
-	@rm -f $(MKIMG) $(DCD_CFG) .imx8qx_dcd.cfg.cfgtmp.d u-boot-atf-container.img Image0 Image1
+	@rm -f $(MKIMG) u-boot-atf-container.img Image0 Image1
 	@rm -rf extracted_imgs
 	@echo "imx8dxl clean done"
 

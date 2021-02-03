@@ -1446,7 +1446,6 @@ int main(int argc, char **argv)
 			sld_img = (char *)&sld_ivt_img; /* Change to the sld_ivt image */
 
 			sld_header_off = sld_src_off - rom_image_offset;
-			imx_header[IMAGE_IVT_ID].fhdr.reserved1 = sld_header_off - header_image_off; /* Record the second bootloader relative offset in image's IVT reserved1*/
 
 			sld_fd = open(sld_img, O_RDONLY | O_BINARY);
 			if (sld_fd < 0) {
@@ -1472,8 +1471,6 @@ int main(int argc, char **argv)
 			file_off += CSF_SIZE - sizeof(flash_header_v2_t);
 		}else {
 			sld_header_off = sld_src_off - rom_image_offset;
-			if (version == ROM_V1)
-				imx_header[IMAGE_IVT_ID].fhdr.reserved1 = sld_header_off - header_image_off; /* Record the second bootloader relative offset in image's IVT reserved1*/
 			sld_fd = open(sld_img, O_RDONLY | O_BINARY);
 			if (sld_fd < 0) {
 				fprintf(stderr, "%s: Can't open: %s\n",

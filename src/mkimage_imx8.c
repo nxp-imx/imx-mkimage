@@ -605,9 +605,7 @@ int main(int argc, char **argv)
 				break;
 			case 'r':
 				if(soc == QX || soc == QM) {
-					if(strcmp(optarg, "A0") == 0)
-						rev = A0;
-					else if(strcmp(optarg, "B0") == 0) {
+					if(strcmp(optarg, "B0") == 0) {
 						rev = B0;
 						sector_size = 0x400;
 					} else {
@@ -874,22 +872,25 @@ int main(int argc, char **argv)
 	{
 		case QX:
 			if (rev == NO_REV) {
-				fprintf(stdout, "No REVISION defined, using A0 by default\n");
-				rev = A0;
+				fprintf(stdout, "No REVISION defined, using B0 by default\n");
+				rev = B0;
 			}
 			fprintf(stdout, "ivt_offset:\t%d\n", ivt_offset);
 			fprintf(stdout, "rev:\t%d\n", rev);
 			if (rev == B0)
 				build_container_qx_qm_b0(soc, sector_size, ivt_offset, ofname, emmc_fastboot, (image_t *) param_stack, dcd_skip, fuse_version, sw_version, images_hash);
 			else
-				build_container_qx(sector_size, ivt_offset, ofname, emmc_fastboot, (image_t *) param_stack);
-
+				fprintf(stderr, " unsupported SOC revision");
 			break;
 		case QM:
+			if (rev == NO_REV) {
+				fprintf(stdout, "No REVISION defined, using B0 by default\n");
+				rev = B0;
+			}
 			if (rev == B0)
 				build_container_qx_qm_b0(soc, sector_size, ivt_offset, ofname, emmc_fastboot, (image_t *) param_stack, dcd_skip, fuse_version, sw_version, images_hash);
 			else
-				build_container_qm(sector_size, ivt_offset, ofname, emmc_fastboot, (image_t *) param_stack);
+				fprintf(stderr, " unsupported SOC revision");
 			break;
 		case DXL:
 		case ULP:

@@ -4,7 +4,7 @@ CC = gcc
 CFLAGS ?= -g -O2 -Wall -std=c99 -static
 INCLUDE += $(CURR_DIR)/src
 
-SRCS = src/imx8qm.c  src/imx8qx.c src/imx8qxb0.c src/mkimage_imx8.c
+SRCS = src/imx8qxb0.c src/mkimage_imx8.c
 
 ifneq ($(findstring iMX8M,$(SOC)),)
 SOC_DIR = iMX8M

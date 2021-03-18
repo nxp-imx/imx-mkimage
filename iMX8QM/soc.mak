@@ -177,11 +177,6 @@ $(info include autobuild.mak)
 include scripts/autobuild.mak
 endif
 
-ifneq ($(wildcard scripts/rev_a.mak),)
-$(info include rev_a.mak)
-include scripts/rev_a.mak
-endif
-
 ifneq ($(wildcard scripts/alias.mak),)
 $(info include alias.mak)
 include scripts/alias.mak

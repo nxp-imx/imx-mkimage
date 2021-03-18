@@ -70,16 +70,16 @@
 #define IMAGE_ENCRYPTED_SHIFT	0x11
 #define IMAGE_ENCRYPTED_MASK	0x1
 
-#define IMAGE_A35_DEFAULT_META(PART)		(((PART == 0 ) ? PARTITION_ID_AP : PART)  << BOOT_IMG_META_PART_ID_SHIFT |\
-					 SC_R_MU_0A << BOOT_IMG_META_MU_RID_SHIFT | \
+#define IMAGE_A35_DEFAULT_META(PART, SC_R_MU)	(((PART == 0 ) ? PARTITION_ID_AP : PART)  << BOOT_IMG_META_PART_ID_SHIFT |\
+					 SC_R_MU << BOOT_IMG_META_MU_RID_SHIFT | \
 					 SC_R_A35_0)
 
-#define IMAGE_A53_DEFAULT_META(PART)		(((PART == 0 ) ? PARTITION_ID_AP : PART) << BOOT_IMG_META_PART_ID_SHIFT |\
-					 SC_R_MU_0A << BOOT_IMG_META_MU_RID_SHIFT | \
+#define IMAGE_A53_DEFAULT_META(PART, SC_R_MU)	(((PART == 0 ) ? PARTITION_ID_AP : PART) << BOOT_IMG_META_PART_ID_SHIFT |\
+					 SC_R_MU << BOOT_IMG_META_MU_RID_SHIFT | \
 					 SC_R_A53_0)
 
-#define IMAGE_A72_DEFAULT_META(PART)		(((PART == 0 ) ? PARTITION_ID_AP : PART) << BOOT_IMG_META_PART_ID_SHIFT |\
-					 SC_R_MU_0A << BOOT_IMG_META_MU_RID_SHIFT | \
+#define IMAGE_A72_DEFAULT_META(PART, SC_R_MU)	(((PART == 0 ) ? PARTITION_ID_AP2 : PART) << BOOT_IMG_META_PART_ID_SHIFT |\
+					 SC_R_MU << BOOT_IMG_META_MU_RID_SHIFT | \
 					 SC_R_A72_0)
 
 #define IMAGE_M4_0_DEFAULT_META(PART)		(((PART == 0) ? PARTITION_ID_M4 : PART) << BOOT_IMG_META_PART_ID_SHIFT |\
@@ -451,11 +451,11 @@ void set_image_array_entry(flash_header_v3_t *container, soc_type_t soc,
 		break;
 	case AP:
 		if ((soc == QX || soc == DXL) && core == CORE_CA35)
-			meta = IMAGE_A35_DEFAULT_META(custom_partition);
+			meta = IMAGE_A35_DEFAULT_META(image_stack->part, image_stack->mu);
 		else if (soc == QM && core == CORE_CA53)
-			meta = IMAGE_A53_DEFAULT_META(custom_partition);
+			meta = IMAGE_A53_DEFAULT_META(image_stack->part, image_stack->mu);
 		else if (soc == QM && core == CORE_CA72)
-			meta = IMAGE_A72_DEFAULT_META(custom_partition);
+			meta = IMAGE_A72_DEFAULT_META(image_stack->part, image_stack->mu);
 		else if (soc == ULP && core == CORE_CA35)
 			meta = 0;
 		else {

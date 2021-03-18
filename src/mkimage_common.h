@@ -61,6 +61,8 @@ typedef struct {
       uint64_t dst;
       uint64_t entry;/* image entry address or general purpose num */
       uint64_t ext;
+      uint64_t mu;
+      uint64_t part;
 } image_t;
 
 typedef enum REVISION_TYPE {
@@ -163,12 +165,14 @@ typedef struct {
 #define SC_R_A53_0      1
 #define SC_R_A72_0      6
 #define SC_R_MU_0A      213
+#define SC_R_MU_3A      216
 #define SC_R_M4_0_PID0  278
 #define SC_R_M4_0_MU_1A 297
 #define SC_R_M4_1_PID0  298
 #define SC_R_M4_1_MU_1A 317
 #define PARTITION_ID_M4 0
 #define PARTITION_ID_AP 1
+#define PARTITION_ID_AP2 3
 
 /* Command tags and parameters */
 #define HAB_DATA_WIDTH_BYTE 1 /* 8-bit value */

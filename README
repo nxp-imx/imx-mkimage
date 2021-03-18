@@ -66,10 +66,12 @@ OPTIONS:
 		Specifies the CSF image to be appended to the new container.
 		Applicable only for non B0 revisions.
 
-	-ap [filename] [core] [address]
+	-ap [filename] [core] [address] (mu0|mu3) (pt[1-9])
 		Specifies the AP image to be appended to the new container.
 		Valid core values for this image are 'a35', 'a53' and 'a72'.
 		The address represents the start address and needs to be a 32bit value in hex.
+		optional: specify MU ID and partition ID, default values are mu0 and pt1.
+		Note: pt2 is an illegal value, it is reserved for system.
 
 	-images_hash [sha256|sha384|sha512]
 		Specifies the image hash type used in the new container.

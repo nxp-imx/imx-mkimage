@@ -702,7 +702,36 @@ int main(int argc, char **argv)
 					fprintf(stdout, "\tcore: %s", argv[optind++]);
 
 					param_stack[p_idx].entry = (uint32_t) strtoll(argv[optind++], NULL, 0);
+					param_stack[p_idx].mu = SC_R_MU_0A;
+					param_stack[p_idx].part = 1;
 
+					if (optind < argc && *argv[optind] != '-') {
+						if (!strncmp(argv[optind], "mu0", 3))
+							param_stack[p_idx].mu = SC_R_MU_0A;
+						else if (!strncmp(argv[optind], "mu3", 3))
+							param_stack[p_idx].mu = SC_R_MU_3A;
+						else {
+							fprintf(stderr, "ERROR: MU number %s not found\n", argv[optind]);
+							exit(EXIT_FAILURE);
+						}
+						fprintf(stdout, "\tMU: %s ", argv[optind++]);
+					}
+					if (optind < argc && *argv[optind] != '-') {
+						if ( !strncmp(argv[optind], "pt", 2)
+								&& (argv[optind][2] > '0')
+								&& (argv[optind][2] != '2') /* partition 2 is reserved */
+								&& (argv[optind][2] <= '9') ) {
+							char str[2];
+							str[0] = argv[optind][2];
+							str[1] = '\0';
+							param_stack[p_idx].part = strtoll(str, NULL, 0);
+						}
+						else {
+							fprintf(stderr, "ERROR: partition number %s not found\n", argv[optind]);
+							exit(EXIT_FAILURE);
+						}
+						fprintf(stdout, "\tPartition: %s ", argv[optind++]);
+					}
 					fprintf(stdout, " addr: 0x%08" PRIx64 "\n", param_stack[p_idx++].entry);
 				} else {
 					fprintf(stderr, "\n-ap option require THREE arguments: filename, a35/a53/a72, start address in hex\n\n");

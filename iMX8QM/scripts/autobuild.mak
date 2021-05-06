@@ -53,7 +53,7 @@ nightly_cockpit :
 	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qm-cockpit-mek/m4_image.bin -O m4_image.bin
 	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qm-cockpit-mek/m4_1_image.bin -O m4_1_image.bin
 	@$(WGET) -qr -nd -l1 -np $(SERVER)/$(DIR)/imx_dtbs -P boot -A "imx8qm-mek*.dtb"
-	@$(WGET) -q $(SERVER)/$(DIR)/Image-imx8_all.bin -O Image
+	@$(WGET) -q $(SERVER)/$(DIR)/Image-imx8qm-cockpit-mek.bin -O Image
 	@mv -f Image boot
 
 nightly_cockpit_spl :
@@ -73,7 +73,7 @@ nightly_cockpit_spl :
 	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qm-cockpit-mek/m4_image.bin -O m4_image.bin
 	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qm-cockpit-mek/m4_1_image.bin -O m4_1_image.bin
 	@$(WGET) -qr -nd -l1 -np $(SERVER)/$(DIR)/imx_dtbs -P boot -A "imx8qm-mek*.dtb"
-	@$(WGET) -q $(SERVER)/$(DIR)/Image-imx8_all.bin -O Image
+	@$(WGET) -q $(SERVER)/$(DIR)/Image-imx8qm-cockpit-mek.bin -O Image
 	@mv -f Image boot
 
 archive :

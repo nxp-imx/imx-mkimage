@@ -6,6 +6,7 @@ CFLAGS ?= -O2 -Wall -std=c99 -static
 INCLUDE = ./lib
 
 #define the F(Q)SPI header file
+QSPI_HEADER_MCU = ../scripts/fspi_header_atxp
 QSPI_HEADER = ../scripts/fspi_header
 QSPI_PACKER = ../scripts/fspi_packer.sh
 PAD_IMAGE = ../scripts/pad_image.sh
@@ -75,6 +76,10 @@ flash_dualboot_flexspi: $(MKIMG) u-boot-spl.bin u-boot-atf-container.img
                    echo "append u-boot-atf-container.img at $$pad_cnt KB"; \
                    dd if=u-boot-atf-container.img of=flash.bin bs=1K seek=$$pad_cnt;
 	./$(QSPI_PACKER) $(QSPI_HEADER)
+
+flash_dualboot_m33: $(MKIMG) $(MCU_IMG)
+	./$(MKIMG) -soc ULP -append $(AHAB_IMG) -c -upower $(UPOWER_IMG) -m4 $(MCU_IMG) 0 $(MCU_SSRAM_ADDR) -out flash.bin
+	./$(QSPI_PACKER) $(QSPI_HEADER_MCU)
 
 flash_singleboot: $(MKIMG) $(AHAB_IMG) $(UPOWER_IMG) u-boot-spl.bin u-boot-atf-container.img
 	./$(MKIMG) -soc ULP -append $(AHAB_IMG) -c -upower $(UPOWER_IMG) -ap u-boot-spl.bin a35 $(SPL_LOAD_ADDR) -out flash.bin

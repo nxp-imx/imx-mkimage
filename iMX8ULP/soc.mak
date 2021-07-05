@@ -10,6 +10,7 @@ QSPI_HEADER_MCU = ../scripts/fspi_header_atxp
 QSPI_HEADER = ../scripts/fspi_header
 QSPI_PACKER = ../scripts/fspi_packer.sh
 PAD_IMAGE = ../scripts/pad_image.sh
+SPLIT_KERNEL = ../scripts/split_kernel.sh
 
 ifneq ($(wildcard /usr/bin/rename.ul),)
     RENAME = rename.ul
@@ -104,6 +105,14 @@ flash_singleboot_m33: $(MKIMG) $(AHAB_IMG) $(UPOWER_IMG) u-boot-atf-container.im
                    echo "append u-boot-atf-container.img at $$pad_cnt KB"; \
                    dd if=u-boot-atf-container.img of=flash.bin bs=1K seek=$$pad_cnt;
 
+flash_singleboot_m33_no_ahabfw: $(MKIMG) $(UPOWER_IMG) u-boot-atf-container.img $(MCU_IMG) u-boot-spl.bin
+	./$(MKIMG) -soc ULP -c -upower $(UPOWER_IMG) -m4 $(MCU_IMG) 0 $(MCU_SSRAM_ADDR) -ap u-boot-spl.bin a35 $(SPL_LOAD_ADDR) -out flash.bin
+	cp flash.bin boot-spl-container.img
+	@flashbin_size=`wc -c flash.bin | awk '{print $$1}'`; \
+                   pad_cnt=$$(((flashbin_size + 0x400 - 1) / 0x400)); \
+                   echo "append u-boot-atf-container.img at $$pad_cnt KB"; \
+                   dd if=u-boot-atf-container.img of=flash.bin bs=1K seek=$$pad_cnt;
+
 flash_singleboot_m33_flexspi: $(MKIMG) $(AHAB_IMG) $(UPOWER_IMG) u-boot-atf-container.img $(MCU_IMG) u-boot-spl.bin
 	./$(MKIMG) -soc ULP  -dev flexspi -append $(AHAB_IMG) -c -upower $(UPOWER_IMG) -m4 $(MCU_IMG) 0 $(MCU_SSRAM_ADDR) -ap u-boot-spl.bin a35 $(SPL_LOAD_ADDR) -out flash.bin
 	cp flash.bin boot-spl-container.img
@@ -116,8 +125,12 @@ flash_singleboot_m33_flexspi: $(MKIMG) $(AHAB_IMG) $(UPOWER_IMG) u-boot-atf-cont
 flash_sentinel: $(MKIMG) ahabfw.bin
 	./$(MKIMG) -soc ULP -c -sentinel ahabfw.bin -out flash.bin
 
-flash_kernel: $(MKIMG) Image imx8ulp-evk.dtb
-	./$(MKIMG) -soc ULP -c -ap Image a35 0x80280000 --data imx8ulp-evk.dtb 0x83000000 -out flash.bin
+prepare_kernel_chunks: Image
+	./$(SPLIT_KERNEL) Image 0x80480000 0x700000
+
+flash_kernel: $(MKIMG) prepare_kernel_chunks imx8ulp-evk.dtb
+	KERNEL_CMD="$(shell cat Image_cmd)"; \
+	./$(MKIMG) -soc ULP -c $$KERNEL_CMD --data imx8ulp-evk.dtb 0x83000000 -out flash.bin
 
 parse_container: $(MKIMG) flash.bin
 	./$(MKIMG) -soc ULP  -parse flash.bin

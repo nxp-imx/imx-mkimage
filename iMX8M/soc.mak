@@ -24,6 +24,8 @@ DTB_PREPROC = ../scripts/dtb_check.sh
 PRINT_FIT_HAB_OFFSET ?= 0x60000
 DEK_BLOB_LOAD_ADDR = 0x40400000
 
+UBOOT_DTB ?=
+
 ifeq ($(SOC),iMX8MM)
 PLAT = imx8mm
 HDMI = no
@@ -139,7 +141,7 @@ clean:
 
 dtbs = evk.dtb
 $(dtbs):
-	./$(DTB_PREPROC) $(PLAT)-evk.dtb $(dtbs)
+	./$(DTB_PREPROC) $(PLAT)-evk.dtb $(dtbs) $(UBOOT_DTB)
 
 u-boot.itb: $(dtbs)
 	./$(PAD_IMAGE) tee.bin
@@ -151,7 +153,7 @@ u-boot.itb: $(dtbs)
 
 dtbs_ddr3l = valddr3l.dtb
 $(dtbs_ddr3l):
-	./$(DTB_PREPROC) $(PLAT)-ddr3l-$(VAL_BOARD).dtb $(dtbs_ddr3l)
+	./$(DTB_PREPROC) $(PLAT)-ddr3l-$(VAL_BOARD).dtb $(dtbs_ddr3l) $(UBOOT_DTB)
 
 u-boot-ddr3l.itb: $(dtbs_ddr3l)
 	./$(PAD_IMAGE) tee.bin
@@ -163,7 +165,7 @@ u-boot-ddr3l.itb: $(dtbs_ddr3l)
 
 dtbs_ddr3l_evk = evkddr3l.dtb
 $(dtbs_ddr3l_evk):
-	./$(DTB_PREPROC) $(PLAT)-ddr3l-evk.dtb $(dtbs_ddr3l_evk)
+	./$(DTB_PREPROC) $(PLAT)-ddr3l-evk.dtb $(dtbs_ddr3l_evk) $(UBOOT_DTB)
 
 u-boot-ddr3l-evk.itb: $(dtbs_ddr3l_evk)
 	./$(PAD_IMAGE) tee.bin
@@ -175,7 +177,7 @@ u-boot-ddr3l-evk.itb: $(dtbs_ddr3l_evk)
 
 dtbs_ddr4 = valddr4.dtb
 $(dtbs_ddr4):
-	./$(DTB_PREPROC) $(PLAT)-ddr4-$(VAL_BOARD).dtb $(dtbs_ddr4)
+	./$(DTB_PREPROC) $(PLAT)-ddr4-$(VAL_BOARD).dtb $(dtbs_ddr4) $(UBOOT_DTB)
 
 u-boot-ddr4.itb: $(dtbs_ddr4)
 	./$(PAD_IMAGE) tee.bin
@@ -187,7 +189,7 @@ u-boot-ddr4.itb: $(dtbs_ddr4)
 
 dtbs_ddr4_evk = evkddr4.dtb
 $(dtbs_ddr4_evk):
-	./$(DTB_PREPROC) $(PLAT)-ddr4-evk.dtb $(dtbs_ddr4_evk)
+	./$(DTB_PREPROC) $(PLAT)-ddr4-evk.dtb $(dtbs_ddr4_evk) $(UBOOT_DTB)
 
 u-boot-ddr4-evk.itb: $(dtbs_ddr4_evk)
 	./$(PAD_IMAGE) tee.bin

@@ -27,6 +27,8 @@ ATF_LOAD_ADDR ?= 0x20040000
 TEE_LOAD_ADDR ?= 0x96000000
 UBOOT_LOAD_ADDR ?= 0x80200000
 MCU_SSRAM_ADDR ?= 0x1ffc2000
+MCU_XIP_ADDR ?= 0x4032000 # Point entry of m33 in flexspi0 nor flash
+M33_IMAGE_XIP_OFFSET ?= 0x31000 # 1st container offset is 0x1000 when boot device is flexspi0 nor flash, actually the m33_image.bin is in 0x31000 + 0x1000 = 0x32000.
 
 
 FORCE:
@@ -80,6 +82,11 @@ flash_dualboot_flexspi: $(MKIMG) u-boot-spl.bin u-boot-atf-container.img
 
 flash_dualboot_m33: $(MKIMG) $(MCU_IMG)
 	./$(MKIMG) -soc ULP -append $(AHAB_IMG) -c -upower $(UPOWER_IMG) -m4 $(MCU_IMG) 0 $(MCU_SSRAM_ADDR) -out flash.bin
+	./$(QSPI_PACKER) $(QSPI_HEADER_MCU)
+
+# For m33, write the flash.bin(make SOC=iMX8ULP flash_dualboot_m33_xip) to flexspi0 nor flash of m33.
+flash_dualboot_m33_xip: $(MKIMG) $(MCU_IMG)
+	./$(MKIMG) -soc ULP -dev flexspi -append $(AHAB_IMG) -c -upower $(UPOWER_IMG) -fileoff $(M33_IMAGE_XIP_OFFSET) -m4 $(MCU_IMG) 0 $(MCU_XIP_ADDR) -out flash.bin
 	./$(QSPI_PACKER) $(QSPI_HEADER_MCU)
 
 flash_singleboot: $(MKIMG) $(AHAB_IMG) $(UPOWER_IMG) u-boot-spl.bin u-boot-atf-container.img

@@ -23,7 +23,7 @@ else
 fi
 
 BL32="tee.bin"
-LOADABLES="\"atf@1\""
+LOADABLES="\"atf-1\""
 
 if [ ! -f $BL32 ]; then
 	BL32=/dev/null
@@ -31,7 +31,7 @@ else
 	echo "Building with TEE support, make sure your bl31 is compiled with spd. If you do not want tee, please delete tee.bin" >&2
 	echo "tee.bin size: " >&2
 	ls -lct tee.bin | awk '{print $5}' >&2
-	LOADABLES="$LOADABLES, \"tee@1\""
+	LOADABLES="$LOADABLES, \"tee-1\""
 fi
 
 BL33="u-boot-nodtb.bin"
@@ -41,7 +41,7 @@ if [ ! -f $DEK_BLOB ]; then
 	DEK_BLOB=/dev/null
 else
 	echo "Building with encrypted boot support, make sure to replace DEK Blob in final image." >&2
-	LOADABLES="\"dek_blob@1\", $LOADABLES"
+	LOADABLES="\"dek_blob-1\", $LOADABLES"
 fi
 
 if [ ! -f $BL33 ]; then
@@ -66,7 +66,7 @@ cat << __HEADER_EOF
 	description = "Configuration to load ATF before U-Boot";
 
 	images {
-		uboot@1 {
+		uboot-1 {
 			description = "U-Boot (64-bit)";
 			data = /incbin/("$BL33");
 			type = "standalone";
@@ -80,7 +80,7 @@ cnt=1
 for dtname in $*
 do
 	cat << __FDT_IMAGE_EOF
-		fdt@$cnt {
+		fdt-$cnt {
 			description = "$(basename $dtname .dtb)";
 			data = /incbin/("$dtname");
 			type = "flat_dt";
@@ -91,7 +91,7 @@ cnt=$((cnt+1))
 done
 
 cat << __HEADER_EOF
-		atf@1 {
+		atf-1 {
 			description = "ARM Trusted Firmware";
 			data = /incbin/("$BL31");
 			type = "firmware";
@@ -104,7 +104,7 @@ __HEADER_EOF
 
 if [ -f $BL32 ]; then
 cat << __HEADER_EOF
-		tee@1 {
+		tee-1 {
 			description = "TEE firmware";
 			data = /incbin/("$BL32");
 			type = "firmware";
@@ -118,7 +118,7 @@ fi
 
 if [ -f $DEK_BLOB ]; then
 cat << __HEADER_EOF
-		dek_blob@1 {
+		dek_blob-1 {
 			description = "dek_blob";
 			data = /incbin/("$DEK_BLOB");
 			type = "script";
@@ -131,7 +131,7 @@ fi
 cat << __CONF_HEADER_EOF
 	};
 	configurations {
-		default = "config@1";
+		default = "config-1";
 
 __CONF_HEADER_EOF
 
@@ -141,31 +141,31 @@ do
 if [ -f $BL32 ]; then
 if [ $ROLLBACK_INDEX_IN_FIT ]; then
 cat << __CONF_SECTION_EOF
-		config@$cnt {
+		config-$cnt {
 			description = "$(basename $dtname .dtb)";
-			firmware = "uboot@1";
+			firmware = "uboot-1";
 			loadables = $LOADABLES;
-			fdt = "fdt@$cnt";
+			fdt = "fdt-$cnt";
 			rbindex = "$ROLLBACK_INDEX_IN_FIT";
 		};
 __CONF_SECTION_EOF
 else
 cat << __CONF_SECTION_EOF
-		config@$cnt {
+		config-$cnt {
 			description = "$(basename $dtname .dtb)";
-			firmware = "uboot@1";
+			firmware = "uboot-1";
 			loadables = $LOADABLES;
-			fdt = "fdt@$cnt";
+			fdt = "fdt-$cnt";
 		};
 __CONF_SECTION_EOF
 fi
 else
 cat << __CONF_SECTION1_EOF
-		config@$cnt {
+		config-$cnt {
 			description = "$(basename $dtname .dtb)";
-			firmware = "uboot@1";
+			firmware = "uboot-1";
 			loadables = $LOADABLES;
-			fdt = "fdt@$cnt";
+			fdt = "fdt-$cnt";
 		};
 __CONF_SECTION1_EOF
 fi

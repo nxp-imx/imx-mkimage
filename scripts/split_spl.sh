@@ -21,7 +21,7 @@ if [ ${size} -gt ${split_size} ]; then
 	dd if=$1 of=$1_split_a bs=1 count=${split_size} conv=fsync
 	dd if=$1 of=$1_split_b bs=1 skip=${split_size} count=${residual_size} conv=fsync
 
-	echo "-ap u-boot-spl.bin_split_a a35 0x00100000 -data u-boot-spl.bin_split_b" $2 >  $1_cmd
+	echo "-ap u-boot-spl.bin_split_a a35 0x00100000 -data u-boot-spl.bin_split_b a35" $2 >  $1_cmd
 else
 	echo "-ap u-boot-spl.bin a35 0x00100000" > $1_cmd
 fi

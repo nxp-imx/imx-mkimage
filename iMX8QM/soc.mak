@@ -94,7 +94,7 @@ flash_cockpit: $(MKIMG) scfw_tcm.bin $(AHAB_IMG) u-boot-atf.bin u-boot-atf-a72.b
 	./$(MKIMG) -soc QM -rev B0 -append $(AHAB_IMG) -c -scfw scfw_tcm.bin -ap u-boot-atf.bin a53 0x80000000 mu0 pt1 -ap u-boot-atf-a72.bin a72 0xC0000000 mu3 pt3 -out flash.bin
 
 flash_cockpit_spl: $(MKIMG) u-boot-atf-container-a72.img scfw_tcm.bin $(AHAB_IMG) u-boot-atf.bin tee.bin u-boot-spl-a72.bin
-	./$(MKIMG) -soc QM -rev B0 -append $(AHAB_IMG) -c -scfw scfw_tcm.bin -ap u-boot-atf.bin a53 0x80000000 mu0 pt1 -ap u-boot-spl-a72.bin a72 0x00100000 mu3 pt3 -data tee.bin 0xBE000000 -out flash.bin
+	./$(MKIMG) -soc QM -rev B0 -append $(AHAB_IMG) -c -scfw scfw_tcm.bin -ap u-boot-atf.bin a53 0x80000000 mu0 pt1 -ap u-boot-spl-a72.bin a72 0x00100000 mu3 pt3 -data tee.bin a53 0xBE000000 -out flash.bin
 	@flashbin_size=`wc -c flash.bin | awk '{print $$1}'`; \
                    pad_cnt=$$(((flashbin_size + 0x400 - 1) / 0x400)); \
                    echo "append u-boot-atf-container-a72.img at $$pad_cnt KB"; \
@@ -104,7 +104,7 @@ flash_cockpit_m4: $(MKIMG) scfw_tcm.bin $(AHAB_IMG) u-boot-atf.bin u-boot-atf-a7
 	./$(MKIMG) -soc QM -rev B0 -append $(AHAB_IMG) -c -flags 0x00200000 -scfw scfw_tcm.bin -ap u-boot-atf.bin a53 0x80000000 mu0 pt1 -ap u-boot-atf-a72.bin a72 0xC0000000 mu3 pt3 -p5 -m4 m4_image.bin 0 0x34FE0000 -p6 -m4 m4_1_image.bin 1 0x38FE0000 -out flash.bin
 
 flash_cockpit_m4_spl: $(MKIMG) u-boot-atf-container-a72.img scfw_tcm.bin $(AHAB_IMG) m4_image.bin m4_1_image.bin u-boot-atf.bin tee.bin u-boot-spl-a72.bin
-	./$(MKIMG) -soc QM -rev B0 -append $(AHAB_IMG) -c -flags 0x00200000 -scfw scfw_tcm.bin -ap u-boot-atf.bin a53 0x80000000 mu0 pt1 -ap u-boot-spl-a72.bin a72 0x00100000 mu3 pt3 -data tee.bin 0xBE000000 -p5 -m4 m4_image.bin 0 0x34FE0000 -p6 -m4 m4_1_image.bin 1 0x38FE0000 -out flash.bin
+	./$(MKIMG) -soc QM -rev B0 -append $(AHAB_IMG) -c -flags 0x00200000 -scfw scfw_tcm.bin -ap u-boot-atf.bin a53 0x80000000 mu0 pt1 -ap u-boot-spl-a72.bin a72 0x00100000 mu3 pt3 -data tee.bin a53 0xBE000000 -p5 -m4 m4_image.bin 0 0x34FE0000 -p6 -m4 m4_1_image.bin 1 0x38FE0000 -out flash.bin
 	@flashbin_size=`wc -c flash.bin | awk '{print $$1}'`; \
                    pad_cnt=$$(((flashbin_size + 0x400 - 1) / 0x400)); \
                    echo "append u-boot-atf-container-a72.img at $$pad_cnt KB"; \
@@ -180,7 +180,7 @@ flash_scfw: $(MKIMG) $(AHAB_IMG) scfw_tcm.bin
 	./$(MKIMG) -soc QM -rev B0 -dcd skip -append $(AHAB_IMG) -c -scfw scfw_tcm.bin -out flash.bin
 
 flash_kernel: $(MKIMG) Image fsl-imx8qm-mek.dtb
-	./$(MKIMG) -soc QM -rev B0 -c -ap Image a53 0x80280000 --data fsl-imx8qm-mek.dtb 0x83000000 -out flash.bin
+	./$(MKIMG) -soc QM -rev B0 -c -ap Image a53 0x80280000 --data fsl-imx8qm-mek.dtb a53 0x83000000 -out flash.bin
 
 flash_ca72: $(MKIMG) $(AHAB_IMG) scfw_tcm.bin u-boot-atf.bin
 	./$(MKIMG) -soc QM -rev B0 -append $(AHAB_IMG) -c -scfw scfw_tcm.bin -ap u-boot-atf.bin a72 0x80000000 -out flash.bin

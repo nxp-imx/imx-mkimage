@@ -85,8 +85,9 @@ OPTIONS:
 		Valid core values for this image are 0 and 1.
 		The address represents the start address and needs to be a 32bit value in hex.
 
-	-data [filename] [address]
+	-data [filename] [core] [address]
 		Specifies a data image to be appended to the new container, usually a rootfs image or a kernel image.
+		The core can be 'a35', 'a53', 'a72', 'm4', 'm4_1'.
 		The address represents the load address and needs to be a 32bit value in hex.
 
 	-fileoff [offset]

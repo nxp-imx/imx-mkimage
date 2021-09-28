@@ -504,9 +504,12 @@ void set_image_array_entry(flash_header_v3_t *container, soc_type_t soc,
 	case DATA:
 		img->hab_flags |= IMG_TYPE_DATA;
 		if (soc == ULP)
-			img->hab_flags |= CORE_ULP_CA35 << BOOT_IMG_FLAGS_CORE_SHIFT;
+			if (core == CORE_CM4_0)
+				img->hab_flags |= CORE_ULP_CM33 << BOOT_IMG_FLAGS_CORE_SHIFT;
+			else
+				img->hab_flags |= CORE_ULP_CA35 << BOOT_IMG_FLAGS_CORE_SHIFT;
 		else
-			img->hab_flags |= CORE_CA35 << BOOT_IMG_FLAGS_CORE_SHIFT;
+			img->hab_flags |= core << BOOT_IMG_FLAGS_CORE_SHIFT;
 		tmp_name = "DATA";
 		img->dst = entry;
 		break;

@@ -139,7 +139,7 @@ flash_scfw: $(MKIMG) $(AHAB_IMG) scfw_tcm.bin
 	./$(MKIMG) -soc QX -rev B0 -dcd skip -append $(AHAB_IMG) -c -scfw scfw_tcm.bin -out flash.bin
 
 flash_kernel: $(MKIMG) Image fsl-imx8qxp-mek.dtb
-	./$(MKIMG) -soc QX -rev B0 -c -ap Image a35 0x80280000 --data fsl-imx8qxp-mek.dtb 0x83000000 -out flash.bin
+	./$(MKIMG) -soc QX -rev B0 -c -ap Image a35 0x80280000 --data fsl-imx8qxp-mek.dtb a35 0x83000000 -out flash.bin
 
 parse_container: $(MKIMG) flash.bin
 	./$(MKIMG) -soc QX -rev B0 -parse flash.bin

@@ -137,7 +137,7 @@ prepare_kernel_chunks: Image
 
 flash_kernel: $(MKIMG) prepare_kernel_chunks imx8ulp-evk.dtb
 	KERNEL_CMD="$(shell cat Image_cmd)"; \
-	./$(MKIMG) -soc ULP -c $$KERNEL_CMD --data imx8ulp-evk.dtb 0x83000000 -out flash.bin
+	./$(MKIMG) -soc ULP -c $$KERNEL_CMD --data imx8ulp-evk.dtb a35 0x83000000 -out flash.bin
 
 parse_container: $(MKIMG) flash.bin
 	./$(MKIMG) -soc ULP  -parse flash.bin

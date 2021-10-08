@@ -77,6 +77,7 @@ typedef enum SOC_TYPE {
     QM,
     DXL,
     ULP,
+    IMX9,
 } soc_type_t;
 
 typedef struct {

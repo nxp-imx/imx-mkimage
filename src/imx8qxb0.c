@@ -456,14 +456,14 @@ void set_image_array_entry(flash_header_v3_t *container, soc_type_t soc,
 			meta = IMAGE_A53_DEFAULT_META(image_stack->part, image_stack->mu);
 		else if (soc == QM && core == CORE_CA72)
 			meta = IMAGE_A72_DEFAULT_META(image_stack->part, image_stack->mu);
-		else if (soc == ULP && core == CORE_CA35)
+		else if (((soc == ULP) || (soc == IMX9)) && core == CORE_CA35)
 			meta = 0;
 		else {
 			fprintf(stderr, "Error: invalid AP core id: %" PRIi64 "\n", core);
 			exit(EXIT_FAILURE);
 		}
 		img->hab_flags |= IMG_TYPE_EXEC;
-		if (soc == ULP)
+		if ((soc == ULP) || (soc == IMX9))
 			img->hab_flags |= CORE_ULP_CA35 << BOOT_IMG_FLAGS_CORE_SHIFT;
 		else
 			img->hab_flags |= CORE_CA53 << BOOT_IMG_FLAGS_CORE_SHIFT; /* On B0, only core id = 4 is valid */
@@ -474,7 +474,7 @@ void set_image_array_entry(flash_header_v3_t *container, soc_type_t soc,
 		custom_partition = 0;
 		break;
 	case M4:
-		if (soc == ULP) {
+		if ((soc == ULP) || (soc == IMX9)) {
 			core = CORE_ULP_CM33;
 			meta = 0;
 		} else {
@@ -503,7 +503,7 @@ void set_image_array_entry(flash_header_v3_t *container, soc_type_t soc,
 		break;
 	case DATA:
 		img->hab_flags |= IMG_TYPE_DATA;
-		if (soc == ULP)
+		if ((soc == ULP) || (soc == IMX9))
 			if (core == CORE_CM4_0)
 				img->hab_flags |= CORE_ULP_CM33 << BOOT_IMG_FLAGS_CORE_SHIFT;
 			else
@@ -541,11 +541,13 @@ void set_image_array_entry(flash_header_v3_t *container, soc_type_t soc,
 		}
 		break;
 	case UPOWER:
-		img->hab_flags |= IMG_TYPE_EXEC;
-		img->hab_flags |= CORE_ULP_UPOWER << BOOT_IMG_FLAGS_CORE_SHIFT;
-		tmp_name = "UPOWER";
-		img->dst = 0x28300200; /* UPOWER code RAM */
-		img->entry = 0x28300200;
+		if (soc == ULP) {
+			img->hab_flags |= IMG_TYPE_EXEC;
+			img->hab_flags |= CORE_ULP_UPOWER << BOOT_IMG_FLAGS_CORE_SHIFT;
+			tmp_name = "UPOWER";
+			img->dst = 0x28300200; /* UPOWER code RAM */
+			img->entry = 0x28300200;
+		}
 		break;
 	case DUMMY_V2X:
 		img->hab_flags |= IMG_TYPE_V2X_DUMMY;
@@ -666,6 +668,8 @@ int build_container_qx_qm_b0(soc_type_t soc, uint32_t sector_size, uint32_t ivt_
 		fprintf(stdout, "Platform:\ti.MX8DXL A0\n");
 	else if (soc == ULP)
 		fprintf(stdout, "Platform:\ti.MX8ULP A0\n");
+	else if (soc == IMX9)
+		fprintf(stdout, "Platform:\ti.MX9\n");
 
 	set_imx_hdr_v3(&imx_header, dcd_len, ivt_offset, INITIAL_LOAD_ADDR_SCU_ROM, 0);
 	set_imx_hdr_v3(&imx_header, 0, ivt_offset, INITIAL_LOAD_ADDR_AP_ROM, 1);
@@ -864,7 +868,7 @@ img_flags_t parse_image_flags(uint32_t flags, char *flag_list, soc_type_t soc)
 		strcat(flag_list, "DDR Init");
 		break;
 	case 0x6:
-		if (soc == ULP)
+		if ((soc == ULP) || (soc == IMX9))
 			strcat(flag_list, "SENTINEL");
 		else
 			strcat(flag_list, "SECO");
@@ -897,7 +901,7 @@ img_flags_t parse_image_flags(uint32_t flags, char *flag_list, soc_type_t soc)
 	strcat(flag_list, "CORE ID: ");
 	img_flags.core_id = (flags >> CORE_ID_SHIFT) & CORE_ID_MASK;
 
-	if (soc == ULP) {
+	if ((soc == ULP) || (soc == IMX9)) {
 		switch (img_flags.core_id) {
 
 		case CORE_ULP_CM33:
@@ -910,7 +914,10 @@ img_flags_t parse_image_flags(uint32_t flags, char *flag_list, soc_type_t soc)
 			strcat(flag_list, "CORE_UPOWER");
 			break;
 		case CORE_ULP_CA35:
-			strcat(flag_list, "CORE_CA35");
+			if (soc == IMX9)
+				strcat(flag_list, "CORE_CA55");
+			else
+				strcat(flag_list, "CORE_CA35");
 			break;
 		default:
 			strcat(flag_list, "Invalid core id");
@@ -1010,7 +1017,7 @@ void print_image_array_fields(flash_header_v3_t *container_hdrs, soc_type_t soc,
 		switch (img_flags.type) {
 
 		case 0x3:
-			if (soc == ULP) {
+			if ((soc == ULP) || (soc == IMX9)) {
 				if (img_flags.core_id == CORE_ULP_UPOWER)
 					strcpy(img_name, "uPower FW");
 				else if ((img_flags.core_id == CORE_ULP_CA35))
@@ -1042,7 +1049,7 @@ void print_image_array_fields(flash_header_v3_t *container_hdrs, soc_type_t soc,
 			strcpy(img_name, "DDR Init");
 			break;
 		case 0x6:
-			if (soc == ULP)
+			if ((soc == ULP) || (soc == IMX9))
 				strcpy(img_name, "SENTINEL FW");
 			else
 				strcpy(img_name, "SECO FW");

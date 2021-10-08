@@ -33,6 +33,7 @@ clean:
 	@$(MAKE) --no-print-directory -C iMX8DXL -f soc.mak clean
 	@$(MAKE) --no-print-directory -C iMX8ULP -f soc.mak  clean
 	@$(MAKE) --no-print-directory -C iMX8M -f soc.mak  clean
+	@$(MAKE) --no-print-directory -C iMX9 -f soc.mak  clean
 
 $(MKIMG): src/build_info.h $(SRCS)
 	@echo "Compiling mkimage_imx8"

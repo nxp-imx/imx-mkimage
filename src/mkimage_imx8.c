@@ -597,6 +597,9 @@ int main(int argc, char **argv)
 				} else if (!strncmp(optarg, "ULP", 3)) {
 					soc = ULP;
 					sector_size = 0x400;
+				} else if (!strncmp(optarg, "IMX9", 4)) {
+					soc = IMX9;
+					sector_size = 0x400;
 				} else{
 					fprintf(stdout, "unrecognized SOC: %s \n",optarg);
 					exit(EXIT_FAILURE);
@@ -644,8 +647,8 @@ int main(int argc, char **argv)
 						fprintf(stderr, "\n-dcd option requires argument skip\n\n");
 						exit(EXIT_FAILURE);
 					}
-				} else if (soc == ULP) {
-					fprintf(stderr, "\n-dcd option is not used on ULP\n\n");
+				} else if ((soc == ULP) || (soc == IMX9)) {
+					fprintf(stderr, "\n-dcd option is not used on ULP and IMX9\n\n");
 					exit(EXIT_FAILURE);
 				} else {
 					param_stack[p_idx].option = DCD;
@@ -654,13 +657,15 @@ int main(int argc, char **argv)
 				}
 				break;
 			case 'D':
-				if ((rev == B0) || (soc == DXL) || (soc == ULP)) {
+				if ((rev == B0) || (soc == DXL) || (soc == ULP) || (soc == IMX9)) {
 					fprintf(stdout, "Data:\t%s", optarg);
 					param_stack[p_idx].option = DATA;
 					param_stack[p_idx].filename = optarg;
 					if ((optind < argc && *argv[optind] != '-') && (optind+1 < argc && *argv[optind+1] != '-' )) {
 						if (!strncmp(argv[optind], "a53", 3))
 							param_stack[p_idx].ext = CORE_CA53;
+						else if (!strncmp(argv[optind], "a55", 3))
+							param_stack[p_idx].ext = CORE_CA35; /* fake id for a55 */
 						else if (!strncmp(argv[optind], "a35", 3))
 							param_stack[p_idx].ext = CORE_CA35;
 						else if (!strncmp(argv[optind], "a72", 3))
@@ -677,12 +682,12 @@ int main(int argc, char **argv)
 						param_stack[p_idx].entry = (uint32_t) strtoll(argv[optind++], NULL, 0);
 					}
 					else {
-						fprintf(stderr, "\n-data option require THREE arguments: filename, core: a35/a53/a72/m4_0/m4_1, load address in hex\n\n");
+						fprintf(stderr, "\n-data option require THREE arguments: filename, core: a55/a35/a53/a72/m4_0/m4_1, load address in hex\n\n");
 						exit(EXIT_FAILURE);
 					}
 					p_idx++;
 				} else {
-					fprintf(stderr, "\n-data option is only used with -rev B0, or DXL or ULP soc.\n\n");
+					fprintf(stderr, "\n-data option is only used with -rev B0, or DXL or ULP or IMX9 soc.\n\n");
 					exit(EXIT_FAILURE);
 				}
 				break;
@@ -707,6 +712,8 @@ int main(int argc, char **argv)
 				if ((optind < argc && *argv[optind] != '-') && (optind+1 < argc &&*argv[optind+1] != '-' )) {
 					if (!strncmp(argv[optind], "a53", 3))
 						param_stack[p_idx].ext = CORE_CA53;
+					else if (!strncmp(argv[optind], "a55", 3))
+						param_stack[p_idx].ext = CORE_CA35; /* fake id for a55 */
 					else if (!strncmp(argv[optind], "a35", 3))
 						param_stack[p_idx].ext = CORE_CA35;
 					else if (!strncmp(argv[optind], "a72", 3))
@@ -943,6 +950,7 @@ int main(int argc, char **argv)
 			break;
 		case DXL:
 		case ULP:
+		case IMX9:
 			build_container_qx_qm_b0(soc, sector_size, ivt_offset, ofname, emmc_fastboot, (image_t *) param_stack, dcd_skip, fuse_version, sw_version, images_hash);
 			break;
 		default:

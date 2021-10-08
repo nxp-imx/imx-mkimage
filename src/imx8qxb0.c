@@ -1251,7 +1251,7 @@ int extract_container_images(flash_header_v3_t *container_hdr, char *ifname, int
 	const uint32_t pad = 0;
 	int ofd = 0;
 	int ret = 0;
-	uint32_t seco_off = 0, seco_size = 0;
+	uint32_t seco_off = 0;
 	char dd_cmd[512]; /* dd cmd to extract each image from container binary */
 	struct stat buf;
 	FILE *f_ptr = NULL; /* file pointer to the dd process */
@@ -1326,7 +1326,6 @@ int extract_container_images(flash_header_v3_t *container_hdr, char *ifname, int
 
 					/* For DXL go to next container to copy header */
 					seco_off = img_offset;
-					seco_size = img_size;
 					continue;
 				}
 				else if (i == 1 && j == 0)

@@ -1341,7 +1341,7 @@ int extract_container_images(flash_header_v3_t *container_hdr, char *ifname, int
 						ret = write(ofd, (void *)&pad, 4);
 
 					/* now write the SECO fw image to the output file */
-					ret = write(ofd, (void *)(mem_ptr+seco_off), seco_size);
+					ret = write(ofd, (void *)(mem_ptr+seco_off), file_off + img_offset - seco_off);
 					if (ret < 0)
 						fprintf(stderr, "Error writing to output file3: %x\n",ret);
 				}

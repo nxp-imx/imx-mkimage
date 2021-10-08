@@ -986,7 +986,7 @@ img_flags_t parse_image_flags(uint32_t flags, char *flag_list, soc_type_t soc)
 	return img_flags;
 }
 
-void print_image_array_fields(flash_header_v3_t *container_hdrs, soc_type_t soc)
+void print_image_array_fields(flash_header_v3_t *container_hdrs, soc_type_t soc, bool app_cntr)
 {
 	boot_img_t img; /* image array entry */
 	img_flags_t img_flags; /* image hab flags */
@@ -1014,7 +1014,10 @@ void print_image_array_fields(flash_header_v3_t *container_hdrs, soc_type_t soc)
 				if (img_flags.core_id == CORE_ULP_UPOWER)
 					strcpy(img_name, "uPower FW");
 				else if ((img_flags.core_id == CORE_ULP_CA35))
-					strcpy(img_name, "Bootloader");
+					if (app_cntr)
+						strcpy(img_name, "A core Image");
+					else
+						strcpy(img_name, "Bootloader");
 				else if ((img_flags.core_id == CORE_ULP_CM33))
 					strcpy(img_name, "M33");
 
@@ -1022,7 +1025,10 @@ void print_image_array_fields(flash_header_v3_t *container_hdrs, soc_type_t soc)
 				if (img_flags.core_id == CORE_SC)
 					strcpy(img_name, "SCFW");
 				else if ((img_flags.core_id == CORE_CA53) || (img_flags.core_id == CORE_CA72))
-					strcpy(img_name, "Bootloader");
+					if (app_cntr)
+						strcpy(img_name, "A core Image");
+					else
+						strcpy(img_name, "Bootloader");
 				else if (img_flags.core_id == CORE_CM4_0)
 					strcpy(img_name, "M4_0");
 				else if (img_flags.core_id == CORE_CM4_1)
@@ -1108,14 +1114,17 @@ void print_image_array_fields(flash_header_v3_t *container_hdrs, soc_type_t soc)
 	}
 }
 
-void print_container_hdr_fields(flash_header_v3_t *container_hdrs, int num_cntrs, soc_type_t soc)
+void print_container_hdr_fields(flash_header_v3_t *container_hdrs, int num_cntrs, soc_type_t soc, bool app_cntr)
 {
 
 	for (int i = 0; i < num_cntrs; i++) {
 		fprintf(stdout, "\n");
 		fprintf(stdout, "*********************************\n");
 		fprintf(stdout, "*				*\n");
-		fprintf(stdout, "*          CONTAINER %d          *\n", i+1);
+		if (app_cntr)
+			fprintf(stdout, "*          APP CONTAINER %d          *\n", i+1);
+		else
+			fprintf(stdout, "*          ROM CONTAINER %d          *\n", i+1);
 		fprintf(stdout, "*				*\n");
 		fprintf(stdout, "*********************************\n\n");
 		fprintf(stdout, "%16s", "Length: ");
@@ -1135,14 +1144,106 @@ void print_container_hdr_fields(flash_header_v3_t *container_hdrs, int num_cntrs
 		fprintf(stdout, "%16s", "Sig blk offset: ");
 		fprintf(stdout, "%#X\n\n", container_hdrs->sig_blk_offset);
 
-		print_image_array_fields(container_hdrs, soc);
+		print_image_array_fields(container_hdrs, soc, app_cntr);
 
 		container_hdrs++;
 	}
 
 }
 
-int extract_container_images(flash_header_v3_t *container_hdr, char *ifname, int num_cntrs, int ifd, soc_type_t soc)
+static int get_container_size(flash_header_v3_t *phdr)
+{
+	uint8_t i = 0;
+	uint32_t max_offset = 0, img_end;
+
+	max_offset = phdr->length;
+
+	for (i = 0; i < phdr->num_images; i++) {
+		img_end = phdr->img[i].offset + phdr->img[i].size;
+		if (img_end > max_offset)
+			max_offset = img_end;
+	}
+
+	if (phdr->sig_blk_offset != 0) {
+		uint16_t len = phdr->sig_blk_hdr.length;
+
+		if (phdr->sig_blk_offset + len > max_offset)
+			max_offset = phdr->sig_blk_offset + len;
+	}
+
+	return max_offset;
+}
+
+int search_app_container(flash_header_v3_t *container_hdrs, int num_cntrs, int ifd, flash_header_v3_t *app_container_hdr)
+{
+	int off[MAX_NUM_OF_CONTAINER];
+	int end = 0, last = 0;
+	int img_array_entries = 0;
+	ssize_t rd_err;
+	off_t err;
+
+	off[0] = 0;
+
+	for (int i = 0; i < num_cntrs; i++) {
+		end = get_container_size(&container_hdrs[i]);
+		if (end + off[i] > last)
+			last = end + off[i];
+
+		if ((i + 1) < num_cntrs)
+			off[i + 1] = off[i] + ALIGN(container_hdrs[i].length, CONTAINER_ALIGNMENT);
+	}
+
+	/* Check app container tag at each 1KB beginning until 16KB */
+	last = ALIGN(last, 0x400);
+	for (int i = 0; i < 16; i++) {
+		last = last + (i * 0x400);
+		err = lseek(ifd, last, SEEK_SET);
+		if (err < 0)
+			break;
+
+		rd_err = read(ifd, (void *)app_container_hdr, 16);
+		if (rd_err < 0) {
+			fprintf(stderr, "Error reading from input binary\n");
+			exit(EXIT_FAILURE);
+		}
+
+		/* check that the current container has a valid tag */
+		if (app_container_hdr->tag != IVT_HEADER_TAG_B0)
+			continue;
+
+		if (app_container_hdr->num_images > MAX_NUM_IMGS) {
+			fprintf(stderr, "This container includes %d images, beyond max 8 images\n",
+				app_container_hdr->num_images);
+			exit(EXIT_FAILURE);
+		}
+
+		/* compute the size of the image array */
+		img_array_entries = app_container_hdr->num_images * sizeof(boot_img_t);
+
+		/* read in the full image array */
+		rd_err = read(ifd, (void *)&app_container_hdr->img, img_array_entries);
+		if (rd_err < 0) {
+			fprintf(stderr, "Error reading from input binary\n");
+			exit(EXIT_FAILURE);
+		}
+
+		/* read in signature block header */
+		if (app_container_hdr->sig_blk_offset != 0) {
+			lseek(ifd, last + app_container_hdr->sig_blk_offset, SEEK_SET);
+			rd_err = read(ifd, (void *)&app_container_hdr->sig_blk_hdr, sizeof(sig_blk_hdr_t));
+			if (rd_err == -1) {
+				fprintf(stderr, "Error reading from input binary\n");
+				exit(EXIT_FAILURE);
+			}
+		}
+
+		return last;
+	}
+
+	return 0;
+}
+
+int extract_container_images(flash_header_v3_t *container_hdr, char *ifname, int num_cntrs, int ifd, soc_type_t soc, int app_cntr_off)
 {
 	uint32_t img_offset = 0; /* image offset from container header */
 	uint32_t img_size = 0; /* image size */
@@ -1178,6 +1279,11 @@ int extract_container_images(flash_header_v3_t *container_hdr, char *ifname, int
 
 			if (!img_size) { /* check for images with zero size (DDR Init) */
 				continue;
+
+			} else if (app_cntr_off > 0) {
+				sprintf(dd_cmd, "dd if=%s of=extracted_imgs/app_container%d_img%d.bin ibs=1 skip=%d count=%d conv=notrunc > /dev/null 2>&1", \
+						ifname, i+1, j+1, app_cntr_off+img_offset, img_size);
+				fprintf(stdout, "APP Container %d Image %d -> extracted_imgs/app_container%d_img%d.bin\n", i+1, j+1, i+1, j+1);
 
 			} else if ((i == 0) && (soc != DXL)) { /* first container is always SECO FW */
 
@@ -1290,6 +1396,8 @@ int parse_container_hdrs_qx_qm_b0(char *ifname, bool extract, soc_type_t soc)
 	int img_array_entries = 0; /* number of images in container */
 	ssize_t rd_err;
 	flash_header_v3_t container_headers[MAX_NUM_OF_CONTAINER];
+	flash_header_v3_t app_container_header;
+	int app_cntr_off;
 
 	/* initialize region of memory where flash header will be stored */
 	memset((void *)container_headers, 0, sizeof(container_headers));
@@ -1326,12 +1434,14 @@ int parse_container_hdrs_qx_qm_b0(char *ifname, bool extract, soc_type_t soc)
 			exit(EXIT_FAILURE);
 		}
 
-		/* read in signature block header */
-		lseek(ifd, file_off + container_headers[cntr_num].sig_blk_offset, SEEK_SET);
-		rd_err = read(ifd, (void *)&container_headers[cntr_num].sig_blk_hdr, sizeof(sig_blk_hdr_t));
-		if (rd_err == -1) {
-			fprintf(stderr, "Error reading from input binary\n");
-			exit(EXIT_FAILURE);
+		if (container_headers[cntr_num].sig_blk_offset != 0) {
+			/* read in signature block header */
+			lseek(ifd, file_off + container_headers[cntr_num].sig_blk_offset, SEEK_SET);
+			rd_err = read(ifd, (void *)&container_headers[cntr_num].sig_blk_hdr, sizeof(sig_blk_hdr_t));
+			if (rd_err == -1) {
+				fprintf(stderr, "Error reading from input binary\n");
+				exit(EXIT_FAILURE);
+			}
 		}
 
 		/* seek to next container in binary */
@@ -1343,10 +1453,18 @@ int parse_container_hdrs_qx_qm_b0(char *ifname, bool extract, soc_type_t soc)
 	}
 
 
-	print_container_hdr_fields(container_headers, cntr_num, soc);
+	print_container_hdr_fields(container_headers, cntr_num, soc, false);
 
 	if (extract)
-		extract_container_images(container_headers, ifname, cntr_num, ifd, soc);
+		extract_container_images(container_headers, ifname, cntr_num, ifd, soc, 0);
+
+	app_cntr_off = search_app_container(container_headers, cntr_num, ifd, &app_container_header);
+
+	if (app_cntr_off > 0) {
+		print_container_hdr_fields(&app_container_header, 1, soc, true);
+		if (extract)
+			extract_container_images(&app_container_header, ifname, 1, ifd, soc, app_cntr_off);
+	}
 
 	close(ifd);
 

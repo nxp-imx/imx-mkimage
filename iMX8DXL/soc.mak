@@ -67,7 +67,7 @@ Image1: Image
 
 .PHONY: clean nightly
 clean:
-	@rm -f $(MKIMG) u-boot-atf-container.img Image0 Image1
+	@rm -f $(MKIMG) u-boot-atf-container.img Image0 Image1 u-boot-hash.bin u-boot-atf.bin head.hash u-boot-atf-container.img flash.bin
 	@rm -rf extracted_imgs
 	@echo "imx8dxl clean done"
 

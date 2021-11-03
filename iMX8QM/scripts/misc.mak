@@ -1,10 +1,10 @@
 flash_secofw flash_b0_secofw: $(MKIMG) ahabfw.bin
 	./$(MKIMG) -soc QX -rev B0 -c -seco ahabfw.bin -out flash.bin
 
-flash_msg_block:
+flash_msg_block_field_return:
 	./$(MKIMG) -soc QX -rev B0 -dcd skip -append $(AHAB_IMG) -c -scfw scfw_tcm.bin -msg_blk signed_message.bin field 0x00100000 -out flash.bin
 
-flash_flexspi_msg_block: $(MKIMG) $(AHAB_IMG) scfw_tcm.bin u-boot-atf.bin $(QSPI_HEADER)
+flash_flexspi_msg_block_field_return: $(MKIMG) $(AHAB_IMG) scfw_tcm.bin u-boot-atf.bin $(QSPI_HEADER)
 	./$(MKIMG) -soc QX -rev B0 -dcd skip -dev flexspi -append $(AHAB_IMG) -c -scfw scfw_tcm.bin -msg_blk signed_message.bin field 0x00100000 -out flash.bin
 	./$(QSPI_PACKER) $(QSPI_HEADER)
 

@@ -2,11 +2,11 @@ MKIMG = ../mkimage_imx8
 
 CC ?= gcc
 V2X ?= YES
-REVISION ?= A1
+REV ?= A1
 CFLAGS ?= -O2 -Wall -std=c99 -static
 INCLUDE = ./lib
 
-LC_REVISION = $(shell echo $(REVISION) | tr ABC abc)
+LC_REVISION = $(shell echo $(REV) | tr ABC abc)
 SECO_FW_NAME = mx8dxl$(LC_REVISION)-ahab-container.img
 
 #define the F(Q)SPI header file

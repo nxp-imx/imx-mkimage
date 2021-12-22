@@ -470,8 +470,8 @@ void set_image_array_entry(flash_header_v3_t *container, soc_type_t soc,
 		img->hab_flags |= IMG_TYPE_SENTINEL;
 		img->hab_flags |= CORE_ULP_SENTINEL << BOOT_IMG_FLAGS_CORE_SHIFT;
 		tmp_name = "SENTINEL";
-		img->dst = 0xe4000000; /* S400 IRAM base */
-		img->entry = 0xe4000000;
+		img->dst = 0XE7FE8000; /* S400 IRAM base */
+		img->entry = 0XE7FE8000;
 
 		break;
 	case AP:
@@ -715,6 +715,7 @@ int build_container_qx_qm_b0(soc_type_t soc, uint32_t sector_size, uint32_t ivt_
 		case DATA:
 		case UPOWER:
 		case MSG_BLOCK:
+		case SENTINEL:
 			if (container < 0) {
 				fprintf(stderr, "No container found\n");
 				exit(EXIT_FAILURE);
@@ -755,7 +756,6 @@ int build_container_qx_qm_b0(soc_type_t soc, uint32_t sector_size, uint32_t ivt_
 			break;
 
 		case SECO:
-		case SENTINEL:
 			if (container < 0) {
 				fprintf(stderr, "No container found\n");
 				exit(EXIT_FAILURE);

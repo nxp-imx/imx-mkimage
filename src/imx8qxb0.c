@@ -25,6 +25,7 @@
 #define IMG_FLAG_HASH_SHA256		0x000
 #define IMG_FLAG_HASH_SHA384		0x100
 #define IMG_FLAG_HASH_SHA512		0x200
+#define IMG_FLAG_HASH_SM3		0x300
 
 #define IMG_FLAG_ENCRYPTED_MASK		0x400
 #define IMG_FLAG_ENCRYPTED_SHIFT	0x0A
@@ -38,10 +39,12 @@
 #define HASH_STR_SHA_256		"sha256"
 #define HASH_STR_SHA_384		"sha384"
 #define HASH_STR_SHA_512		"sha512"
+#define HASH_STR_SM3			"sm3"
 
 #define HASH_TYPE_SHA_256		256
 #define HASH_TYPE_SHA_384		384
 #define HASH_TYPE_SHA_512		512
+#define HASH_TYPE_SM3			003
 
 #define IMAGE_HASH_ALGO_DEFAULT		384
 #define IMAGE_PADDING_DEFAULT		0x1000
@@ -230,25 +233,30 @@ void set_image_hash(boot_img_t *img, char *filename, uint32_t hash_type)
 {
 	FILE *fp = NULL;
 	char sha_command[512];
+	char digest_type[10];
 	char hash[2 * HASH_MAX_LEN + 1];
-
-	if (img->size == 0)
-		sprintf(sha_command, "sha%dsum /dev/null", hash_type);
-	else
-		sprintf(sha_command, "dd if=/dev/zero of=tmp_pad bs=%d count=1;\
-				dd if=\'%s\' of=tmp_pad conv=notrunc;\
-				sha%dsum tmp_pad; rm -f tmp_pad",
-			img->size, filename, hash_type);
+	int digest_length=0;
 
 	switch(hash_type) {
 	case HASH_TYPE_SHA_256:
 		img->hab_flags |= IMG_FLAG_HASH_SHA256;
+		strcpy(digest_type, "sha256sum" );
+		digest_length = 64;
 		break;
 	case HASH_TYPE_SHA_384:
 		img->hab_flags |= IMG_FLAG_HASH_SHA384;
+		strcpy(digest_type, "sha384sum" );
+		digest_length = 96;
 		break;
 	case HASH_TYPE_SHA_512:
 		img->hab_flags |= IMG_FLAG_HASH_SHA512;
+		strcpy(digest_type, "sha512sum" );
+		digest_length = 128;
+		break;
+	case HASH_TYPE_SM3:
+		img->hab_flags |= IMG_FLAG_HASH_SM3;
+		strcpy(digest_type, "sm3sum" );
+		digest_length = 64;
 		break;
 	default:
 		fprintf(stderr, "Wrong hash type selected (%d) !!!\n\n",
@@ -256,6 +264,15 @@ void set_image_hash(boot_img_t *img, char *filename, uint32_t hash_type)
 		exit(EXIT_FAILURE);
 		break;
 	}
+
+	if (img->size == 0)
+		sprintf(sha_command, "%s /dev/null", digest_type);
+	else
+		sprintf(sha_command, "dd if=/dev/zero of=tmp_pad bs=%d count=1;\
+				dd if=\'%s\' of=tmp_pad conv=notrunc;\
+				%s tmp_pad; rm -f tmp_pad",
+			img->size, filename, digest_type);
+
 	memset(img->hash, 0, HASH_MAX_LEN);
 
 	fp = popen(sha_command, "r");
@@ -264,7 +281,7 @@ void set_image_hash(boot_img_t *img, char *filename, uint32_t hash_type)
 		exit(EXIT_FAILURE);
 	}
 
-	if(fgets(hash, hash_type / 4 + 1, fp) == NULL) {
+	if(fgets(hash, digest_length + 1, fp) == NULL) {
 		fprintf(stderr, "Failed to hash file: %s\n", filename);
 		exit(EXIT_FAILURE);
 	}
@@ -375,27 +392,35 @@ uint64_t read_dcd_offset(char *filename)
 uint32_t get_hash_algo(char *images_hash)
 {
 	uint32_t hash_algo = IMAGE_HASH_ALGO_DEFAULT;
+	char *hash_name = "";
 
 	if (NULL != images_hash) {
 	    if (0 == strcmp(images_hash, HASH_STR_SHA_256)) {
 			hash_algo = HASH_TYPE_SHA_256;
+			hash_name = HASH_STR_SHA_256; 
 		}
 		else if (0 == strcmp(images_hash, HASH_STR_SHA_384)) {
 			hash_algo = HASH_TYPE_SHA_384;
+			hash_name = HASH_STR_SHA_384;
 		}
 		else if (0 == strcmp(images_hash, HASH_STR_SHA_512)) {
 			hash_algo = HASH_TYPE_SHA_512;
+			hash_name = HASH_STR_SHA_512;
+		}
+		else if (0 == strcmp(images_hash, HASH_STR_SM3)) {
+			hash_algo = HASH_TYPE_SM3;
+			hash_name = HASH_STR_SM3;
 		}
 		else {
 			fprintf(stderr,
 					"\nERROR: %s is an invalid hash argument\n"
-					"    Expected values: %s, %s, %s\n\n",
-					images_hash, HASH_STR_SHA_256, HASH_STR_SHA_384, HASH_STR_SHA_512);
+					"    Expected values: %s, %s, %s, %s\n\n",
+					images_hash, HASH_STR_SHA_256, HASH_STR_SHA_384, HASH_STR_SHA_512, HASH_STR_SM3);
 			exit(EXIT_FAILURE);
 		}
 	}
 
-	fprintf(stdout, "Hash of the images = sha%d\n", hash_algo);
+	fprintf(stdout, "Hash of the images = %s\n", hash_name);
 	return hash_algo;
 }
 
@@ -973,6 +998,9 @@ img_flags_t parse_image_flags(uint32_t flags, char *flag_list, soc_type_t soc)
 	case 0x2:
 		strcat(flag_list, "SHA512");
 		break;
+	case 0x3:
+		strcat(flag_list, "SM3");
+		break;
 	default:
 		break;
 	}
@@ -1091,6 +1119,10 @@ void print_image_array_fields(flash_header_v3_t *container_hdrs, soc_type_t soc,
 		case 0x2:
 			hash_length = 512 / 8;
 			strcpy(hash_name, "SHA512");
+			break;
+		case 0x3:
+			hash_length = 256 / 8;
+			strcpy(hash_name, "SM3");
 			break;
 		default:
 			strcpy(hash_name, "Unknown");

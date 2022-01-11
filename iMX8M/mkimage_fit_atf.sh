@@ -64,6 +64,7 @@ cat << __HEADER_EOF
 
 / {
 	description = "Configuration to load ATF before U-Boot";
+	#address-cells = <1>;
 
 	images {
 		uboot-1 {

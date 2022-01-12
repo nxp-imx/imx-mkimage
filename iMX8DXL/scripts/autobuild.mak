@@ -14,11 +14,11 @@ else
 AT := @
 endif
 
-nightly : nightly_a1_evk
-nightly_evk : nightly_a1_evk
-nightly_mek : nightly_a1_evk
+nightly : nightly_a1evk
+nightly_evk : nightly_a1evk
+nightly_mek : nightly_a1evk
 
-nightly_a1_evk:
+nightly_a1evk:
 	$(AT)rm -rf boot
 	$(AT)echo "Pulling nightly for MEK board from $(SERVER)/$(DIR)"
 	$(AT)echo $(BUILD)-$(N)-iMX8DXL-$(LC_REVISION)-evk > nightly.txt
@@ -32,13 +32,13 @@ nightly_a1_evk:
 	$(AT)$(WGET) -q $(SERVER)/$(DIR)/Image-imx8_all.bin -O Image
 	$(AT)mv -f Image boot
 
-nightly_b0_evk: nightly_a1_evk
+nightly_b0evk: nightly_a1evk
 	$(AT)$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8dxl$(LC_REVISION)evk/bl31-imx8dxl.bin-optee -O bl31-optee.bin
 	$(AT)$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8dxl$(LC_REVISION)evk/u-boot-spl.bin-imx8dxl$(LC_REVISION)evk-sd -O u-boot-spl.bin
 	$(AT)$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8dxl$(LC_REVISION)evk/u-boot-spl.bin-imx8dxl$(LC_REVISION)evk-fspi -O u-boot-spl-fspi.bin
 	$(AT)$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8dxl$(LC_REVISION)evk/tee.bin -O tee.bin
 
-nightly_ddr3_a1_evk:
+nightly_ddr3_a1evk:
 	$(AT)rm -rf boot
 	$(AT)echo "Pulling nightly for MEK board from $(SERVER)/$(DIR)"
 	$(AT)echo $(BUILD)-$(N)-iMX8DXL-ddr3-$(LC_REVISION)-evk > nightly.txt
@@ -52,7 +52,7 @@ nightly_ddr3_a1_evk:
 	$(AT)$(WGET) -q $(SERVER)/$(DIR)/Image-imx8_all.bin -O Image
 	$(AT)mv -f Image boot
 
-nightly_ddr3_b0_evk: nightly_ddr3_a1_evk
+nightly_ddr3_b0evk: nightly_ddr3_a1evk
 	$(AT)$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8dxl$(LC_REVISION)ddr3evk/bl31-imx8dxl.bin-optee -O bl31-optee.bin
 	$(AT)$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8dxl$(LC_REVISION)ddr3evk/u-boot-spl.bin-imx8dxl$(LC_REVISION)ddr3evk-sd -O u-boot-spl.bin
 	$(AT)$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8dxl$(LC_REVISION)ddr3evk/u-boot-spl.bin-imx8dxl$(LC_REVISION)ddr3evk-nand -O u-boot-spl-nand.bin

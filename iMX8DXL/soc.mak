@@ -22,9 +22,11 @@ else
 endif
 
 V2X_OCRAM = 0x110000
+V2X_FSPI = 0x8015000
 ifeq ($(V2X),YES)
     V2X_DUMMY_DDR = -dummy 0x87fc0000
     V2X_DUMMY_OCRAM = -dummy ${V2X_OCRAM}
+    V2X_DUMMY_FSPI = -dummy ${V2X_FSPI}
 endif
 
 TEE_LOAD_ADDR ?= 0x96000000

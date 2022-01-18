@@ -883,8 +883,10 @@ int main(int argc, char **argv)
 		}
 	}
 
-	fprintf(stdout, "CONTAINER FUSE VERSION:\t0x%02x\n", fuse_version);
-	fprintf(stdout, "CONTAINER SW VERSION:\t0x%04x\n", sw_version);
+	if (!parse) {
+		fprintf(stdout, "CONTAINER FUSE VERSION:\t0x%02x\n", fuse_version);
+		fprintf(stdout, "CONTAINER SW VERSION:\t0x%04x\n", sw_version);
+	}
 
 	param_stack[p_idx].option = NO_IMG; /* null terminate the img stack */
 

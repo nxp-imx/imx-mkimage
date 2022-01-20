@@ -26,7 +26,7 @@ else
 	let uboot_sign_off=$((fit_off - 0x8000 - ivt_off + 0x3000))
 fi
 
-let uboot_size=$(ls -lct u-boot-nodtb.bin | awk '{print $5}')
+let uboot_size=$(stat --printf="%s" u-boot-nodtb.bin)
 let uboot_load_addr=0x40200000
 
 let last_sign_off=$(((uboot_sign_off + uboot_size + 3) & ~3))
@@ -43,7 +43,7 @@ for dtname in $*
 do
 	if [ ${cnt} != 0 ]
 	then
-		let fdt${cnt}_size=$(ls -lct $dtname | awk '{print $5}')
+		let fdt${cnt}_size=$(stat --printf="%s" $dtname)
 
 		let fdt${cnt}_sign_off=$((last_sign_off))
 		let fdt${cnt}_load_addr=$((last_load_addr))
@@ -64,13 +64,13 @@ done
 
 let atf_sign_off=$((last_sign_off))
 let atf_load_addr=$ATF_LOAD_ADDR
-let atf_size=$(ls -lct bl31.bin | awk '{print $5}')
+let atf_size=$(stat --printf="%s" bl31.bin)
 
 if [ ! -f $BL32 ]; then
 	let tee_size=0x0
 	let tee_sign_off=$((atf_sign_off + atf_size))
 else
-	let tee_size=$(ls -lct tee.bin | awk '{print $5}')
+	let tee_size=$(stat --printf="%s" tee.bin)
 
 	let tee_sign_off=$(((atf_sign_off + atf_size + 3) & ~3))
 	let tee_load_addr=$TEE_LOAD_ADDR

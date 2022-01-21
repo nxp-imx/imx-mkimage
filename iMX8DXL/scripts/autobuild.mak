@@ -32,6 +32,8 @@ nightly_a1evk:
 	$(AT)$(WGET) -q $(SERVER)/$(DIR)/Image-imx8_all.bin -O Image
 	$(AT)mv -f Image boot
 
+nightly_b0evk: REV = b0
+
 nightly_b0evk: nightly_a1evk
 	$(AT)$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8dxl$(LC_REVISION)evk/bl31-imx8dxl.bin-optee -O bl31-optee.bin
 	$(AT)$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8dxl$(LC_REVISION)evk/u-boot-spl.bin-imx8dxl$(LC_REVISION)evk-sd -O u-boot-spl.bin

@@ -76,9 +76,10 @@ OPTIONS:
 	-images_hash [sha256|sha384|sha512]
 		Specifies the image hash type used in the new container.
 
-	-msg_blk [filename] [fuse|field|debug|patch|zero] [address]
-		Specifies a special A core data image used to pass a message block to SCFW for debug,
-		secure fuse programming, field return, patch, and FIPS key zeroization.
+	-msg_blk [filename] [fuse|field|debug|patch|zero|degrade] [address]
+		Specifies a special A core data image used to pass a message block to SCFW
+		for debug, secure fuse programming, field return, patch, FIPS key zeroization,
+		and FIPS cluster degrade.
 
 	-m4 [filename] [core] [address]
 		Specifies the M4 image to be appended to the new container.

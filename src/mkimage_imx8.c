@@ -836,6 +836,8 @@ int main(int argc, char **argv)
 						param_stack[p_idx].ext = SC_R_PWM_0;
 					else if (!strncmp(argv[optind], "patch", 5))
 						param_stack[p_idx].ext = SC_R_SNVS;
+					else if (!strncmp(argv[optind], "degrade", 7))
+						param_stack[p_idx].ext = SC_R_DC_0;
 					else {
 						fprintf(stderr, "ERROR: MSG type not found %s\n", argv[optind+2]);
 						exit(EXIT_FAILURE);

@@ -103,6 +103,10 @@ flash_singleboot_m33_flexspi: $(MKIMG) $(AHAB_IMG) $(UPOWER_IMG) u-boot-atf-cont
                    dd if=u-boot-atf-container.img of=flash.bin bs=1K seek=$$pad_cnt; \
 	./$(QSPI_PACKER) $(QSPI_HEADER)
 
+flash_lpboot_no_ahabfw_flexspi: $(MKIMG) $(MCU_IMG)
+	./$(MKIMG) -soc IMX9 -dev flexspi -c -m4 $(MCU_IMG) 0 $(MCU_TCM_ADDR) -out flash.bin
+	./$(QSPI_PACKER) $(QSPI_HEADER)
+
 flash_sentinel: $(MKIMG) ahabfw.bin
 	./$(MKIMG) -soc IMX9 -c -sentinel ahabfw.bin -out flash.bin
 

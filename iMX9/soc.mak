@@ -23,7 +23,8 @@ SPL_LOAD_ADDR ?= 0x2049A000
 ATF_LOAD_ADDR ?= 0x204E0000
 TEE_LOAD_ADDR ?= 0x96000000
 UBOOT_LOAD_ADDR ?= 0x80200000
-MCU_SSRAM_ADDR ?= 0x1ffc2000
+MCU_TCM_ADDR ?= 0x1FFE0000
+MCU_TCM_ADDR_ACORE_VIEW ?= 0x201E0000
 MCU_XIP_ADDR ?= 0x4032000 # Point entry of m33 in flexspi0 nor flash
 M33_IMAGE_XIP_OFFSET ?= 0x31000 # 1st container offset is 0x1000 when boot device is flexspi0 nor flash, actually the m33_image.bin is in 0x31000 + 0x1000 = 0x32000.
 
@@ -78,7 +79,7 @@ flash_singleboot_flexspi: $(MKIMG) $(AHAB_IMG) u-boot-spl.bin u-boot-atf-contain
 	./$(QSPI_PACKER) $(QSPI_HEADER)
 
 flash_singleboot_m33: $(MKIMG) $(AHAB_IMG) u-boot-atf-container.img $(MCU_IMG) u-boot-spl.bin
-	./$(MKIMG) -soc IMX9 -append $(AHAB_IMG) -c -m4 $(MCU_IMG) 0 $(MCU_SSRAM_ADDR) -ap u-boot-spl.bin a35 $(SPL_LOAD_ADDR) -out flash.bin
+	./$(MKIMG) -soc IMX9 -append $(AHAB_IMG) -c -m4 $(MCU_IMG) 0 $(MCU_TCM_ADDR) $(MCU_TCM_ADDR_ACORE_VIEW) -ap u-boot-spl.bin a35 $(SPL_LOAD_ADDR) -out flash.bin
 	cp flash.bin boot-spl-container.img
 	@flashbin_size=`wc -c flash.bin | awk '{print $$1}'`; \
                    pad_cnt=$$(((flashbin_size + 0x400 - 1) / 0x400)); \
@@ -86,7 +87,7 @@ flash_singleboot_m33: $(MKIMG) $(AHAB_IMG) u-boot-atf-container.img $(MCU_IMG) u
                    dd if=u-boot-atf-container.img of=flash.bin bs=1K seek=$$pad_cnt;
 
 flash_singleboot_m33_no_ahabfw: $(MKIMG) u-boot-atf-container.img $(MCU_IMG) u-boot-spl.bin
-	./$(MKIMG) -soc IMX9 -c -m4 $(MCU_IMG) 0 $(MCU_SSRAM_ADDR) -ap u-boot-spl.bin a35 $(SPL_LOAD_ADDR) -out flash.bin
+	./$(MKIMG) -soc IMX9 -c -m4 $(MCU_IMG) 0 $(MCU_TCM_ADDR) $(MCU_TCM_ADDR_ACORE_VIEW) -ap u-boot-spl.bin a35 $(SPL_LOAD_ADDR) -out flash.bin
 	cp flash.bin boot-spl-container.img
 	@flashbin_size=`wc -c flash.bin | awk '{print $$1}'`; \
                    pad_cnt=$$(((flashbin_size + 0x400 - 1) / 0x400)); \
@@ -94,7 +95,7 @@ flash_singleboot_m33_no_ahabfw: $(MKIMG) u-boot-atf-container.img $(MCU_IMG) u-b
                    dd if=u-boot-atf-container.img of=flash.bin bs=1K seek=$$pad_cnt;
 
 flash_singleboot_m33_flexspi: $(MKIMG) $(AHAB_IMG) $(UPOWER_IMG) u-boot-atf-container.img $(MCU_IMG) u-boot-spl.bin
-	./$(MKIMG) -soc IMX9  -dev flexspi -append $(AHAB_IMG) -c -m4 $(MCU_IMG) 0 $(MCU_SSRAM_ADDR) -ap u-boot-spl.bin a35 $(SPL_LOAD_ADDR) -out flash.bin
+	./$(MKIMG) -soc IMX9  -dev flexspi -append $(AHAB_IMG) -c -m4 $(MCU_IMG) 0 $(MCU_TCM_ADDR) $(MCU_TCM_ADDR_ACORE_VIEW) -ap u-boot-spl.bin a35 $(SPL_LOAD_ADDR) -out flash.bin
 	cp flash.bin boot-spl-container.img
 	@flashbin_size=`wc -c flash.bin | awk '{print $$1}'`; \
                    pad_cnt=$$(((flashbin_size + 0x400 - 1) / 0x400)); \

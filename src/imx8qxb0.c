@@ -429,6 +429,7 @@ void set_image_array_entry(flash_header_v3_t *container, soc_type_t soc,
 		uint32_t size, char *tmp_filename, bool dcd_skip, char *images_hash)
 {
 	uint64_t entry = image_stack->entry;
+	uint64_t dst = image_stack->dst;
 	uint64_t core = image_stack->ext;
 	uint32_t meta;
 	char *tmp_name = "";
@@ -521,7 +522,10 @@ void set_image_array_entry(flash_header_v3_t *container, soc_type_t soc,
 		{
 			fprintf(stderr, "\n\nWarning: M4 Destination address is not 8 byte aligned\n\n");
 		}
-		img->dst = entry;
+		if (dst)
+			img->dst = dst;
+		else
+			img->dst = entry;
 		img->entry = entry;
 		img->meta = meta;
 		custom_partition = 0;

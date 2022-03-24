@@ -698,10 +698,17 @@ int main(int argc, char **argv)
 				if ((optind < argc && *argv[optind] != '-') && (optind+1 < argc &&*argv[optind+1] != '-' )) {
 					param_stack[p_idx].ext = strtol(argv[optind++], NULL, 0);
 					param_stack[p_idx].entry = (uint32_t) strtoll(argv[optind++], NULL, 0);
+					param_stack[p_idx].dst = 0;
 					fprintf(stdout, "\tcore: %" PRIi64, param_stack[p_idx].ext);
-					fprintf(stdout, " addr: 0x%08" PRIx64 "\n", param_stack[p_idx++].entry);
+					fprintf(stdout, " entry addr: 0x%08" PRIx64 , param_stack[p_idx].entry);
+					if (optind < argc && *argv[optind] != '-') {
+						param_stack[p_idx].dst = (uint32_t) strtoll(argv[optind++], NULL, 0);
+						fprintf(stdout, " load addr: 0x%08" PRIx64 , param_stack[p_idx].dst);
+					}
+					fprintf(stdout, "\n");
+					p_idx++;
 				} else {
-					fprintf(stderr, "\n-m4 option require THREE arguments: filename, core: 0/1, start address in hex\n\n");
+					fprintf(stderr, "\n-m4 option require FOUR arguments: filename, core: 0/1, entry address in hex, load address in hex(optional)\n\n");
 					exit(EXIT_FAILURE);
 				}
 				break;

@@ -22,7 +22,7 @@ else
 	ls -lct bl31.bin | awk '{print $5}' >&2
 fi
 
-BL32="tee.bin"
+[ -z "$BL32" ] && BL32="tee.bin"
 LOADABLES="\"atf-1\""
 
 if [ ! -f $BL32 ]; then

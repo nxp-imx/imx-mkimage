@@ -179,8 +179,8 @@ flash_regression_linux_m41_xip: $(MKIMG) $(AHAB_IMG) scfw_tcm.bin u-boot-atf.bin
 flash_scfw: $(MKIMG) $(AHAB_IMG) scfw_tcm.bin
 	./$(MKIMG) -soc QM -rev B0 -dcd skip -append $(AHAB_IMG) -c -scfw scfw_tcm.bin -out flash.bin
 
-flash_kernel: $(MKIMG) Image fsl-imx8qm-mek.dtb
-	./$(MKIMG) -soc QM -rev B0 -c -ap Image a53 0x80280000 --data fsl-imx8qm-mek.dtb a53 0x83000000 -out flash.bin
+flash_kernel: $(MKIMG) Image imx8qm-mek.dtb
+	./$(MKIMG) -soc QM -rev B0 -c -ap Image a53 0x80200000 --data imx8qm-mek.dtb a53 0x83000000 -out flash.bin
 
 flash_ca72: $(MKIMG) $(AHAB_IMG) scfw_tcm.bin u-boot-atf.bin
 	./$(MKIMG) -soc QM -rev B0 -append $(AHAB_IMG) -c -scfw scfw_tcm.bin -ap u-boot-atf.bin a72 0x80000000 -out flash.bin

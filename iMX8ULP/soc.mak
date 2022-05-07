@@ -133,7 +133,7 @@ flash_sentinel: $(MKIMG) ahabfw.bin
 	./$(MKIMG) -soc ULP -c -sentinel ahabfw.bin -out flash.bin
 
 prepare_kernel_chunks: Image
-	./$(SPLIT_KERNEL) Image 0x80480000 0x700000
+	./$(SPLIT_KERNEL) Image 0x80400000 0x700000
 
 flash_kernel: $(MKIMG) prepare_kernel_chunks imx8ulp-evk.dtb
 	KERNEL_CMD="$(shell cat Image_cmd)"; \

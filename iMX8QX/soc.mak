@@ -41,7 +41,7 @@ u-boot-atf.bin: u-boot-hash.bin bl31.bin
 u-boot-atf.itb: u-boot-hash.bin bl31.bin
 	./$(PAD_IMAGE) bl31.bin
 	./$(PAD_IMAGE) u-boot-hash.bin
-	TEE_LOAD_ADDR=$(TEE_LOAD_ADDR) ./mkimage_fit_atf.sh > u-boot.its;
+	TEE_LOAD_ADDR=$(TEE_LOAD_ADDR) ../$(SOC_DIR)/mkimage_fit_atf.sh > u-boot.its;
 	./mkimage_uboot -E -p 0x3000 -f u-boot.its u-boot-atf.itb;
 	@rm -f u-boot.its
 
@@ -148,32 +148,32 @@ extract: $(MKIMG) flash.bin
 	./$(MKIMG) -soc QX -rev B0 -extract flash.bin
 
 
-ifneq ($(wildcard scripts/misc.mak),)
+ifneq ($(wildcard ../$(SOC_DIR)/scripts/misc.mak),)
 $(info include misc.mak)
-include scripts/misc.mak
+include ../$(SOC_DIR)/scripts/misc.mak
 endif
 
-ifneq ($(wildcard scripts/m4.mak),)
+ifneq ($(wildcard ../$(SOC_DIR)/scripts/m4.mak),)
 $(info include m4.mak)
-include scripts/m4.mak
+include ../$(SOC_DIR)/scripts/m4.mak
 endif
 
-ifneq ($(wildcard scripts/android.mak),)
+ifneq ($(wildcard ../$(SOC_DIR)/scripts/android.mak),)
 $(info include android.mak)
-include scripts/android.mak
+include ../$(SOC_DIR)/scripts/android.mak
 endif
 
-ifneq ($(wildcard scripts/test.mak),)
+ifneq ($(wildcard ../$(SOC_DIR)/scripts/test.mak),)
 $(info include test.mak)
-include scripts/test.mak
+include ../$(SOC_DIR)/scripts/test.mak
 endif
 
-ifneq ($(wildcard scripts/autobuild.mak),)
+ifneq ($(wildcard ../$(SOC_DIR)/scripts/autobuild.mak),)
 $(info include autobuild.mak)
-include scripts/autobuild.mak
+include ../$(SOC_DIR)/scripts/autobuild.mak
 endif
 
-ifneq ($(wildcard scripts/alias.mak),)
+ifneq ($(wildcard ../$(SOC_DIR)/scripts/alias.mak),)
 $(info include alias.mak)
-include scripts/alias.mak
+include ../$(SOC_DIR)/scripts/alias.mak
 endif

@@ -20,7 +20,11 @@ vpath $(INCLUDE)
 
 .DEFAULT:
 	@$(MAKE) -s --no-print-directory bin
-	@$(MAKE) --no-print-directory -C $(SOC_DIR) -f soc.mak $@
+ifdef O
+	@$(MAKE) --no-print-directory SOC_DIR=$(SOC_DIR) -C $(O) -f ../$(SOC_DIR)/soc.mak $@
+else
+	@$(MAKE) --no-print-directory SOC_DIR=$(SOC_DIR) -C $(SOC_DIR) -f soc.mak $@
+endif
 
 #print out usage as the default target
 all: $(MKIMG) help
@@ -28,6 +32,9 @@ all: $(MKIMG) help
 clean:
 	@rm -f $(MKIMG)
 	@rm -f src/build_info.h
+ifdef O
+	@$(MAKE) --no-print-directory -C $(O) -f ../$(SOC_DIR)/soc.mak clean
+endif
 	@$(MAKE) --no-print-directory -C iMX8QM -f soc.mak clean
 	@$(MAKE) --no-print-directory -C iMX8QX -f soc.mak  clean
 	@$(MAKE) --no-print-directory -C iMX8DXL -f soc.mak clean

@@ -164,37 +164,37 @@ extract: $(MKIMG) flash.bin
 	./$(MKIMG) -soc DXL -rev A0 -extract flash.bin
 
 
-ifneq ($(wildcard scripts/misc.mak),)
+ifneq ($(wildcard ../$(SOC_DIR)/scripts/misc.mak),)
 $(info include misc.mak)
-include scripts/misc.mak
+include ../$(SOC_DIR)/scripts/misc.mak
 endif
 
-ifneq ($(wildcard scripts/m4.mak),)
+ifneq ($(wildcard ../$(SOC_DIR)/scripts/m4.mak),)
 $(info include m4.mak)
-include scripts/m4.mak
+include ../$(SOC_DIR)/scripts/m4.mak
 endif
 
-ifneq ($(wildcard scripts/android.mak),)
+ifneq ($(wildcard ../$(SOC_DIR)/scripts/android.mak),)
 $(info include android.mak)
-include scripts/android.mak
+include ../$(SOC_DIR)/scripts/android.mak
 endif
 
-ifneq ($(wildcard scripts/test.mak),)
+ifneq ($(wildcard ../$(SOC_DIR)/scripts/test.mak),)
 $(info include test.mak)
-include scripts/test.mak
+include ../$(SOC_DIR)/scripts/test.mak
 endif
 
-ifneq ($(wildcard scripts/autobuild.mak),)
+ifneq ($(wildcard ../$(SOC_DIR)/scripts/autobuild.mak),)
 $(info include autobuild.mak)
-include scripts/autobuild.mak
+include ../$(SOC_DIR)/scripts/autobuild.mak
 endif
 
-ifneq ($(wildcard scripts/rev_a.mak),)
+ifneq ($(wildcard ../$(SOC_DIR)/scripts/rev_a.mak),)
 $(info include rev_a.mak)
-include scripts/rev_a.mak
+include ../$(SOC_DIR)/scripts/rev_a.mak
 endif
 
-ifneq ($(wildcard scripts/alias.mak),)
+ifneq ($(wildcard ../$(SOC_DIR)/scripts/alias.mak),)
 $(info include alias.mak)
-include scripts/alias.mak
+include ../$(SOC_DIR)/scripts/alias.mak
 endif

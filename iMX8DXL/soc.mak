@@ -14,6 +14,7 @@ QSPI_HEADER = ../scripts/fspi_header
 QSPI_PACKER = ../scripts/fspi_packer.sh
 PAD_IMAGE = ../scripts/pad_image.sh
 SPLIT_SPL = ../scripts/split_spl.sh
+SPLIT_KERNEL = ../scripts/split_kernel.sh
 
 ifneq ($(wildcard /usr/bin/rename.ul),)
     RENAME = rename.ul
@@ -154,8 +155,15 @@ flash_scfw: $(MKIMG) $(SECO_FW_NAME) scfw_tcm.bin
 flash_patch: $(MKIMG) $(SECO_FW_NAME) scfw_tcm.bin message_signed.bin
 	./$(MKIMG) -soc DXL -rev A0 -append $(SECO_FW_NAME) -c -scfw scfw_tcm.bin -msg_blk message_signed.bin patch 0x80000000 $(V2X_DUMMY_OCRAM) --out flash.bin
 
+prepare_kernel_chunks: Image
+	./$(SPLIT_KERNEL) Image 0x80200000 0xA00000
+
+flash_split_kernel: $(MKIMG) prepare_kernel_chunks imx8dxl-evk.dtb
+	KERNEL_CMD="$(shell cat Image_cmd)"; \
+	./$(MKIMG) -soc DXL -rev A0 -c $$KERNEL_CMD --data imx8dxl-evk.dtb 0x83000000 -out flash.bin
+
 flash_kernel: $(MKIMG) Image imx8dxl-evk.dtb
-	./$(MKIMG) -soc DXL -rev A0 -c -ap Image a35 0x80280000 --data imx8dxl-evk.dtb 0x83000000 -out flash.bin
+	./$(MKIMG) -soc DXL -rev A0 -c -ap Image a35 0x80200000 --data imx8dxl-evk.dtb 0x83000000 -out flash.bin
 
 parse_container: $(MKIMG) flash.bin
 	./$(MKIMG) -soc DXL -rev A0 -parse flash.bin

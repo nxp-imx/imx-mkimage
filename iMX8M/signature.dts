@@ -1,0 +1,17 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * Copyright 2022 NXP
+ */
+
+/dts-v1/;
+/plugin/;
+/ {
+	fragment@0 {
+		target-path = "/";
+			__overlay__ {
+				signature {
+					capsule-key = /incbin/("CRT.esl");
+			};
+		};
+	};
+};

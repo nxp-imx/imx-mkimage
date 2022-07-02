@@ -236,6 +236,31 @@ flash_ddr4_val: flash_ddr4_val_no_hdmi
 endif
 
 ifeq ($(TEE),tee.bin-stmm)
+KEY_EXISTS = $(shell if ls CRT.* &> /dev/null 2>&1; then echo "exist"; else echo "noexist"; fi)
+capsule_key:
+ifeq ($(KEY_EXISTS),exist)
+	@echo "****************************************************************"
+	@echo "Key $(shell ls CRT.*) already existed"
+	@echo "If you not wanna use new Key, please not run target: capsule_key"
+	@echo "Otherwise, please delete CRT.* and re-run capsule_key"
+	@echo "****************************************************************"
+	@exit 1
+endif
+	openssl req -x509 -sha256 -newkey rsa:2048 -subj /CN=CRT/ -keyout CRT.key -out CRT.crt -nodes -days 365
+	cert-to-efi-sig-list CRT.crt CRT.esl
+
+overlay:
+	dtc -@ -I dts -O dtb -o signature.dtbo signature.dts
+	fdtoverlay -i $(PLAT)-evk.dtb -o $(PLAT)-evk.dtb signature.dtbo
+
+
+flash_evk_stmm_capsule: overlay flash_evk
+	./mkeficapsule_uboot --raw flash.bin --monotonic-count 1 \
+		--private-key CRT.key \
+		--certificate CRT.crt \
+		--index 1 --instance 0 \
+		capsule1.bin
+
 flash_evk_stmm: flash_evk
 endif
 

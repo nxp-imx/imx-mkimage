@@ -18,7 +18,8 @@ else
     RENAME = rename
 endif
 
-AHAB_IMG = mx8ulpa0-ahab-container.img
+LC_REVISION = $(shell echo $(REV) | tr ABC abc)
+AHAB_IMG = mx8ulp$(LC_REVISION)-ahab-container.img
 UPOWER_IMG = upower.bin
 MCU_IMG = m33_image.bin
 

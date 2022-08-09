@@ -249,6 +249,9 @@ endif
 	openssl req -x509 -sha256 -newkey rsa:2048 -subj /CN=CRT/ -keyout CRT.key -out CRT.crt -nodes -days 365
 	cert-to-efi-sig-list CRT.crt CRT.esl
 
+delete_capsule_key:
+	@rm -rf CRT.*
+
 overlay:
 	dtc -@ -I dts -O dtb -o signature.dtbo signature.dts
 	fdtoverlay -i $(PLAT)-evk.dtb -o $(PLAT)-evk.dtb signature.dtbo

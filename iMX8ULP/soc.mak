@@ -133,12 +133,17 @@ flash_singleboot_m33_flexspi: $(MKIMG) $(AHAB_IMG) $(UPOWER_IMG) u-boot-atf-cont
 flash_sentinel: $(MKIMG) ahabfw.bin
 	./$(MKIMG) -soc ULP -c -sentinel ahabfw.bin -out flash.bin
 
+ifeq ($(REV),A0)
 prepare_kernel_chunks: Image
 	./$(SPLIT_KERNEL) Image 0x80400000 0x700000
 
 flash_kernel: $(MKIMG) prepare_kernel_chunks imx8ulp-evk.dtb
 	KERNEL_CMD="$(shell cat Image_cmd)"; \
 	./$(MKIMG) -soc ULP -c $$KERNEL_CMD --data imx8ulp-evk.dtb a35 0x83000000 -out flash.bin
+else
+flash_kernel: $(MKIMG) Image imx8ulp-evk.dtb
+	./$(MKIMG) -soc ULP -c -ap Image a35 0x80400000 --data imx8ulp-evk.dtb a35 0x83000000 -out flash.bin
+endif
 
 parse_container: $(MKIMG) flash.bin
 	./$(MKIMG) -soc ULP  -parse flash.bin

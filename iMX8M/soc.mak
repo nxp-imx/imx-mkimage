@@ -39,6 +39,7 @@ VAL_BOARD = val
 QSPI_HEADER = ../scripts/fspi_header 0
 QSPI_PACKER = ../scripts/fspi_packer.sh
 VERSION = v1
+CAPSULE_GUID = ead2005e-7780-400b-9348-a282eb858b6b
 else ifeq ($(SOC),iMX8MN)
 PLAT = imx8mn
 HDMI = no
@@ -52,6 +53,7 @@ QSPI_HEADER = ../scripts/fspi_header
 QSPI_PACKER = ../scripts/fspi_packer.sh
 VERSION = v2
 DDR_FW_VERSION = _201810
+CAPSULE_GUID = cbabf44d-12cc-45dd-b0c5-29c5b7422d34
 else ifeq ($(SOC),iMX8MP)
 PLAT = imx8mp
 HDMI = no
@@ -66,6 +68,7 @@ QSPI_PACKER = ../scripts/fspi_packer.sh
 VERSION = v2
 LPDDR_FW_VERSION = _202006
 DDR_FW_VERSION = _202006
+CAPSULE_GUID = 928b33bc-e58b-4247-9f1d-3bf1ee1cdaff
 else
 PLAT = imx8mq
 HDMI = yes
@@ -77,6 +80,7 @@ VAL_BOARD = val
 QSPI_HEADER = ../scripts/qspi_header
 QSPI_PACKER = ../scripts/fspi_packer.sh
 VERSION = v1
+CAPSULE_GUID = 296119cf-dd70-43de-8ac8-a7051f312577
 endif
 
 
@@ -258,7 +262,8 @@ overlay:
 
 
 flash_evk_stmm_capsule: overlay flash_evk
-	./mkeficapsule_uboot --raw flash.bin --monotonic-count 1 \
+	./mkeficapsule_uboot flash.bin --monotonic-count 1 \
+		--guid $(CAPSULE_GUID) \
 		--private-key CRT.key \
 		--certificate CRT.crt \
 		--index 1 --instance 0 \

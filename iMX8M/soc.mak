@@ -262,7 +262,7 @@ overlay:
 
 
 flash_evk_stmm_capsule: overlay flash_evk
-	./mkeficapsule_uboot flash.bin --monotonic-count 1 \
+	./mkeficapsule flash.bin --monotonic-count 1 \
 		--guid $(CAPSULE_GUID) \
 		--private-key CRT.key \
 		--certificate CRT.crt \

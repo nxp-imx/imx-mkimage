@@ -22,6 +22,7 @@ LC_REVISION = $(shell echo $(REV) | tr ABC abc)
 AHAB_IMG = mx8ulp$(LC_REVISION)-ahab-container.img
 UPOWER_IMG = upower.bin
 MCU_IMG = m33_image.bin
+ROM_PATCH_IMG = ahab-container-patch.bin
 
 SPL_LOAD_ADDR ?= 0x22020000
 ATF_LOAD_ADDR ?= 0x20040000
@@ -107,6 +108,14 @@ flash_singleboot_flexspi: $(MKIMG) $(AHAB_IMG) $(UPOWER_IMG) u-boot-spl.bin u-bo
 
 flash_singleboot_m33: $(MKIMG) $(AHAB_IMG) $(UPOWER_IMG) u-boot-atf-container.img $(MCU_IMG) u-boot-spl.bin
 	./$(MKIMG) -soc ULP -append $(AHAB_IMG) -c -upower $(UPOWER_IMG) -m4 $(MCU_IMG) 0 $(MCU_SSRAM_ADDR) -ap u-boot-spl.bin a35 $(SPL_LOAD_ADDR) -out flash.bin
+	cp flash.bin boot-spl-container.img
+	@flashbin_size=`wc -c flash.bin | awk '{print $$1}'`; \
+                   pad_cnt=$$(((flashbin_size + 0x400 - 1) / 0x400)); \
+                   echo "append u-boot-atf-container.img at $$pad_cnt KB"; \
+                   dd if=u-boot-atf-container.img of=flash.bin bs=1K seek=$$pad_cnt;
+
+flash_singleboot_m33_rom_patch: $(MKIMG) $(AHAB_IMG) $(UPOWER_IMG) u-boot-atf-container.img $(MCU_IMG) u-boot-spl.bin $(ROM_PATCH_IMG)
+	./$(MKIMG) -soc ULP -append $(AHAB_IMG) -c -upower $(UPOWER_IMG) -m4 $(MCU_IMG) 0 $(MCU_SSRAM_ADDR) --data $(ROM_PATCH_IMG) a35 0x1fff9000 -ap u-boot-spl.bin a35 $(SPL_LOAD_ADDR) -out flash.bin
 	cp flash.bin boot-spl-container.img
 	@flashbin_size=`wc -c flash.bin | awk '{print $$1}'`; \
                    pad_cnt=$$(((flashbin_size + 0x400 - 1) / 0x400)); \

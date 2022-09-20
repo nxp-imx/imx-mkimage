@@ -16,3 +16,6 @@ flash_mfg flash_b0_mfg: $(MKIMG) $(SECO_FW_NAME) scfw_tcm.bin u-boot-atf.bin Ima
 
 flash_nand_mfg flash_nand_b0_mfg: $(MKIMG) $(SECO_FW_NAME) scfw_tcm.bin u-boot-atf.bin Image fsl-image-mfgtool-initramfs-imx_mfgtools.cpio.gz.u-boot board-nand.dtb Image0 Image1
 	./$(MKIMG) -soc DXL -rev A0 -append $(SECO_FW_NAME) -c -scfw scfw_tcm.bin -ap u-boot-atf.bin a35 0x80000000 -data board-nand.dtb a35 0x83000000 -data fsl-image-mfgtool-initramfs-imx_mfgtools.cpio.gz.u-boot a35 0x83100000 -data Image0 a35 0x80280000 -data Image1 a35 0x80c80000 -dummy 0x87fc0000 -out flash_mfg.bin
+
+flash_kernel_sha256: $(MKIMG) Image imx8dxl-evk.dtb
+	./$(MKIMG) -soc DXL -rev A0 -h sha256 -c -ap Image a35 0x80200000 --data imx8dxl-evk.dtb a35 0x83000000 -out flash.bin

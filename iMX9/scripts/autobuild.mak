@@ -1,12 +1,26 @@
 WGET = /usr/bin/wget
 N ?= latest
-SERVER ?= http://yb2.am.freescale.net
+SERVER ?= https://us-nxrm.sw.nxp.com:8443
+ROOTDIR ?= repository/IMX-raw_Linux_Internal_Daily_Build
 BUILD ?= Linux_IMX_Core
-#DIR = internal-only/Linux_IMX_Rocko_MX8/$(N)/common_bsp
-#DIR = internal-only/Linux_IMX_Core/$(N)/common_bsp
-DIR = internal-only/$(BUILD)/$(N)/common_bsp
+#DIR = $(ROOTDIR)/Linux_IMX_Rocko_MX8/$(N)/common_bsp
+#DIR = $(ROOTDIR)/Linux_IMX_Core/$(N)/common_bsp
+DIR = $(ROOTDIR)/$(BUILD)/$(N)/common_bsp
 ARCHIVE_PATH ?= ~
 ARCHIVE_NAME ?= $(shell cat nightly.txt).tar
+
+ifneq (,$(findstring yb2,$(SERVER)))
+ROOTDIR := internal-only
+RWGET = /usr/bin/wget -qr -nd -l1 -np
+else
+ifneq ($(shell test -e ~/.netrc && echo -n yes),yes)
+$(error No ~/.netrc found!)
+endif
+ifeq ($(N),latest)
+N := $(shell $(WGET) -q --output-document - $(SERVER)/$(ROOTDIR)/$(BUILD)/latest)
+endif
+RWGET = echo Skipping
+endif
 
 ifeq ($(V),1)
 AT :=
@@ -39,6 +53,6 @@ core_files:
 	$(AT)$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/$(BOARD)/$(DDR)_dmem_2d_$(DDR_FW_VER).bin -O $(DDR)_dmem_2d_$(DDR_FW_VER).bin
 	$(AT)$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/$(BOARD)/$(DDR)_imem_1d_$(DDR_FW_VER).bin -O $(DDR)_imem_1d_$(DDR_FW_VER).bin
 	$(AT)$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/$(BOARD)/$(DDR)_imem_2d_$(DDR_FW_VER).bin -O $(DDR)_imem_2d_$(DDR_FW_VER).bin
-	$(AT)$(WGET) -qr -nd -l1 -np $(SERVER)/$(DIR)/imx_dtbs -P boot -A "$(DTB)*.dtb"
+	$(AT)$(RWGET) $(SERVER)/$(DIR)/imx_dtbs -P boot -A "$(DTB)*.dtb"
 	$(AT)$(WGET) -q $(SERVER)/$(DIR)/Image-$(BOARD).bin -O Image
 	$(AT)mv -f Image boot

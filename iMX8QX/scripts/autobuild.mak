@@ -1,12 +1,26 @@
 WGET = /usr/bin/wget
 N ?= latest
-SERVER ?= http://yb2.am.freescale.net
+SERVER ?= https://us-nxrm.sw.nxp.com:8443
+ROOTDIR ?= repository/IMX-raw_Linux_Internal_Daily_Build
 BUILD ?= Linux_IMX_Full
-#DIR = internal-only/Linux_IMX_Rocko_MX8/$(N)/common_bsp
-#DIR = internal-only/Linux_IMX_Core/$(N)/common_bsp
-DIR = internal-only/$(BUILD)/$(N)/common_bsp
+#DIR = $(ROOTDIR)/Linux_IMX_Rocko_MX8/$(N)/common_bsp
+#DIR = $(ROOTDIR)/Linux_IMX_Core/$(N)/common_bsp
+DIR = $(ROOTDIR)/$(BUILD)/$(N)/common_bsp
 ARCHIVE_PATH ?= ~
 ARCHIVE_NAME ?= $(shell cat nightly.txt).tar
+
+ifeq (,$(findstring nxrm,$(SERVER)))
+ROOTDIR := internal-only
+RWGET = /usr/bin/wget -qr -nd -l1 -np
+else
+ifneq ($(shell test -e ~/.netrc && echo -n yes),yes)
+$(error No ~/.netrc found!)
+endif
+ifeq ($(N),latest)
+override N := $(shell $(WGET) -q --output-document - $(SERVER)/$(ROOTDIR)/$(BUILD)/latest)
+endif
+RWGET = echo Skipping
+endif
 
 nightly :
 	ls
@@ -20,7 +34,7 @@ nightly :
 #	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qxpc0lpddr4arm2/u-boot-spl.bin-imx8qxplpddr4arm2-sd -O u-boot-spl.bin
 #	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qxpc0lpddr4arm2/u-boot-spl.bin-imx8qxplpddr4arm2-fspi -O u-boot-spl-fspi.bin
 	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qxpc0lpddr4arm2/m4_image.bin -O m4_image.bin
-	@$(WGET) -qr -nd -l1 -np $(SERVER)/$(DIR)/imx_dtbs -P boot -A "imx8qxp-lpddr4*.dtb"
+	@$(RWGET) $(SERVER)/$(DIR)/imx_dtbs -P boot -A "imx8qxp-lpddr4*.dtb"
 	@$(WGET) -q $(SERVER)/$(DIR)/Image-imx8_all.bin -O Image
 	@mv -f Image boot
 
@@ -36,7 +50,7 @@ nightly_c0 :
 #	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qxplpddr4arm2/u-boot-spl.bin-imx8qxplpddr4arm2-sd -O u-boot-spl.bin
 #	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qxplpddr4arm2/u-boot-spl.bin-imx8qxplpddr4arm2-fspi -O u-boot-spl-fspi.bin
 	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qxplpddr4arm2/m4_image.bin -O m4_image.bin
-	@$(WGET) -qr -nd -l1 -np $(SERVER)/$(DIR)/imx_dtbs -P boot -A "imx8qxp-lpddr4*.dtb"
+	@$(RWGET) $(SERVER)/$(DIR)/imx_dtbs -P boot -A "imx8qxp-lpddr4*.dtb"
 	@$(WGET) -q $(SERVER)/$(DIR)/Image-imx8_all.bin -O Image
 	@mv -f Image boot
 
@@ -51,7 +65,7 @@ nightly_mek :
 	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qxpmek/u-boot-spl.bin-imx8qxpmek-sd -O u-boot-spl.bin
 	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qxpmek/u-boot-spl.bin-imx8qxpmek-fspi -O u-boot-spl-fspi.bin
 	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qxpmek/m4_image.bin -O m4_image.bin
-	@$(WGET) -qr -nd -l1 -np $(SERVER)/$(DIR)/imx_dtbs -P boot -A "imx8qxp-mek*.dtb"
+	@$(RWGET) $(SERVER)/$(DIR)/imx_dtbs -P boot -A "imx8qxp-mek*.dtb"
 	@$(WGET) -q $(SERVER)/$(DIR)/Image-imx8_all.bin -O Image
 	@mv -f Image boot
 
@@ -66,7 +80,7 @@ nightly_c0mek :
 	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qxpc0mek/u-boot-spl.bin-imx8qxpc0mek-sd -O u-boot-spl.bin
 	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qxpc0mek/u-boot-spl.bin-imx8qxpc0mek-fspi -O u-boot-spl-fspi.bin
 	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qxpc0mek/m4_image.bin -O m4_image.bin
-	@$(WGET) -qr -nd -l1 -np $(SERVER)/$(DIR)/imx_dtbs -P boot -A "imx8qxp-mek*.dtb"
+	@$(RWGET) $(SERVER)/$(DIR)/imx_dtbs -P boot -A "imx8qxp-mek*.dtb"
 	@$(WGET) -q $(SERVER)/$(DIR)/Image-imx8_all.bin -O Image
 	@mv -f Image boot
 
@@ -81,7 +95,7 @@ nightly_dxmek :
 	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8dxmek/u-boot-spl.bin-imx8dxmek-sd -O u-boot-spl.bin
 	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8dxmek/u-boot-spl.bin-imx8dxmek-fspi -O u-boot-spl-fspi.bin
 	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8dxmek/m4_image.bin -O m4_image.bin
-	@$(WGET) -qr -nd -l1 -np $(SERVER)/$(DIR)/imx_dtbs -P boot -A "imx8dx-mek*.dtb"
+	@$(RWGET) $(SERVER)/$(DIR)/imx_dtbs -P boot -A "imx8dx-mek*.dtb"
 	@$(WGET) -q $(SERVER)/$(DIR)/Image-imx8_all.bin -O Image
 	@mv -f Image boot
 
@@ -96,7 +110,7 @@ nightly_dxlphantommek :
 	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8dxlphantommek/u-boot-spl.bin-imx8dxlphantommek-sd -O u-boot-spl.bin
 	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8dxlphantommek/u-boot-spl.bin-imx8dxlphantommek-fspi -O u-boot-spl-fspi.bin
 	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8dxlphantommek/m4_image.bin -O m4_image.bin
-	@$(WGET) -qr -nd -l1 -np $(SERVER)/$(DIR)/imx_dtbs -P boot -A "imx8dxl-phantom-mek*.dtb"
+	@$(RWGET) $(SERVER)/$(DIR)/imx_dtbs -P boot -A "imx8dxl-phantom-mek*.dtb"
 	@$(WGET) -q $(SERVER)/$(DIR)/Image-imx8_all.bin -O Image
 	@mv -f Image boot
 

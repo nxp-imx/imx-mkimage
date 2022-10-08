@@ -1,12 +1,26 @@
 WGET = /usr/bin/wget
 N ?= latest
-SERVER ?= http://yb2.am.freescale.net
+SERVER ?= https://us-nxrm.sw.nxp.com:8443
+ROOTDIR ?= repository/IMX-raw_Linux_Internal_Daily_Build
 BUILD ?= Linux_IMX_Full
-#DIR = internal-only/Linux_IMX_Rocko_MX8/$(N)/common_bsp
-#DIR = internal-only/Linux_IMX_Core/$(N)/common_bsp
-DIR = internal-only/$(BUILD)/$(N)/common_bsp
+#DIR = $(ROOTDIR)/Linux_IMX_Rocko_MX8/$(N)/common_bsp
+#DIR = $(ROOTDIR)/Linux_IMX_Core/$(N)/common_bsp
+DIR = $(ROOTDIR)/$(BUILD)/$(N)/common_bsp
 ARCHIVE_PATH ?= ~
 ARCHIVE_NAME ?= $(shell cat nightly.txt).tar
+
+ifeq (,$(findstring nxrm,$(SERVER)))
+ROOTDIR := internal-only
+RWGET = /usr/bin/wget -qr -nd -l1 -np
+else
+ifneq ($(shell test -e ~/.netrc && echo -n yes),yes)
+$(error No ~/.netrc found!)
+endif
+ifeq ($(N),latest)
+override N := $(shell $(WGET) -q --output-document - $(SERVER)/$(ROOTDIR)/$(BUILD)/latest)
+endif
+RWGET = echo Skipping
+endif
 
 ifeq ($(V),1)
 AT :=
@@ -27,7 +41,7 @@ nightly_evk:
 	$(AT)$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8dxl$(LC_REVISION)-lpddr4-evk/u-boot-imx8dxl$(LC_REVISION)-lpddr4-evk.bin-sd -O u-boot.bin
 	$(AT)$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8dxl$(LC_REVISION)-lpddr4-evk/u-boot-imx8dxl$(LC_REVISION)-lpddr4-evk.bin-fspi -O u-boot-fspi.bin
 	$(AT)$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8dxl$(LC_REVISION)-lpddr4-evk/m4_image.bin -O m4_image.bin
-	$(AT)$(WGET) -qr -nd -l1 -np $(SERVER)/$(DIR)/imx_dtbs -P boot -A "imx8dxl-evk*.dtb"
+	$(AT)$(RWGET) $(SERVER)/$(DIR)/imx_dtbs -P boot -A "imx8dxl-evk*.dtb"
 	$(AT)$(WGET) -q $(SERVER)/$(DIR)/Image-imx8_all.bin -O Image
 	$(AT)mv -f Image boot
 
@@ -53,7 +67,7 @@ nightly_ddr3_evk:
 	$(AT)$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8dxl$(LC_REVISION)-ddr3l-evk/u-boot-imx8dxl$(LC_REVISION)-ddr3l-evk.bin-sd -O u-boot.bin
 	$(AT)$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8dxl$(LC_REVISION)-ddr3l-evk/u-boot-imx8dxl$(LC_REVISION)-ddr3l-evk.bin-nand -O u-boot-nand.bin
 	$(AT)$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8dxl$(LC_REVISION)-ddr3l-evk/m4_image.bin -O m4_image.bin
-	$(AT)$(WGET) -qr -nd -l1 -np $(SERVER)/$(DIR)/imx_dtbs -P boot -A "imx8dxl-ddr3*.dtb"
+	$(AT)$(RWGET) $(SERVER)/$(DIR)/imx_dtbs -P boot -A "imx8dxl-ddr3*.dtb"
 	$(AT)$(WGET) -q $(SERVER)/$(DIR)/Image-imx8_all.bin -O Image
 	$(AT)mv -f Image boot
 

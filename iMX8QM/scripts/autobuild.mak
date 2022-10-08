@@ -1,12 +1,26 @@
 WGET = /usr/bin/wget
 N ?= latest
-SERVER ?= http://yb2.am.freescale.net
+SERVER ?= https://us-nxrm.sw.nxp.com:8443
+ROOTDIR ?= repository/IMX-raw_Linux_Internal_Daily_Build
 BUILD ?= Linux_IMX_Full
-#DIR = internal-only/Linux_IMX_Rocko_MX8/$(N)/common_bsp
-#DIR = internal-only/Linux_IMX_Core/$(N)/common_bsp
-DIR = internal-only/$(BUILD)/$(N)/common_bsp
+#DIR = $(ROOTDIR)/Linux_IMX_Rocko_MX8/$(N)/common_bsp
+#DIR = $(ROOTDIR)/Linux_IMX_Core/$(N)/common_bsp
+DIR = $(ROOTDIR)/$(BUILD)/$(N)/common_bsp
 ARCHIVE_PATH ?= ~
 ARCHIVE_NAME ?= $(shell cat nightly.txt).tar
+
+ifeq (,$(findstring nxrm,$(SERVER)))
+ROOTDIR := internal-only
+RWGET = /usr/bin/wget -qr -nd -l1 -np
+else
+ifneq ($(shell test -e ~/.netrc && echo -n yes),yes)
+$(error No ~/.netrc found!)
+endif
+ifeq ($(N),latest)
+override N := $(shell $(WGET) -q --output-document - $(SERVER)/$(ROOTDIR)/$(BUILD)/latest)
+endif
+RWGET = echo Skipping
+endif
 
 nightly :
 	@rm -rf boot
@@ -20,7 +34,7 @@ nightly :
 	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qmmek/u-boot-spl.bin-imx8qmmek-fspi -O u-boot-spl-fspi.bin
 	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qmlpddr4arm2/m4_image.bin -O m4_image.bin
 	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qmlpddr4arm2/m4_1_image.bin -O m4_1_image.bin
-	@$(WGET) -qr -nd -l1 -np $(SERVER)/$(DIR)/imx_dtbs -P boot -A "imx8qm-lpddr4*.dtb"
+	@$(RWGET) $(SERVER)/$(DIR)/imx_dtbs -P boot -A "imx8qm-lpddr4*.dtb"
 	@$(WGET) -q $(SERVER)/$(DIR)/Image-imx8_all.bin -O Image
 	@mv -f Image boot
 
@@ -36,7 +50,7 @@ nightly_mek :
 	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qmmek/u-boot-spl.bin-imx8qmmek-fspi -O u-boot-spl-fspi.bin
 	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qmmek/m4_image.bin -O m4_image.bin
 	@$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/imx8qmmek/m4_1_image.bin -O m4_1_image.bin
-	@$(WGET) -qr -nd -l1 -np $(SERVER)/$(DIR)/imx_dtbs -P boot -A "imx8qm-mek*.dtb"
+	@$(RWGET) $(SERVER)/$(DIR)/imx_dtbs -P boot -A "imx8qm-mek*.dtb"
 	@$(WGET) -q $(SERVER)/$(DIR)/Image-imx8_all.bin -O Image
 	@mv -f Image boot
 

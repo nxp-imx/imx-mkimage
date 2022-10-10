@@ -14,7 +14,7 @@ ROOTDIR := internal-only
 RWGET = /usr/bin/wget -qr -nd -l1 -np
 else
 ifneq ($(shell test -e ~/.netrc && echo -n yes),yes)
-$(error No ~/.netrc found!)
+$(warning No ~/.netrc found!)
 endif
 ifeq ($(N),latest)
 override N := $(shell $(WGET) -q --output-document - $(SERVER)/$(ROOTDIR)/$(BUILD)/latest)

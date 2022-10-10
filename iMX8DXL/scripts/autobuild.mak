@@ -1,6 +1,5 @@
 WGET = /usr/bin/wget
 N ?= latest
-SERVER ?= https://us-nxrm.sw.nxp.com:8443
 ROOTDIR ?= repository/IMX-raw_Linux_Internal_Daily_Build
 BUILD ?= Linux_IMX_Full
 #DIR = $(ROOTDIR)/Linux_IMX_Rocko_MX8/$(N)/common_bsp

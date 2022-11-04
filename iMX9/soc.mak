@@ -25,7 +25,7 @@ TEE_LOAD_ADDR ?= 0x96000000
 UBOOT_LOAD_ADDR ?= 0x80200000
 MCU_TCM_ADDR ?= 0x1FFE0000
 MCU_TCM_ADDR_ACORE_VIEW ?= 0x201E0000
-MCU_XIP_ADDR ?= 0x4032000 # Point entry of m33 in flexspi0 nor flash
+MCU_XIP_ADDR ?= 0x28032000 # Point entry of m33 in flexspi0 nor flash
 M33_IMAGE_XIP_OFFSET ?= 0x31000 # 1st container offset is 0x1000 when boot device is flexspi0 nor flash, actually the m33_image.bin is in 0x31000 + 0x1000 = 0x32000.
 
 LPDDR_FW_VERSION = _v202201
@@ -124,6 +124,10 @@ flash_lpboot: $(MKIMG) $(AHAB_IMG) $(MCU_IMG)
 
 flash_lpboot_flexspi: $(MKIMG) $(AHAB_IMG) $(MCU_IMG)
 	./$(MKIMG) -soc IMX9 -dev flexspi -append $(AHAB_IMG) -c -m4 $(MCU_IMG) 0 $(MCU_TCM_ADDR) -out flash.bin
+	./$(QSPI_PACKER) $(QSPI_HEADER)
+
+flash_lpboot_flexspi_xip: $(MKIMG) $(AHAB_IMG) $(MCU_IMG)
+	./$(MKIMG) -soc IMX9 -dev flexspi -append $(AHAB_IMG) -fileoff $(M33_IMAGE_XIP_OFFSET) -c -m4 $(MCU_IMG) 0 $(MCU_XIP_ADDR) -out flash.bin
 	./$(QSPI_PACKER) $(QSPI_HEADER)
 
 flash_lpboot_no_ahabfw_flexspi: $(MKIMG) $(MCU_IMG)

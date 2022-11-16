@@ -1662,6 +1662,14 @@ int main(int argc, char **argv)
 	fprintf(stderr, " sld hab block: \t0x%x 0x%x 0x%x\n",
 		sld_load_addr, sld_header_off, sld_csf_off - sld_header_off);
 
+	fprintf(stderr, "SPL CSF block:\n");
+	fprintf(stderr, "\tBlocks = \t0x%x 0x%x 0x%x \"flash.bin\"\n",
+		imx_header[IMAGE_IVT_ID].fhdr.self, header_image_off, csf_off - header_image_off);
+
+	fprintf(stderr, "SLD CSF block:\n");
+	fprintf(stderr, "\tBlocks = \t0x%x 0x%x 0x%x \"flash.bin\",\\\n",
+		sld_load_addr, sld_header_off, sld_csf_off - sld_header_off);
+
 	return 0;
 }
 

@@ -26,10 +26,19 @@ fi
 [ -z "$BL32" ] && BL32="tee.bin"
 LOADABLES="\"atf-1\""
 
+PAD=../scripts/pad_image.sh
+
 if [ ! -f $BL32 ]; then
 	BL32=/dev/null
 else
 	echo "Building with TEE support, make sure $BL31 is compiled with spd. If you do not want tee, please delete $BL32" >&2
+	if [ $TEE_COMPRESS_ENABLE ]; then
+		echo "Start compress $BL32" >&2
+		rm -f $BL32.lz4
+		lz4 -9 $BL32 $BL32.lz4 >&2
+		BL32=$BL32.lz4
+		./$PAD $BL32 >&2
+	fi
 	echo "$BL32 size: " >&2
 	ls -lct $BL32 | awk '{print $5}' >&2
 	LOADABLES="$LOADABLES, \"tee-1\""

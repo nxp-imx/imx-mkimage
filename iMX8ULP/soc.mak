@@ -20,6 +20,7 @@ endif
 
 LC_REVISION = $(shell echo $(REV) | tr ABC abc)
 AHAB_IMG = mx8ulp$(LC_REVISION)-ahab-container.img
+TEE = tee.bin
 UPOWER_IMG = upower.bin
 MCU_IMG = m33_image.bin
 ROM_PATCH_IMG = ahab-container-patch.bin
@@ -51,11 +52,17 @@ u-boot-atf.itb: u-boot-hash.bin bl31.bin
 	@rm -f u-boot.its
 
 u-boot-atf-container.img: bl31.bin u-boot-hash.bin
-	if [ -f tee.bin ]; then \
+	if [ -f $(TEE) ]; then \
+		if [ $(shell echo $(TEE_COMPRESS_ENABLE)) ]; then \
+			echo "Start compress $(TEE)"; \
+			rm -f $(TEE).lz4; \
+			lz4 -9 $(TEE) $(TEE).lz4; \
+			TEE = $(TEE).lz4; \
+		fi; \
 		if [ $(shell echo $(ROLLBACK_INDEX_IN_CONTAINER)) ]; then \
-			./$(MKIMG) -soc ULP -sw_version $(ROLLBACK_INDEX_IN_CONTAINER)  -c -ap bl31.bin a35 $(ATF_LOAD_ADDR) -ap u-boot-hash.bin a35 $(UBOOT_LOAD_ADDR) -ap tee.bin a35 $(TEE_LOAD_ADDR) -out u-boot-atf-container.img; \
+			./$(MKIMG) -soc ULP -sw_version $(ROLLBACK_INDEX_IN_CONTAINER)  -c -ap bl31.bin a35 $(ATF_LOAD_ADDR) -ap u-boot-hash.bin a35 $(UBOOT_LOAD_ADDR) -ap $(TEE) a35 $(TEE_LOAD_ADDR) -out u-boot-atf-container.img; \
 		else \
-			./$(MKIMG) -soc ULP -c -ap bl31.bin a35 $(ATF_LOAD_ADDR) -ap u-boot-hash.bin a35 $(UBOOT_LOAD_ADDR) -ap tee.bin a35 $(TEE_LOAD_ADDR) -out u-boot-atf-container.img; \
+			./$(MKIMG) -soc ULP -c -ap bl31.bin a35 $(ATF_LOAD_ADDR) -ap u-boot-hash.bin a35 $(UBOOT_LOAD_ADDR) -ap $(TEE) a35 $(TEE_LOAD_ADDR) -out u-boot-atf-container.img; \
 		fi; \
 	else \
 		./$(MKIMG) -soc ULP -c -ap bl31.bin a35 $(ATF_LOAD_ADDR) -ap u-boot-hash.bin a35 $(UBOOT_LOAD_ADDR) -out u-boot-atf-container.img; \

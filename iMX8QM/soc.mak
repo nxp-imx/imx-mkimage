@@ -15,6 +15,7 @@ QSPI_PACKER = ../scripts/fspi_packer.sh
 PAD_IMAGE = ../scripts/pad_image.sh
 
 AHAB_IMG = mx8qmb0-ahab-container.img
+TEE = tee.bin
 
 FORCE:
 
@@ -64,11 +65,17 @@ u-boot-atf-container.img: bl31.bin u-boot-hash.bin
 	cat u-boot-hash.bin hdmitxfw-pad.bin hdmirxfw-pad.bin > u-boot-hash.bin.temp; \
 	mv u-boot-hash.bin.temp u-boot-hash.bin; \
 	fi
-	if [ -f "tee.bin" ]; then \
+	if [ -f $(TEE) ]; then \
+		if [ $(shell echo $(TEE_COMPRESS_ENABLE)) ]; then \
+			echo "Start compress $(TEE)"; \
+			@rm -f $(TEE).lz4; \
+			lz4 -9 $(TEE) $(TEE).lz4; \
+			TEE = $(TEE).lz4; \
+		fi; \
 		if [ $(shell echo $(ROLLBACK_INDEX_IN_CONTAINER)) ]; then \
-			./$(MKIMG) -soc QM -sw_version $(ROLLBACK_INDEX_IN_CONTAINER) -rev B0 -c -ap bl31.bin a53 0x80000000 -ap u-boot-hash.bin a53 0x80020000 -ap tee.bin a53 0xFE000000 -out u-boot-atf-container.img; \
+			./$(MKIMG) -soc QM -sw_version $(ROLLBACK_INDEX_IN_CONTAINER) -rev B0 -c -ap bl31.bin a53 0x80000000 -ap u-boot-hash.bin a53 0x80020000 -ap $(TEE) a53 0xFE000000 -out u-boot-atf-container.img; \
 		else \
-			./$(MKIMG) -soc QM -rev B0 -c -ap bl31.bin a53 0x80000000 -ap u-boot-hash.bin a53 0x80020000 -ap tee.bin a53 0xFE000000 -out u-boot-atf-container.img; \
+			./$(MKIMG) -soc QM -rev B0 -c -ap bl31.bin a53 0x80000000 -ap u-boot-hash.bin a53 0x80020000 -ap $(TEE) a53 0xFE000000 -out u-boot-atf-container.img; \
 		fi; \
 	else \
 	./$(MKIMG) -soc QM -rev B0 -c -ap bl31.bin a53 0x80000000 -ap u-boot-hash.bin a53 0x80020000 -out u-boot-atf-container.img; \

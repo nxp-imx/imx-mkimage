@@ -22,6 +22,8 @@ else
 AHAB_IMG = mx8qxc0-ahab-container.img
 endif
 
+TEE = tee.bin
+
 ifeq ($(SOC),iMX8DX)
 TEE_LOAD_ADDR ?= 0x96000000
 else ifeq ($(SOC),iMX8QX)
@@ -46,11 +48,17 @@ u-boot-atf.itb: u-boot-hash.bin bl31.bin
 	@rm -f u-boot.its
 
 u-boot-atf-container.img: bl31.bin u-boot-hash.bin
-	if [ -f tee.bin ]; then \
+	if [ -f $(TEE) ]; then \
+		if [ $(shell echo $(TEE_COMPRESS_ENABLE)) ]; then \
+			echo "Start compress $(TEE)"; \
+			@rm -f $(TEE).lz4; \
+			lz4 -9 $(TEE) $(TEE).lz4; \
+			TEE = $(TEE).lz4; \
+		fi; \
 		if [ $(shell echo $(ROLLBACK_INDEX_IN_CONTAINER)) ]; then \
-			./$(MKIMG) -soc QX -sw_version $(ROLLBACK_INDEX_IN_CONTAINER) -rev B0 -c -ap bl31.bin a35 0x80000000 -ap u-boot-hash.bin a35 0x80020000 -ap tee.bin a35 $(TEE_LOAD_ADDR) -out u-boot-atf-container.img; \
+			./$(MKIMG) -soc QX -sw_version $(ROLLBACK_INDEX_IN_CONTAINER) -rev B0 -c -ap bl31.bin a35 0x80000000 -ap u-boot-hash.bin a35 0x80020000 -ap $(TEE) a35 $(TEE_LOAD_ADDR) -out u-boot-atf-container.img; \
 		else \
-			./$(MKIMG) -soc QX -rev B0 -c -ap bl31.bin a35 0x80000000 -ap u-boot-hash.bin a35 0x80020000 -ap tee.bin a35 $(TEE_LOAD_ADDR) -out u-boot-atf-container.img; \
+			./$(MKIMG) -soc QX -rev B0 -c -ap bl31.bin a35 0x80000000 -ap u-boot-hash.bin a35 0x80020000 -ap $(TEE) a35 $(TEE_LOAD_ADDR) -out u-boot-atf-container.img; \
 		fi; \
 	else \
 	./$(MKIMG) -soc QX -rev B0 -c -ap bl31.bin a35 0x80000000 -ap u-boot-hash.bin a35 0x80020000 -out u-boot-atf-container.img; \

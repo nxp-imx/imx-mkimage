@@ -140,6 +140,12 @@ flash_sentinel: $(MKIMG) ahabfw.bin
 flash_kernel: $(MKIMG) Image imx93-11x11-evk.dtb
 	./$(MKIMG) -soc IMX9 -c -ap Image a35 0x80400000 --data imx93-11x11-evk.dtb a35 0x83000000 -out flash.bin
 
+flash_bootaux_cntr: $(MKIMG) $(MCU_IMG)
+	./$(MKIMG) -soc IMX9 -c -m4 $(MCU_IMG) 0 $(MCU_TCM_ADDR) $(MCU_TCM_ADDR_ACORE_VIEW) -out flash.bin
+
+flash_bootaux_cntr_xip: $(MKIMG) $(MCU_IMG)
+	./$(MKIMG) -soc IMX9 -c -fileoff $(M33_IMAGE_XIP_OFFSET) -m4 $(MCU_IMG) 0 $(MCU_XIP_ADDR) -out flash.bin
+
 parse_container: $(MKIMG) flash.bin
 	./$(MKIMG) -soc IMX9 -parse flash.bin
 

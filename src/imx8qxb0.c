@@ -319,6 +319,9 @@ uint8_t *flatten_container_header(imx_header_v3_t *imx_header,
 		fprintf(stdout, "CST: CONTAINER %d: Signature Block: offset is at 0x%x\n", i,
 						file_offset + size + container->length - SIGNATURE_BLOCK_HEADER_LENGTH);
 
+		fprintf(stdout, "\tOffsets = \t0x%x \t0x%x\n", file_offset + size,
+						file_offset + size + container->length - SIGNATURE_BLOCK_HEADER_LENGTH);
+
 		size += ALIGN(container->length, container->padding);
 	}
 
@@ -707,6 +710,8 @@ int build_container_qx_qm_b0(soc_type_t soc, uint32_t sector_size, uint32_t ivt_
 
 	file_off = get_container_image_start_pos(image_stack, sector_size, soc, &file_padding);
 	printf("container image offset (aligned):%x\n", file_off);
+
+	printf("csf_off \t0x%x\n", ivt_offset + file_off);
 
 	/* step through image stack and generate the header */
 	img_sp = image_stack;

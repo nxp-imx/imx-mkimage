@@ -7,7 +7,10 @@ let fit_off=$1
 
 [ -z "$BL31" ] && BL31="bl31.bin"
 
-[ -z "$BL32" ] && BL32="tee.bin"
+if [ -z "$BL32" ]; then
+	BL32="tee.bin"
+	[ -f "tee.bin.lz4" ] && BL32="tee.bin.lz4"
+fi
 
 [ -z "$BL33" ] && BL33="u-boot-nodtb.bin"
 

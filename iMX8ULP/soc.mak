@@ -55,9 +55,8 @@ u-boot-atf-container.img: bl31.bin u-boot-hash.bin
 	if [ -f $(TEE) ]; then \
 		if [ $(shell echo $(TEE_COMPRESS_ENABLE)) ]; then \
 			echo "Start compress $(TEE)"; \
-			rm -f $(TEE).lz4; \
-			lz4 -9 $(TEE) $(TEE).lz4; \
-			TEE = $(TEE).lz4; \
+			lz4 -9 -f --rm $(TEE) $(TEE).lz4; \
+			cp $(TEE).lz4 $(TEE); \
 		fi; \
 		if [ $(shell echo $(ROLLBACK_INDEX_IN_CONTAINER)) ]; then \
 			./$(MKIMG) -soc ULP -sw_version $(ROLLBACK_INDEX_IN_CONTAINER)  -c -ap bl31.bin a35 $(ATF_LOAD_ADDR) -ap u-boot-hash.bin a35 $(UBOOT_LOAD_ADDR) -ap $(TEE) a35 $(TEE_LOAD_ADDR) -out u-boot-atf-container.img; \

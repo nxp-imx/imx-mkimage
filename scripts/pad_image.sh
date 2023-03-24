@@ -1,34 +1,26 @@
 #!/bin/bash
+#set -x
 
-if [ $# -eq 1 ]; then
-	if [ ! -f $1 ]; then
-		echo "Pad file" $1 "NOT found"
-		exit 0
-	fi
-	let size=$(wc -c $1 | awk '{print $1}')
-	let padded_size=$(((size + 15) & ~15))
+# Concatenates all files passed in the command line and pad the last one,
+# so that the sum of all files size is aligned on 16 bytes.
 
-	if [ ${size} != ${padded_size} ]
-	then
-		echo $1 "is padded to" ${padded_size}
-		objcopy -I binary -O binary --pad-to ${padded_size} $1
-	fi
-elif [ $# -eq 2 ]; then
-	if [ ! -f $1 ]; then
-		echo "Pad file" $1 "NOT found"
-		exit 0
-	fi
-	if [ ! -f $2 ]; then
-		echo "Pad file" $2 "NOT found"
-		exit 0
-	fi
-	let size_1=$(wc -c $1 | awk '{print $1}')
-	let size_2=$(wc -c $2 | awk '{print $1}')
-	let padded_size=$(((size_1 + size_2 + 15) & ~15))
+_total_size=0
 
-	if [ $((size_1 + size_2)) != ${padded_size} ]
-	then
-		echo $1 "+" $2 "are padded to" ${padded_size}
-		objcopy -I binary -O binary --pad-to $((padded_size - size_1)) $2
-	fi
+while [[ $# -gt 0 ]]; do
+  if [[ ! -f $1 ]]; then
+    echo "ERROR: $0: Could not find file $1. Exiting."
+    exit -1
+  fi
+
+  _file=$1
+  _current_file_size="$(wc -c $1 | awk '{print $1}')"
+  _total_size=$((_total_size + _current_file_size))
+  shift
+done
+
+_padded_size="$(((_total_size + 15) & ~15))"
+if [[ "${_total_size}" != "${_padded_size}" ]]; then
+  _last_file_padded_size=$((_padded_size - (_total_size - _current_file_size)))
+  echo "Padding $_file to ${_last_file_padded_size} bytes"
+  objcopy -I binary -O binary --pad-to "${_last_file_padded_size}" "${_file}"
 fi

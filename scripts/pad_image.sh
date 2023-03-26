@@ -9,7 +9,7 @@ _total_size=0
 while [[ $# -gt 0 ]]; do
   if [[ ! -f $1 ]]; then
     echo "ERROR: $0: Could not find file $1. Exiting."
-    exit -1
+    exit 0
   fi
 
   _file=$1

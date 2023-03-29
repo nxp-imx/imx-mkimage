@@ -26,6 +26,7 @@ SPL_LOAD_ADDR ?= 0x204A0000
 ATF_LOAD_ADDR ?= 0x204C0000
 else
 SPL_LOAD_ADDR ?= 0x2049A000
+SPL_LOAD_ADDR_M33_VIEW ?= 0x3049A000
 ATF_LOAD_ADDR ?= 0x204E0000
 endif
 FCB_LOAD_ADDR ?= $(ATF_LOAD_ADDR)
@@ -205,6 +206,21 @@ flash_lpboot_flexspi_xip: $(MKIMG) $(AHAB_IMG) $(MCU_IMG)
 
 flash_lpboot_no_ahabfw_flexspi: $(MKIMG) $(MCU_IMG)
 	./$(MKIMG) -soc IMX9 -dev flexspi -c -m33 $(MCU_IMG) 0 $(MCU_TCM_ADDR) -out flash.bin
+	./$(QSPI_PACKER) $(QSPI_HEADER)
+
+flash_lpboot_a55: $(MKIMG) $(AHAB_IMG) $(MCU_IMG)
+	./$(MKIMG) -soc IMX9 -append $(AHAB_IMG) -c -m33 $(MCU_IMG) 0 $(MCU_TCM_ADDR) -ap u-boot-spl-ddr.bin a55 $(SPL_LOAD_ADDR_M33_VIEW) -out flash.bin
+
+flash_lpboot_flexspi_a55: $(MKIMG) $(AHAB_IMG) $(MCU_IMG)
+	./$(MKIMG) -soc IMX9 -dev flexspi -append $(AHAB_IMG) -c -m33 $(MCU_IMG) 0 $(MCU_TCM_ADDR) -ap u-boot-spl-ddr.bin a55 $(SPL_LOAD_ADDR_M33_VIEW) -out flash.bin
+	./$(QSPI_PACKER) $(QSPI_HEADER)
+
+flash_lpboot_flexspi_xip_a55: $(MKIMG) $(AHAB_IMG) $(MCU_IMG)
+	./$(MKIMG) -soc IMX9 -dev flexspi -append $(AHAB_IMG) -fileoff $(M33_IMAGE_XIP_OFFSET) -c -m33 $(MCU_IMG) 0 $(MCU_XIP_ADDR) -ap u-boot-spl-ddr.bin a55 $(SPL_LOAD_ADDR_M33_VIEW) -out flash.bin
+	./$(QSPI_PACKER) $(QSPI_HEADER)
+
+flash_lpboot_no_ahabfw_flexspi_a55: $(MKIMG) $(MCU_IMG)
+	./$(MKIMG) -soc IMX9 -dev flexspi -c -m33 $(MCU_IMG) 0 $(MCU_TCM_ADDR) -ap u-boot-spl-ddr.bin a55 $(SPL_LOAD_ADDR_M33_VIEW) -out flash.bin
 	./$(QSPI_PACKER) $(QSPI_HEADER)
 
 flash_sentinel: $(MKIMG) ahabfw.bin

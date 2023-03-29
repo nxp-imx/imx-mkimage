@@ -51,7 +51,8 @@ typedef enum option_type {
     DUMMY_V2X,
     SENTINEL,
     UPOWER,
-    FCB
+    FCB,
+    OEI
 } option_type_t;
 
 
@@ -142,6 +143,7 @@ typedef struct {
 #define IMG_TYPE_EXEC           0x03   /* Executable image type */
 #define IMG_TYPE_DATA           0x04   /* Data image type */
 #define IMG_TYPE_DCD_DDR        0x05   /* DCD/DDR image type */
+#define IMG_TYPE_OEI            0x05   /* Optional Executable image type */
 #define IMG_TYPE_SECO           0x06   /* SECO image type */
 #define IMG_TYPE_SENTINEL    0x06   /* SENTINEL image type */
 #define IMG_TYPE_PROV           0x07   /* Provisioning image type */

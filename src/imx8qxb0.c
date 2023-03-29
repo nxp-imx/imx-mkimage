@@ -478,6 +478,27 @@ void set_image_array_entry(flash_header_v3_t *container, soc_type_t soc,
 		img->entry = 0XE7FE8000;
 
 		break;
+	case OEI:
+		if (soc != IMX9) {
+			fprintf(stderr, "Error: invalid core id: %" PRIi64 "\n", core);
+			exit(EXIT_FAILURE);
+		}
+
+		img->hab_flags |= IMG_TYPE_OEI;
+		if (core == CORE_CM4_0) {
+			img->hab_flags |= CORE_ULP_CM33 << BOOT_IMG_FLAGS_CORE_SHIFT;
+			meta = CORE_IMX95_M33P;
+
+		} else {
+			img->hab_flags |= CORE_ULP_CA35 << BOOT_IMG_FLAGS_CORE_SHIFT;
+			meta = CORE_IMX95_A55C0;
+		}
+		tmp_name = "OEI";
+		img->dst = entry;
+		img->entry = entry;
+		img->meta = meta;
+		custom_partition = 0;
+		break;
 	case AP:
 		if ((soc == QX || soc == DXL) && core == CORE_CA35)
 			meta = IMAGE_A35_DEFAULT_META(image_stack->part, image_stack->mu);
@@ -627,42 +648,40 @@ int get_container_image_start_pos(image_t *image_stack, uint32_t align, soc_type
 
 	while (img_sp->option != NO_IMG) {
 		if (img_sp->option == APPEND) {
-			ofd = open(img_sp->filename, O_RDONLY);
-			if (ofd < 0) {
-				printf("Failure open first container file %s\n", img_sp->filename);
-				break;
-			}
+			int i = 0;
+			do {
+				ofd = open(img_sp->filename, O_RDONLY);
+				if (ofd < 0) {
+					printf("Failure open first container file %s\n", img_sp->filename);
+					break;
+				}
 
-			if (soc == DXL) {
-				/* Skip SECO container, jump to V2X container */
-				if(lseek(ofd, CONTAINER_ALIGNMENT, SEEK_SET) < 0) {
+				if(lseek(ofd,  i * CONTAINER_ALIGNMENT, SEEK_SET) < 0) {
 					printf("Failure Skip SECO header \n");
+						exit(EXIT_FAILURE);
+				}
+
+				if(read(ofd, &header, sizeof(header)) != sizeof(header)) {
+					printf("Failure Read header \n");
 					exit(EXIT_FAILURE);
 				}
-			}
 
-			if(read(ofd, &header, sizeof(header)) != sizeof(header)) {
-				printf("Failure Read header \n");
-				exit(EXIT_FAILURE);
-			}
+				close(ofd);
 
-			close(ofd);
-
-			if (header.tag != IVT_HEADER_TAG_B0) {
-				printf("header tag missmatched %x\n", header.tag);
-			} else if (header.num_images == 0) {
-				printf("image num is 0 \n");
-			} else {
-				file_off = header.img[header.num_images - 1].offset + header.img[header.num_images - 1].size;
-				if (soc == DXL) {
-					file_off += CONTAINER_ALIGNMENT;
-					*scu_cont_hdr_off = CONTAINER_ALIGNMENT + ALIGN(header.length, CONTAINER_ALIGNMENT);
+				if (header.tag != IVT_HEADER_TAG_B0) {
+					printf("header tag missmatched %x\n", header.tag);
+					break;
+				} else if (header.num_images == 0) {
+					printf("image num is 0 \n");
+					break;
+				} else {
+					file_off = header.img[header.num_images - 1].offset + header.img[header.num_images - 1].size;
+					*scu_cont_hdr_off = i * CONTAINER_ALIGNMENT + ALIGN(header.length, CONTAINER_ALIGNMENT);
+					file_off = i * CONTAINER_ALIGNMENT + ALIGN(file_off, align);
 				}
-				else {
-					*scu_cont_hdr_off = ALIGN(header.length, CONTAINER_ALIGNMENT);
-				}
-				file_off = ALIGN(file_off, align);
-			}
+
+				i++;
+			} while (true);
 		}
 
 		img_sp++;
@@ -724,6 +743,7 @@ int build_container_qx_qm_b0(soc_type_t soc, uint32_t sector_size, uint32_t ivt_
 	while (img_sp->option != NO_IMG) { /* stop once we reach null terminator */
 		switch (img_sp->option) {
 		case FCB:
+		case OEI:
 		case AP:
 		case M4:
 		case SCFW:
@@ -875,7 +895,9 @@ int build_container_qx_qm_b0(soc_type_t soc, uint32_t sector_size, uint32_t ivt_
 	while (img_sp->option != NO_IMG) { /* stop once we reach null terminator */
 		if (img_sp->option == M4 || img_sp->option == AP || img_sp->option == DATA || img_sp->option == SCD ||
 				img_sp->option == SCFW || img_sp->option == SECO || img_sp->option == MSG_BLOCK ||
-				img_sp->option == UPOWER || img_sp->option == SENTINEL || img_sp->option == FCB) {
+				img_sp->option == UPOWER || img_sp->option == SENTINEL ||
+				img_sp->option == FCB || img_sp->option == OEI)
+		{
 			copy_file_aligned(ofd, img_sp->filename, img_sp->src, sector_size);
 		}
 		img_sp++;

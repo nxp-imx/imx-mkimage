@@ -556,6 +556,7 @@ int main(int argc, char **argv)
 		{"upower", required_argument, NULL, 'w'},
 		{"fcb", required_argument, NULL, 'b'},
 		{"padding", required_argument, NULL, 'G'},
+		{"oei", required_argument, NULL, 'E'},
 		{NULL, 0, NULL, 0}
 	};
 
@@ -711,7 +712,7 @@ int main(int argc, char **argv)
 				break;
 			case '3':
 			case 'm':
-				fprintf(stdout, "CM%s:\t%s", optarg, c == '3' ? "33":"4");
+				fprintf(stdout, "CM%s:\t%s", c == '3' ? "33":"4", optarg);
 				param_stack[p_idx].option = M4;
 				param_stack[p_idx].filename = optarg;
 				if ((optind < argc && *argv[optind] != '-') && (optind+1 < argc &&*argv[optind+1] != '-' )) {
@@ -729,6 +730,30 @@ int main(int argc, char **argv)
 				} else {
 					fprintf(stderr, "\n-m[4,33] option require FOUR arguments: filename, core: 0/1, entry address in hex, load address in hex(optional)\n\n");
 					exit(EXIT_FAILURE);
+				}
+				break;
+			case 'E':
+				if (soc != IMX9) {
+					fprintf(stderr, "\nOEI only availble in i.MX95\n\n");
+					exit(EXIT_FAILURE);
+				}
+				fprintf(stdout, "OEI:\t%s", optarg);
+				param_stack[p_idx].option = OEI;
+				param_stack[p_idx].filename = optarg;
+				if ((optind < argc && *argv[optind] != '-') && (optind+1 < argc &&*argv[optind+1] != '-' )) {
+					if (!strncmp(argv[optind], "a55", 3))
+						param_stack[p_idx].ext = CORE_CA35; /* fake id for a55 */
+					else if (!strncmp(argv[optind], "m33", 3))
+						param_stack[p_idx].ext = CORE_CM4_0;
+					else {
+						fprintf(stderr, "ERROR: Core not found %s\n", argv[optind+2]);
+						exit(EXIT_FAILURE);
+					}
+					fprintf(stdout, "\tcore: %s", argv[optind++]);
+
+					param_stack[p_idx].entry = (uint32_t) strtoll(argv[optind++], NULL, 0);
+					param_stack[p_idx].dst = 0;
+					fprintf(stdout, " addr: 0x%08" PRIx64 "\n", param_stack[p_idx++].entry);
 				}
 				break;
 			case 'a':

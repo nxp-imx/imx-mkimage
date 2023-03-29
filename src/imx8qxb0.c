@@ -523,6 +523,28 @@ void set_image_array_entry(flash_header_v3_t *container, soc_type_t soc,
 		img->meta = meta;
 		custom_partition = 0;
 		break;
+	case M7:
+		if (soc != IMX9) {
+			fprintf(stderr, "\n\nWarning: M7 only in i.MX95\n\n");
+			exit(EXIT_FAILURE);
+		}
+		core = CORE_M7_0;
+		meta = 0;
+		img->hab_flags |= IMG_TYPE_EXEC;
+		img->hab_flags |= core << BOOT_IMG_FLAGS_CORE_SHIFT;
+		tmp_name = "M7";
+		if ((entry & 0x7) != 0)
+		{
+			fprintf(stderr, "\n\nWarning: M4 Destination address is not 8 byte aligned\n\n");
+		}
+		if (dst)
+			img->dst = dst;
+		else
+			img->dst = entry;
+		img->entry = entry;
+		img->meta = meta;
+		custom_partition = 0;
+		break;
 	case M4:
 		if ((soc == ULP) || (soc == IMX9)) {
 			core = CORE_ULP_CM33;
@@ -746,6 +768,7 @@ int build_container_qx_qm_b0(soc_type_t soc, uint32_t sector_size, uint32_t ivt_
 		case OEI:
 		case AP:
 		case M4:
+		case M7:
 		case SCFW:
 		case DATA:
 		case UPOWER:
@@ -896,7 +919,7 @@ int build_container_qx_qm_b0(soc_type_t soc, uint32_t sector_size, uint32_t ivt_
 		if (img_sp->option == M4 || img_sp->option == AP || img_sp->option == DATA || img_sp->option == SCD ||
 				img_sp->option == SCFW || img_sp->option == SECO || img_sp->option == MSG_BLOCK ||
 				img_sp->option == UPOWER || img_sp->option == SENTINEL ||
-				img_sp->option == FCB || img_sp->option == OEI)
+				img_sp->option == FCB || img_sp->option == OEI || img_sp->option == M7)
 		{
 			copy_file_aligned(ofd, img_sp->filename, img_sp->src, sector_size);
 		}

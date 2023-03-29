@@ -529,6 +529,7 @@ int main(int argc, char **argv)
 		{"scfw", required_argument, NULL, 'f'},
 		{"seco", required_argument, NULL, 'O'},
 		{"m4", required_argument, NULL, 'm'},
+		{"m7", required_argument, NULL, '7'},
 		{"m33", required_argument, NULL, '3'},
 		{"ap", required_argument, NULL, 'a'},
 		{"dcd", required_argument, NULL, 'd'},
@@ -710,10 +711,16 @@ int main(int argc, char **argv)
 					exit(EXIT_FAILURE);
 				}
 				break;
+			case '7':
 			case '3':
 			case 'm':
-				fprintf(stdout, "CM%s:\t%s", c == '3' ? "33":"4", optarg);
-				param_stack[p_idx].option = M4;
+				if (c == '7') {
+					fprintf(stdout, "CM7:\t%s", optarg);
+					param_stack[p_idx].option = M7;
+				} else {
+					fprintf(stdout, "CM%s:\t%s", c == '3' ? "33":"4", optarg);
+					param_stack[p_idx].option = M4;
+				}
 				param_stack[p_idx].filename = optarg;
 				if ((optind < argc && *argv[optind] != '-') && (optind+1 < argc &&*argv[optind+1] != '-' )) {
 					param_stack[p_idx].ext = strtol(argv[optind++], NULL, 0);

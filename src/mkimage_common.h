@@ -36,6 +36,7 @@ typedef enum option_type {
     SCFW,
     SECO,
     M4,
+    M7,
     AP,
     OUTPUT,
     SCD,
@@ -125,6 +126,9 @@ typedef struct {
 #define CORE_ULP_CA35	0x2
 #define CORE_ULP_UPOWER 	0x4
 #define CORE_ULP_SENTINEL 	0x6
+
+/* TODO_IMX95: ROM still not support this, waiting check */
+#define CORE_M7_0       0xB
 
 #define SC_R_OTP                  357U
 #define SC_R_DEBUG                354U

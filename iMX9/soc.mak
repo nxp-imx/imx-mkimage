@@ -18,7 +18,7 @@ else
 endif
 
 LC_REVISION = $(shell echo $(REV) | tr ABC abc)
-AHAB_IMG = mx93$(LC_REVISION)-ahab-container.img
+AHAB_IMG ?= mx93$(LC_REVISION)-ahab-container.img
 MCU_IMG = m33_image.bin
 
 ifeq ($(SOC),iMX91)

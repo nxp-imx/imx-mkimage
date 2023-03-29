@@ -92,23 +92,23 @@ u-boot-atf.itb: u-boot-hash.bin bl31.bin
 u-boot-atf-container.img: bl31.bin u-boot-hash.bin
 	if [ -f tee.bin ]; then \
 		if [ $(shell echo $(ROLLBACK_INDEX_IN_CONTAINER)) ]; then \
-			./$(MKIMG) -soc IMX9 -sw_version $(ROLLBACK_INDEX_IN_CONTAINER)  -c -ap bl31.bin a35 $(ATF_LOAD_ADDR) -ap u-boot-hash.bin a35 $(UBOOT_LOAD_ADDR) -ap tee.bin a35 $(TEE_LOAD_ADDR) -out u-boot-atf-container.img; \
+			./$(MKIMG) -soc IMX9 -sw_version $(ROLLBACK_INDEX_IN_CONTAINER)  -c -ap bl31.bin a55 $(ATF_LOAD_ADDR) -ap u-boot-hash.bin a55 $(UBOOT_LOAD_ADDR) -ap tee.bin a55 $(TEE_LOAD_ADDR) -out u-boot-atf-container.img; \
 		else \
-			./$(MKIMG) -soc IMX9 -c -ap bl31.bin a35 $(ATF_LOAD_ADDR) -ap u-boot-hash.bin a35 $(UBOOT_LOAD_ADDR) -ap tee.bin a35 $(TEE_LOAD_ADDR) -out u-boot-atf-container.img; \
+			./$(MKIMG) -soc IMX9 -c -ap bl31.bin a55 $(ATF_LOAD_ADDR) -ap u-boot-hash.bin a55 $(UBOOT_LOAD_ADDR) -ap tee.bin a55 $(TEE_LOAD_ADDR) -out u-boot-atf-container.img; \
 		fi; \
 	else \
-		./$(MKIMG) -soc IMX9 -c -ap bl31.bin a35 $(ATF_LOAD_ADDR) -ap u-boot-hash.bin a35 $(UBOOT_LOAD_ADDR) -out u-boot-atf-container.img; \
+		./$(MKIMG) -soc IMX9 -c -ap bl31.bin a55 $(ATF_LOAD_ADDR) -ap u-boot-hash.bin a55 $(UBOOT_LOAD_ADDR) -out u-boot-atf-container.img; \
 	fi
 
 u-boot-atf-container-spinand.img: bl31.bin u-boot-hash.bin
 	if [ -f tee.bin ]; then \
 		if [ $(shell echo $(ROLLBACK_INDEX_IN_CONTAINER)) ]; then \
-			./$(MKIMG) -soc IMX9 -sw_version $(ROLLBACK_INDEX_IN_CONTAINER)  -dev nand 4K -c -ap bl31.bin a35 $(ATF_LOAD_ADDR) -ap u-boot-hash.bin a35 $(UBOOT_LOAD_ADDR) -ap tee.bin a35 $(TEE_LOAD_ADDR) -out u-boot-atf-container-spinand.img; \
+			./$(MKIMG) -soc IMX9 -sw_version $(ROLLBACK_INDEX_IN_CONTAINER)  -dev nand 4K -c -ap bl31.bin a55 $(ATF_LOAD_ADDR) -ap u-boot-hash.bin a55 $(UBOOT_LOAD_ADDR) -ap tee.bin a55 $(TEE_LOAD_ADDR) -out u-boot-atf-container-spinand.img; \
 		else \
-			./$(MKIMG) -soc IMX9 -dev nand 4K -c -ap bl31.bin a35 $(ATF_LOAD_ADDR) -ap u-boot-hash.bin a35 $(UBOOT_LOAD_ADDR) -ap tee.bin a35 $(TEE_LOAD_ADDR) -out u-boot-atf-container-spinand.img; \
+			./$(MKIMG) -soc IMX9 -dev nand 4K -c -ap bl31.bin a55 $(ATF_LOAD_ADDR) -ap u-boot-hash.bin a55 $(UBOOT_LOAD_ADDR) -ap tee.bin a55 $(TEE_LOAD_ADDR) -out u-boot-atf-container-spinand.img; \
 		fi; \
 	else \
-		./$(MKIMG) -soc IMX9 -dev nand 4K -c -ap bl31.bin a35 $(ATF_LOAD_ADDR) -ap u-boot-hash.bin a35 $(UBOOT_LOAD_ADDR) -out u-boot-atf-container-spinand.img; \
+		./$(MKIMG) -soc IMX9 -dev nand 4K -c -ap bl31.bin a55 $(ATF_LOAD_ADDR) -ap u-boot-hash.bin a55 $(UBOOT_LOAD_ADDR) -out u-boot-atf-container-spinand.img; \
 	fi
 
 fcb.bin: FORCE
@@ -125,7 +125,7 @@ clean:
 	@echo "imx9 clean done"
 
 flash_singleboot: $(MKIMG) $(AHAB_IMG) u-boot-spl-ddr.bin u-boot-atf-container.img
-	./$(MKIMG) -soc IMX9 -append $(AHAB_IMG) -c -ap u-boot-spl-ddr.bin a35 $(SPL_LOAD_ADDR) -out flash.bin
+	./$(MKIMG) -soc IMX9 -append $(AHAB_IMG) -c -ap u-boot-spl-ddr.bin a55 $(SPL_LOAD_ADDR) -out flash.bin
 	cp flash.bin boot-spl-container.img
 	@flashbin_size=`wc -c flash.bin | awk '{print $$1}'`; \
                    pad_cnt=$$(((flashbin_size + 0x400 - 1) / 0x400)); \
@@ -133,7 +133,7 @@ flash_singleboot: $(MKIMG) $(AHAB_IMG) u-boot-spl-ddr.bin u-boot-atf-container.i
                    dd if=u-boot-atf-container.img of=flash.bin bs=1K seek=$$pad_cnt;
 
 flash_singleboot_spinand: $(MKIMG) $(AHAB_IMG) u-boot-spl-ddr.bin u-boot-atf-container-spinand.img flash_fw.bin
-	./$(MKIMG) -soc IMX9 -dev nand 4K -append $(AHAB_IMG) -c -ap u-boot-spl-ddr.bin a35 $(SPL_LOAD_ADDR) -out flash.bin
+	./$(MKIMG) -soc IMX9 -dev nand 4K -append $(AHAB_IMG) -c -ap u-boot-spl-ddr.bin a55 $(SPL_LOAD_ADDR) -out flash.bin
 	cp flash.bin boot-spl-container.img
 	@flashbin_size=`wc -c flash.bin | awk '{print $$1}'`; \
                    pad_cnt=$$(((flashbin_size + 0x1000 - 1) / 0x1000)); page=4;\
@@ -144,7 +144,7 @@ flash_singleboot_spinand_fw: flash_fw.bin
 	@mv -f flash_fw.bin flash.bin
 
 flash_singleboot_no_ahabfw: $(MKIMG) u-boot-spl-ddr.bin u-boot-atf-container.img
-	./$(MKIMG) -soc IMX9 -c -ap u-boot-spl-ddr.bin a35 $(SPL_LOAD_ADDR) -out flash.bin
+	./$(MKIMG) -soc IMX9 -c -ap u-boot-spl-ddr.bin a55 $(SPL_LOAD_ADDR) -out flash.bin
 	cp flash.bin boot-spl-container.img
 	@flashbin_size=`wc -c flash.bin | awk '{print $$1}'`; \
                    pad_cnt=$$(((flashbin_size + 0x400 - 1) / 0x400)); \
@@ -152,7 +152,7 @@ flash_singleboot_no_ahabfw: $(MKIMG) u-boot-spl-ddr.bin u-boot-atf-container.img
                    dd if=u-boot-atf-container.img of=flash.bin bs=1K seek=$$pad_cnt;
 
 flash_singleboot_qb: $(MKIMG) $(AHAB_IMG) u-boot-spl-ddr-qb.bin u-boot-atf-container.img
-	./$(MKIMG) -soc IMX9 -append $(AHAB_IMG) -c -ap u-boot-spl-ddr-qb.bin a35 $(SPL_LOAD_ADDR) -out flash.bin
+	./$(MKIMG) -soc IMX9 -append $(AHAB_IMG) -c -ap u-boot-spl-ddr-qb.bin a55 $(SPL_LOAD_ADDR) -out flash.bin
 	cp flash.bin boot-spl-container.img
 	@flashbin_size=`wc -c flash.bin | awk '{print $$1}'`; \
                    pad_cnt=$$(((flashbin_size + 0x400 - 1) / 0x400)); \
@@ -160,7 +160,7 @@ flash_singleboot_qb: $(MKIMG) $(AHAB_IMG) u-boot-spl-ddr-qb.bin u-boot-atf-conta
                    dd if=u-boot-atf-container.img of=flash.bin bs=1K seek=$$pad_cnt;
 
 flash_singleboot_flexspi: $(MKIMG) $(AHAB_IMG) u-boot-spl-ddr.bin u-boot-atf-container.img fcb.bin
-	./$(MKIMG) -soc IMX9 -dev flexspi -append $(AHAB_IMG) -c -ap u-boot-spl-ddr.bin a35 $(SPL_LOAD_ADDR) -fcb fcb.bin $(FCB_LOAD_ADDR) -out flash.bin
+	./$(MKIMG) -soc IMX9 -dev flexspi -append $(AHAB_IMG) -c -ap u-boot-spl-ddr.bin a55 $(SPL_LOAD_ADDR) -fcb fcb.bin $(FCB_LOAD_ADDR) -out flash.bin
 	@flashbin_size=`wc -c flash.bin | awk '{print $$1}'`; \
                    pad_cnt=$$(((flashbin_size + 0x400 - 1) / 0x400)); \
                    echo "append u-boot-atf-container.img at $$pad_cnt KB"; \
@@ -168,7 +168,7 @@ flash_singleboot_flexspi: $(MKIMG) $(AHAB_IMG) u-boot-spl-ddr.bin u-boot-atf-con
 	$(call append_fcb)
 
 flash_singleboot_m33: $(MKIMG) $(AHAB_IMG) u-boot-atf-container.img $(MCU_IMG) u-boot-spl-ddr.bin
-	./$(MKIMG) -soc IMX9 -append $(AHAB_IMG) -c -m4 $(MCU_IMG) 0 $(MCU_TCM_ADDR) $(MCU_TCM_ADDR_ACORE_VIEW) -ap u-boot-spl-ddr.bin a35 $(SPL_LOAD_ADDR) -out flash.bin
+	./$(MKIMG) -soc IMX9 -append $(AHAB_IMG) -c -m33 $(MCU_IMG) 0 $(MCU_TCM_ADDR) $(MCU_TCM_ADDR_ACORE_VIEW) -ap u-boot-spl-ddr.bin a55 $(SPL_LOAD_ADDR) -out flash.bin
 	cp flash.bin boot-spl-container.img
 	@flashbin_size=`wc -c flash.bin | awk '{print $$1}'`; \
                    pad_cnt=$$(((flashbin_size + 0x400 - 1) / 0x400)); \
@@ -176,7 +176,7 @@ flash_singleboot_m33: $(MKIMG) $(AHAB_IMG) u-boot-atf-container.img $(MCU_IMG) u
                    dd if=u-boot-atf-container.img of=flash.bin bs=1K seek=$$pad_cnt;
 
 flash_singleboot_m33_no_ahabfw: $(MKIMG) u-boot-atf-container.img $(MCU_IMG) u-boot-spl-ddr.bin
-	./$(MKIMG) -soc IMX9 -c -m4 $(MCU_IMG) 0 $(MCU_TCM_ADDR) $(MCU_TCM_ADDR_ACORE_VIEW) -ap u-boot-spl-ddr.bin a35 $(SPL_LOAD_ADDR) -out flash.bin
+	./$(MKIMG) -soc IMX9 -c -m33 $(MCU_IMG) 0 $(MCU_TCM_ADDR) $(MCU_TCM_ADDR_ACORE_VIEW) -ap u-boot-spl-ddr.bin a55 $(SPL_LOAD_ADDR) -out flash.bin
 	cp flash.bin boot-spl-container.img
 	@flashbin_size=`wc -c flash.bin | awk '{print $$1}'`; \
                    pad_cnt=$$(((flashbin_size + 0x400 - 1) / 0x400)); \
@@ -184,7 +184,7 @@ flash_singleboot_m33_no_ahabfw: $(MKIMG) u-boot-atf-container.img $(MCU_IMG) u-b
                    dd if=u-boot-atf-container.img of=flash.bin bs=1K seek=$$pad_cnt;
 
 flash_singleboot_m33_flexspi: $(MKIMG) $(AHAB_IMG) $(UPOWER_IMG) u-boot-atf-container.img $(MCU_IMG) u-boot-spl-ddr.bin fcb.bin
-	./$(MKIMG) -soc IMX9  -dev flexspi -append $(AHAB_IMG) -c -m4 $(MCU_IMG) 0 $(MCU_TCM_ADDR) $(MCU_TCM_ADDR_ACORE_VIEW) -ap u-boot-spl-ddr.bin a35 $(SPL_LOAD_ADDR) -fcb fcb.bin $(FCB_LOAD_ADDR) -out flash.bin
+	./$(MKIMG) -soc IMX9  -dev flexspi -append $(AHAB_IMG) -c -m33 $(MCU_IMG) 0 $(MCU_TCM_ADDR) $(MCU_TCM_ADDR_ACORE_VIEW) -ap u-boot-spl-ddr.bin a55 $(SPL_LOAD_ADDR) -fcb fcb.bin $(FCB_LOAD_ADDR) -out flash.bin
 	cp flash.bin boot-spl-container.img
 	@flashbin_size=`wc -c flash.bin | awk '{print $$1}'`; \
                    pad_cnt=$$(((flashbin_size + 0x400 - 1) / 0x400)); \
@@ -193,31 +193,31 @@ flash_singleboot_m33_flexspi: $(MKIMG) $(AHAB_IMG) $(UPOWER_IMG) u-boot-atf-cont
 	$(call append_fcb)
 
 flash_lpboot: $(MKIMG) $(AHAB_IMG) $(MCU_IMG)
-	./$(MKIMG) -soc IMX9 -append $(AHAB_IMG) -c -m4 $(MCU_IMG) 0 $(MCU_TCM_ADDR) -out flash.bin
+	./$(MKIMG) -soc IMX9 -append $(AHAB_IMG) -c -m33 $(MCU_IMG) 0 $(MCU_TCM_ADDR) -out flash.bin
 
 flash_lpboot_flexspi: $(MKIMG) $(AHAB_IMG) $(MCU_IMG)
-	./$(MKIMG) -soc IMX9 -dev flexspi -append $(AHAB_IMG) -c -m4 $(MCU_IMG) 0 $(MCU_TCM_ADDR) -out flash.bin
+	./$(MKIMG) -soc IMX9 -dev flexspi -append $(AHAB_IMG) -c -m33 $(MCU_IMG) 0 $(MCU_TCM_ADDR) -out flash.bin
 	./$(QSPI_PACKER) $(QSPI_HEADER)
 
 flash_lpboot_flexspi_xip: $(MKIMG) $(AHAB_IMG) $(MCU_IMG)
-	./$(MKIMG) -soc IMX9 -dev flexspi -append $(AHAB_IMG) -fileoff $(M33_IMAGE_XIP_OFFSET) -c -m4 $(MCU_IMG) 0 $(MCU_XIP_ADDR) -out flash.bin
+	./$(MKIMG) -soc IMX9 -dev flexspi -append $(AHAB_IMG) -fileoff $(M33_IMAGE_XIP_OFFSET) -c -m33 $(MCU_IMG) 0 $(MCU_XIP_ADDR) -out flash.bin
 	./$(QSPI_PACKER) $(QSPI_HEADER)
 
 flash_lpboot_no_ahabfw_flexspi: $(MKIMG) $(MCU_IMG)
-	./$(MKIMG) -soc IMX9 -dev flexspi -c -m4 $(MCU_IMG) 0 $(MCU_TCM_ADDR) -out flash.bin
+	./$(MKIMG) -soc IMX9 -dev flexspi -c -m33 $(MCU_IMG) 0 $(MCU_TCM_ADDR) -out flash.bin
 	./$(QSPI_PACKER) $(QSPI_HEADER)
 
 flash_sentinel: $(MKIMG) ahabfw.bin
 	./$(MKIMG) -soc IMX9 -c -sentinel ahabfw.bin -out flash.bin
 
 flash_kernel: $(MKIMG) Image imx93-11x11-evk.dtb
-	./$(MKIMG) -soc IMX9 -c -ap Image a35 0x80400000 --data imx93-11x11-evk.dtb a35 0x83000000 -out flash.bin
+	./$(MKIMG) -soc IMX9 -c -ap Image a55 0x80400000 --data imx93-11x11-evk.dtb a55 0x83000000 -out flash.bin
 
 flash_bootaux_cntr: $(MKIMG) $(MCU_IMG)
-	./$(MKIMG) -soc IMX9 -c -m4 $(MCU_IMG) 0 $(MCU_TCM_ADDR) $(MCU_TCM_ADDR_ACORE_VIEW) -out flash.bin
+	./$(MKIMG) -soc IMX9 -c -m33 $(MCU_IMG) 0 $(MCU_TCM_ADDR) $(MCU_TCM_ADDR_ACORE_VIEW) -out flash.bin
 
 flash_bootaux_cntr_xip: $(MKIMG) $(MCU_IMG)
-	./$(MKIMG) -soc IMX9 -c -fileoff $(M33_IMAGE_XIP_OFFSET) -m4 $(MCU_IMG) 0 $(MCU_XIP_ADDR) -out flash.bin
+	./$(MKIMG) -soc IMX9 -c -fileoff $(M33_IMAGE_XIP_OFFSET) -m33 $(MCU_IMG) 0 $(MCU_XIP_ADDR) -out flash.bin
 
 parse_container: $(MKIMG) flash.bin
 	./$(MKIMG) -soc IMX9 -parse flash.bin

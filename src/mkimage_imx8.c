@@ -529,6 +529,7 @@ int main(int argc, char **argv)
 		{"scfw", required_argument, NULL, 'f'},
 		{"seco", required_argument, NULL, 'O'},
 		{"m4", required_argument, NULL, 'm'},
+		{"m33", required_argument, NULL, '3'},
 		{"ap", required_argument, NULL, 'a'},
 		{"dcd", required_argument, NULL, 'd'},
 		{"out", required_argument, NULL, 'o'},
@@ -689,6 +690,8 @@ int main(int argc, char **argv)
 							param_stack[p_idx].ext = CORE_CM4_1;
 						else if (!strncmp(argv[optind], "m4", 2))
 							param_stack[p_idx].ext = CORE_CM4_0;
+						else if (!strncmp(argv[optind], "m33", 2))
+							param_stack[p_idx].ext = CORE_CM4_0;
 						else {
 							fprintf(stderr, "ERROR: incorrect core ID for --data option: %s\n", argv[optind]);
 							exit(EXIT_FAILURE);
@@ -697,7 +700,7 @@ int main(int argc, char **argv)
 						param_stack[p_idx].entry = (uint32_t) strtoll(argv[optind++], NULL, 0);
 					}
 					else {
-						fprintf(stderr, "\n-data option require THREE arguments: filename, core: a55/a35/a53/a72/m4_0/m4_1, load address in hex\n\n");
+						fprintf(stderr, "\n-data option require THREE arguments: filename, core: a[55,35,53,72]/m[4,4_1,33] load address in hex\n\n");
 						exit(EXIT_FAILURE);
 					}
 					p_idx++;
@@ -706,8 +709,9 @@ int main(int argc, char **argv)
 					exit(EXIT_FAILURE);
 				}
 				break;
+			case '3':
 			case 'm':
-				fprintf(stdout, "CM4:\t%s", optarg);
+				fprintf(stdout, "CM%s:\t%s", optarg, c == '3' ? "33":"4");
 				param_stack[p_idx].option = M4;
 				param_stack[p_idx].filename = optarg;
 				if ((optind < argc && *argv[optind] != '-') && (optind+1 < argc &&*argv[optind+1] != '-' )) {
@@ -723,7 +727,7 @@ int main(int argc, char **argv)
 					fprintf(stdout, "\n");
 					p_idx++;
 				} else {
-					fprintf(stderr, "\n-m4 option require FOUR arguments: filename, core: 0/1, entry address in hex, load address in hex(optional)\n\n");
+					fprintf(stderr, "\n-m[4,33] option require FOUR arguments: filename, core: 0/1, entry address in hex, load address in hex(optional)\n\n");
 					exit(EXIT_FAILURE);
 				}
 				break;
@@ -779,7 +783,7 @@ int main(int argc, char **argv)
 					}
 					fprintf(stdout, " addr: 0x%08" PRIx64 "\n", param_stack[p_idx++].entry);
 				} else {
-					fprintf(stderr, "\n-ap option require THREE arguments: filename, a35/a53/a72, start address in hex\n\n");
+					fprintf(stderr, "\n-ap option require THREE arguments: filename, a[35,55,53,72], start address in hex\n\n");
 					exit(EXIT_FAILURE);
 				}
 				break;

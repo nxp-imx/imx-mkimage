@@ -37,6 +37,9 @@ lpddr4_imem_1d = lpddr4_imem_1d$(LPDDR_FW_VERSION).bin
 lpddr4_dmem_1d = lpddr4_dmem_1d$(LPDDR_FW_VERSION).bin
 lpddr4_imem_2d = lpddr4_imem_2d$(LPDDR_FW_VERSION).bin
 lpddr4_dmem_2d = lpddr4_dmem_2d$(LPDDR_FW_VERSION).bin
+lpddr4_imem_qb = lpddr4_imem_qb$(LPDDR_FW_VERSION).bin
+lpddr4_dmem_qb = lpddr4_dmem_qb$(LPDDR_FW_VERSION).bin
+lpddr4_qb_data = lpddr4_qb_data.bin
 
 u-boot-spl-ddr.bin: u-boot-spl.bin $(lpddr4_imem_1d) $(lpddr4_dmem_1d) $(lpddr4_imem_2d) $(lpddr4_dmem_2d)
 	@objcopy -I binary -O binary --pad-to 0x8000 --gap-fill=0x0 $(lpddr4_imem_1d) lpddr4_pmu_train_1d_imem_pad.bin
@@ -47,6 +50,14 @@ u-boot-spl-ddr.bin: u-boot-spl.bin $(lpddr4_imem_1d) $(lpddr4_dmem_1d) $(lpddr4_
 	@dd if=u-boot-spl.bin of=u-boot-spl-pad.bin bs=4 conv=sync
 	@cat u-boot-spl-pad.bin lpddr4_pmu_train_1d_fw.bin lpddr4_pmu_train_2d_fw.bin > u-boot-spl-ddr.bin
 	@rm -f u-boot-spl-pad.bin lpddr4_pmu_train_1d_fw.bin lpddr4_pmu_train_2d_fw.bin lpddr4_pmu_train_1d_imem_pad.bin lpddr4_pmu_train_1d_dmem_pad.bin lpddr4_pmu_train_2d_imem_pad.bin
+
+u-boot-spl-ddr-qb.bin: u-boot-spl.bin $(lpddr4_imem_qb) $(lpddr4_dmem_qb) $(lpddr4_qb_data)
+	@objcopy -I binary -O binary --pad-to 0x8000 --gap-fill=0x0 $(lpddr4_imem_qb) lpddr4_pmu_qb_imem_pad.bin
+	@objcopy -I binary -O binary --pad-to 0x4000 --gap-fill=0x0 $(lpddr4_dmem_qb) lpddr4_pmu_qb_dmem_pad.bin
+	@cat lpddr4_pmu_qb_imem_pad.bin lpddr4_pmu_qb_dmem_pad.bin > lpddr4_pmu_qb_fw.bin
+	@dd if=u-boot-spl.bin of=u-boot-spl-pad.bin bs=4 conv=sync
+	@cat u-boot-spl-pad.bin lpddr4_pmu_qb_fw.bin $(lpddr4_qb_data) > u-boot-spl-ddr-qb.bin
+	@rm -f u-boot-spl-pad.bin lpddr4_pmu_qb_imem_pad.bin lpddr4_pmu_qb_dmem_pad.bin lpddr4_pmu_qb_fw.bin
 
 u-boot-hash.bin: u-boot.bin
 	./$(MKIMG) -commit > head.hash
@@ -76,12 +87,20 @@ u-boot-atf-container.img: bl31.bin u-boot-hash.bin
 
 .PHONY: clean nightly
 clean:
-	@rm -f $(MKIMG) u-boot-atf-container.img u-boot-spl-ddr.bin u-boot-hash.bin
+	@rm -f $(MKIMG) u-boot-atf-container.img u-boot-spl-ddr.bin u-boot-spl-ddr-qb.bin u-boot-hash.bin
 	@rm -rf extracted_imgs
 	@echo "imx8ulp clean done"
 
 flash_singleboot: $(MKIMG) $(AHAB_IMG) u-boot-spl-ddr.bin u-boot-atf-container.img
 	./$(MKIMG) -soc IMX9 -append $(AHAB_IMG) -c -ap u-boot-spl-ddr.bin a35 $(SPL_LOAD_ADDR) -out flash.bin
+	cp flash.bin boot-spl-container.img
+	@flashbin_size=`wc -c flash.bin | awk '{print $$1}'`; \
+                   pad_cnt=$$(((flashbin_size + 0x400 - 1) / 0x400)); \
+                   echo "append u-boot-atf-container.img at $$pad_cnt KB"; \
+                   dd if=u-boot-atf-container.img of=flash.bin bs=1K seek=$$pad_cnt;
+
+flash_singleboot_qb: $(MKIMG) $(AHAB_IMG) u-boot-spl-ddr-qb.bin u-boot-atf-container.img
+	./$(MKIMG) -soc IMX9 -append $(AHAB_IMG) -c -ap u-boot-spl-ddr-qb.bin a35 $(SPL_LOAD_ADDR) -out flash.bin
 	cp flash.bin boot-spl-container.img
 	@flashbin_size=`wc -c flash.bin | awk '{print $$1}'`; \
                    pad_cnt=$$(((flashbin_size + 0x400 - 1) / 0x400)); \

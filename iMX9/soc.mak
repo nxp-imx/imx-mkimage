@@ -16,7 +16,8 @@ else
     RENAME = rename
 endif
 
-AHAB_IMG = mx93a0-ahab-container.img
+LC_REVISION = $(shell echo $(REV) | tr ABC abc)
+AHAB_IMG = mx93$(LC_REVISION)-ahab-container.img
 MCU_IMG = m33_image.bin
 
 SPL_LOAD_ADDR ?= 0x2049A000

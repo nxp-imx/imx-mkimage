@@ -21,8 +21,13 @@ LC_REVISION = $(shell echo $(REV) | tr ABC abc)
 AHAB_IMG = mx93$(LC_REVISION)-ahab-container.img
 MCU_IMG = m33_image.bin
 
+ifeq ($(SOC),iMX91)
+SPL_LOAD_ADDR ?= 0x204A0000
+ATF_LOAD_ADDR ?= 0x204C0000
+else
 SPL_LOAD_ADDR ?= 0x2049A000
 ATF_LOAD_ADDR ?= 0x204E0000
+endif
 FCB_LOAD_ADDR ?= $(ATF_LOAD_ADDR)
 TEE_LOAD_ADDR ?= 0x96000000
 UBOOT_LOAD_ADDR ?= 0x80200000
@@ -102,7 +107,7 @@ fcb.bin: FORCE
 clean:
 	@rm -f $(MKIMG) u-boot-atf-container.img u-boot-spl-ddr.bin u-boot-spl-ddr-qb.bin u-boot-hash.bin
 	@rm -rf extracted_imgs
-	@echo "imx8ulp clean done"
+	@echo "imx9 clean done"
 
 flash_singleboot: $(MKIMG) $(AHAB_IMG) u-boot-spl-ddr.bin u-boot-atf-container.img
 	./$(MKIMG) -soc IMX9 -append $(AHAB_IMG) -c -ap u-boot-spl-ddr.bin a35 $(SPL_LOAD_ADDR) -out flash.bin

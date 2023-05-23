@@ -9,6 +9,9 @@ SRCS = src/imx8qxb0.c src/mkimage_imx8.c
 ifneq ($(findstring iMX8M,$(SOC)),)
 SOC_DIR = iMX8M
 endif
+ifneq ($(findstring iMX9,$(SOC)),)
+SOC_DIR = iMX9
+endif
 ifeq ($(SOC),iMX8DX)
 SOC_DIR = iMX8QX
 endif

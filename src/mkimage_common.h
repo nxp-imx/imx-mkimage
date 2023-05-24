@@ -50,7 +50,8 @@ typedef enum option_type {
     MSG_BLOCK,
     DUMMY_V2X,
     SENTINEL,
-    UPOWER
+    UPOWER,
+    FCB
 } option_type_t;
 
 
@@ -145,6 +146,7 @@ typedef struct {
 #define IMG_TYPE_SENTINEL    0x06   /* SENTINEL image type */
 #define IMG_TYPE_PROV           0x07   /* Provisioning image type */
 #define IMG_TYPE_DEK            0x08   /* DEK validation type */
+#define IMG_TYPE_FCB_CHK        0x08   /* The FCB copy image */
 #define IMG_TYPE_PRIM_V2X       0x0B   /* Primary V2X FW image */
 #define IMG_TYPE_SEC_V2X        0x0C   /* Secondary V2X FW image*/
 #define IMG_TYPE_V2X_ROM        0x0D   /* V2X ROM Patch image */

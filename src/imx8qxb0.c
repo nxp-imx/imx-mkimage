@@ -590,6 +590,11 @@ void set_image_array_entry(flash_header_v3_t *container, soc_type_t soc,
 		img->entry = entry;
 		img->size = 0; /* dummy image has no size */
 		break;
+	case FCB:
+		img->hab_flags |= IMG_TYPE_FCB_CHK;
+		img->dst = entry;
+		tmp_name = "FCB";
+		break;
 	default:
 		fprintf(stderr, "unrecognized image type (%d)\n", type);
 		exit(EXIT_FAILURE);
@@ -718,6 +723,7 @@ int build_container_qx_qm_b0(soc_type_t soc, uint32_t sector_size, uint32_t ivt_
 
 	while (img_sp->option != NO_IMG) { /* stop once we reach null terminator */
 		switch (img_sp->option) {
+		case FCB:
 		case AP:
 		case M4:
 		case SCFW:
@@ -869,7 +875,7 @@ int build_container_qx_qm_b0(soc_type_t soc, uint32_t sector_size, uint32_t ivt_
 	while (img_sp->option != NO_IMG) { /* stop once we reach null terminator */
 		if (img_sp->option == M4 || img_sp->option == AP || img_sp->option == DATA || img_sp->option == SCD ||
 				img_sp->option == SCFW || img_sp->option == SECO || img_sp->option == MSG_BLOCK ||
-				img_sp->option == UPOWER || img_sp->option == SENTINEL) {
+				img_sp->option == UPOWER || img_sp->option == SENTINEL || img_sp->option == FCB) {
 			copy_file_aligned(ofd, img_sp->filename, img_sp->src, sector_size);
 		}
 		img_sp++;
@@ -911,7 +917,10 @@ img_flags_t parse_image_flags(uint32_t flags, char *flag_list, soc_type_t soc)
 		strcat(flag_list, "Provisioning");
 		break;
 	case 0x8:
-		strcat(flag_list, "DEK validation");
+		if (soc == IMX9)
+		    strcat(flag_list, "FCB Check");
+		else
+		    strcat(flag_list, "DEK validation");
 		break;
 	case 0xB:
 		strcat(flag_list, "Primary V2X FW image");
@@ -1095,7 +1104,10 @@ void print_image_array_fields(flash_header_v3_t *container_hdrs, soc_type_t soc,
 			strcpy(img_name, "Provisioning");
 			break;
 		case 0x8:
-			strcpy(img_name, "DEK Validation");
+			if (soc == IMX9)
+			    strcpy(img_name, "FCB Check");
+            else
+			    strcpy(img_name, "DEK Validation");
 			break;
 		case 0xB:
 			strcpy(img_name, "Primary V2X FW image");

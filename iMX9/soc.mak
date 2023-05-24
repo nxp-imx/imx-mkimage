@@ -8,6 +8,7 @@ INCLUDE = ./lib
 #define the F(Q)SPI header file
 QSPI_HEADER = ../scripts/fspi_header
 QSPI_PACKER = ../scripts/fspi_packer.sh
+QSPI_FCB_GEN = ../scripts/fspi_fcb_gen.sh
 PAD_IMAGE = ../scripts/pad_image.sh
 
 ifneq ($(wildcard /usr/bin/rename.ul),)
@@ -22,6 +23,7 @@ MCU_IMG = m33_image.bin
 
 SPL_LOAD_ADDR ?= 0x2049A000
 ATF_LOAD_ADDR ?= 0x204E0000
+FCB_LOAD_ADDR ?= $(ATF_LOAD_ADDR)
 TEE_LOAD_ADDR ?= 0x96000000
 UBOOT_LOAD_ADDR ?= 0x80200000
 MCU_TCM_ADDR ?= 0x1FFE0000
@@ -30,6 +32,14 @@ MCU_XIP_ADDR ?= 0x28032000 # Point entry of m33 in flexspi0 nor flash
 M33_IMAGE_XIP_OFFSET ?= 0x31000 # 1st container offset is 0x1000 when boot device is flexspi0 nor flash, actually the m33_image.bin is in 0x31000 + 0x1000 = 0x32000.
 
 LPDDR_FW_VERSION = _v202201
+
+define append_fcb
+	@mv flash.bin flash.tmp
+	@dd if=fcb.bin of=flash.bin bs=1k seek=1
+	@dd if=flash.tmp of=flash.bin bs=1k seek=4
+	@rm flash.tmp
+	@echo "Append FCB to flash.bin"
+endef
 
 FORCE:
 
@@ -85,6 +95,9 @@ u-boot-atf-container.img: bl31.bin u-boot-hash.bin
 		./$(MKIMG) -soc IMX9 -c -ap bl31.bin a35 $(ATF_LOAD_ADDR) -ap u-boot-hash.bin a35 $(UBOOT_LOAD_ADDR) -out u-boot-atf-container.img; \
 	fi
 
+fcb.bin: FORCE
+	./$(QSPI_FCB_GEN) $(QSPI_HEADER)
+
 .PHONY: clean nightly
 clean:
 	@rm -f $(MKIMG) u-boot-atf-container.img u-boot-spl-ddr.bin u-boot-spl-ddr-qb.bin u-boot-hash.bin
@@ -107,13 +120,13 @@ flash_singleboot_qb: $(MKIMG) $(AHAB_IMG) u-boot-spl-ddr-qb.bin u-boot-atf-conta
                    echo "append u-boot-atf-container.img at $$pad_cnt KB"; \
                    dd if=u-boot-atf-container.img of=flash.bin bs=1K seek=$$pad_cnt;
 
-flash_singleboot_flexspi: $(MKIMG) $(AHAB_IMG) u-boot-spl-ddr.bin u-boot-atf-container.img
-	./$(MKIMG) -soc IMX9 -dev flexspi -append $(AHAB_IMG) -c -ap u-boot-spl-ddr.bin a35 $(SPL_LOAD_ADDR) -out flash.bin
+flash_singleboot_flexspi: $(MKIMG) $(AHAB_IMG) u-boot-spl-ddr.bin u-boot-atf-container.img fcb.bin
+	./$(MKIMG) -soc IMX9 -dev flexspi -append $(AHAB_IMG) -c -ap u-boot-spl-ddr.bin a35 $(SPL_LOAD_ADDR) -fcb fcb.bin $(FCB_LOAD_ADDR) -out flash.bin
 	@flashbin_size=`wc -c flash.bin | awk '{print $$1}'`; \
                    pad_cnt=$$(((flashbin_size + 0x400 - 1) / 0x400)); \
                    echo "append u-boot-atf-container.img at $$pad_cnt KB"; \
                    dd if=u-boot-atf-container.img of=flash.bin bs=1K seek=$$pad_cnt;
-	./$(QSPI_PACKER) $(QSPI_HEADER)
+	$(call append_fcb)
 
 flash_singleboot_m33: $(MKIMG) $(AHAB_IMG) u-boot-atf-container.img $(MCU_IMG) u-boot-spl-ddr.bin
 	./$(MKIMG) -soc IMX9 -append $(AHAB_IMG) -c -m4 $(MCU_IMG) 0 $(MCU_TCM_ADDR) $(MCU_TCM_ADDR_ACORE_VIEW) -ap u-boot-spl-ddr.bin a35 $(SPL_LOAD_ADDR) -out flash.bin
@@ -131,14 +144,14 @@ flash_singleboot_m33_no_ahabfw: $(MKIMG) u-boot-atf-container.img $(MCU_IMG) u-b
                    echo "append u-boot-atf-container.img at $$pad_cnt KB"; \
                    dd if=u-boot-atf-container.img of=flash.bin bs=1K seek=$$pad_cnt;
 
-flash_singleboot_m33_flexspi: $(MKIMG) $(AHAB_IMG) $(UPOWER_IMG) u-boot-atf-container.img $(MCU_IMG) u-boot-spl-ddr.bin
-	./$(MKIMG) -soc IMX9  -dev flexspi -append $(AHAB_IMG) -c -m4 $(MCU_IMG) 0 $(MCU_TCM_ADDR) $(MCU_TCM_ADDR_ACORE_VIEW) -ap u-boot-spl-ddr.bin a35 $(SPL_LOAD_ADDR) -out flash.bin
+flash_singleboot_m33_flexspi: $(MKIMG) $(AHAB_IMG) $(UPOWER_IMG) u-boot-atf-container.img $(MCU_IMG) u-boot-spl-ddr.bin fcb.bin
+	./$(MKIMG) -soc IMX9  -dev flexspi -append $(AHAB_IMG) -c -m4 $(MCU_IMG) 0 $(MCU_TCM_ADDR) $(MCU_TCM_ADDR_ACORE_VIEW) -ap u-boot-spl-ddr.bin a35 $(SPL_LOAD_ADDR) -fcb fcb.bin $(FCB_LOAD_ADDR) -out flash.bin
 	cp flash.bin boot-spl-container.img
 	@flashbin_size=`wc -c flash.bin | awk '{print $$1}'`; \
                    pad_cnt=$$(((flashbin_size + 0x400 - 1) / 0x400)); \
                    echo "append u-boot-atf-container.img at $$pad_cnt KB"; \
                    dd if=u-boot-atf-container.img of=flash.bin bs=1K seek=$$pad_cnt; \
-	./$(QSPI_PACKER) $(QSPI_HEADER)
+	$(call append_fcb)
 
 flash_lpboot: $(MKIMG) $(AHAB_IMG) $(MCU_IMG)
 	./$(MKIMG) -soc IMX9 -append $(AHAB_IMG) -c -m4 $(MCU_IMG) 0 $(MCU_TCM_ADDR) -out flash.bin

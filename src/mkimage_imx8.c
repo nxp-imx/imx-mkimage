@@ -552,6 +552,7 @@ int main(int argc, char **argv)
 		{"parse", required_argument, NULL, 'R'},
 		{"sentinel", required_argument, NULL, 'i'},
 		{"upower", required_argument, NULL, 'w'},
+		{"fcb", required_argument, NULL, 'b'},
 		{NULL, 0, NULL, 0}
 	};
 
@@ -617,6 +618,18 @@ int main(int argc, char **argv)
 					}
 					fprintf(stdout, "REVISION: %s \n",optarg);
 				}
+				break;
+			case 'b':
+				fprintf(stdout, "FCB:\t%s\n", optarg);
+				param_stack[p_idx].option = FCB;
+				param_stack[p_idx].filename = optarg;
+				if (optind < argc && *argv[optind] != '-') {
+				    param_stack[p_idx].entry = (uint32_t) strtoll(argv[optind++], NULL, 0);
+					p_idx++;
+				} else {
+					fprintf(stderr, "\n-fcb option require Two arguments: filename, load address in hex\n\n");
+					exit(EXIT_FAILURE);
+                }
 				break;
 			case 'i':
 				fprintf(stdout, "SENTINEL:\t%s\n", optarg);

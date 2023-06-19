@@ -26,20 +26,24 @@ ifeq ($(SOC),iMX95)
 SPL_LOAD_ADDR ?= 0x204A8000
 SPL_LOAD_ADDR_M33_VIEW ?= 0x304A8000
 ATF_LOAD_ADDR ?= 0x20498000
+MCU_TCM_ADDR ?= 0x1FFC0000
+MCU_TCM_ADDR_ACORE_VIEW ?= 0x201C0000
 else ifeq ($(SOC),iMX91)
 SPL_LOAD_ADDR ?= 0x204A0000
 ATF_LOAD_ADDR ?= 0x204C0000
+MCU_TCM_ADDR ?= 0x1FFE0000
+MCU_TCM_ADDR_ACORE_VIEW ?= 0x201E0000
 else # iMX93
 SPL_LOAD_ADDR ?= 0x2049A000
 SPL_LOAD_ADDR_M33_VIEW ?= 0x3049A000
 ATF_LOAD_ADDR ?= 0x204E0000
+MCU_TCM_ADDR ?= 0x1FFE0000
+MCU_TCM_ADDR_ACORE_VIEW ?= 0x201E0000
 endif
 
 FCB_LOAD_ADDR ?= $(ATF_LOAD_ADDR)
 TEE_LOAD_ADDR ?= 0x96000000
 UBOOT_LOAD_ADDR ?= 0x80200000
-MCU_TCM_ADDR ?= 0x1FFE0000
-MCU_TCM_ADDR_ACORE_VIEW ?= 0x201E0000
 MCU_XIP_ADDR ?= 0x28032000 # Point entry of m33 in flexspi0 nor flash
 M33_IMAGE_XIP_OFFSET ?= 0x31000 # 1st container offset is 0x1000 when boot device is flexspi0 nor flash, actually the m33_image.bin is in 0x31000 + 0x1000 = 0x32000.
 
@@ -144,6 +148,9 @@ clean:
 	@rm -f $(MKIMG) u-boot-atf-container.img u-boot-spl-ddr.bin u-boot-spl-ddr-qb.bin u-boot-hash.bin
 	@rm -rf extracted_imgs
 	@echo "imx9 clean done"
+
+flash_lpboot_a55_no_ahabfw: $(MKIMG) $(MCU_IMG)
+	./$(MKIMG) -soc IMX9 -c $(OEI_OPT_M33) -m33 $(MCU_IMG) 0 $(MCU_TCM_ADDR) -ap u-boot-spl.bin a55 $(SPL_LOAD_ADDR_M33_VIEW) -out flash.bin
 
 flash_singleboot: $(MKIMG) $(AHAB_IMG) u-boot-spl-ddr.bin u-boot-atf-container.img
 	./$(MKIMG) -soc IMX9 -append $(AHAB_IMG) -c $(OEI_OPT_A55) -ap u-boot-spl-ddr.bin a55 $(SPL_LOAD_ADDR) -out flash.bin

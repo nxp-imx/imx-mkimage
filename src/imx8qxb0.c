@@ -506,8 +506,10 @@ void set_image_array_entry(flash_header_v3_t *container, soc_type_t soc,
 			meta = IMAGE_A53_DEFAULT_META(image_stack->part, image_stack->mu);
 		else if (soc == QM && core == CORE_CA72)
 			meta = IMAGE_A72_DEFAULT_META(image_stack->part, image_stack->mu);
-		else if (((soc == ULP) || (soc == IMX9)) && core == CORE_CA35)
+		else if ((soc == ULP) && core == CORE_CA35)
 			meta = 0;
+		else if ((soc == IMX9) && core == CORE_CA35)
+			meta = CORE_IMX95_A55C0;
 		else {
 			fprintf(stderr, "Error: invalid AP core id: %" PRIi64 "\n", core);
 			exit(EXIT_FAILURE);

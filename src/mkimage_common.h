@@ -129,6 +129,15 @@ typedef struct {
 
 /* TODO_IMX95: ROM still not support this, waiting check */
 #define CORE_M7_0       0xB
+#define CORE_IMX95_M33P        0U
+#define CORE_IMX95_M7P         1U
+#define CORE_IMX95_A55C0       2U
+#define CORE_IMX95_A55C1       3U
+#define CORE_IMX95_A55C2       4U
+#define CORE_IMX95_A55C3       5U
+#define CORE_IMX95_A55C4       6U
+#define CORE_IMX95_A55C5       7U
+#define CORE_IMX95_A55P        8U
 
 #define SC_R_OTP                  357U
 #define SC_R_DEBUG                354U

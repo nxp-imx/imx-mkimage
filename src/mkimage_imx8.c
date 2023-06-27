@@ -513,6 +513,7 @@ int main(int argc, char **argv)
 	int container = -1;
 	image_t param_stack[IMG_STACK_SIZE];/* stack of input images */
 	int p_idx = 0;/* param index counter */
+	off_t file_off = 0;
 
 	uint32_t ivt_offset = IVT_OFFSET_SD;
 	uint32_t sector_size = 0x200; /* default sector size */
@@ -553,6 +554,7 @@ int main(int argc, char **argv)
 		{"sentinel", required_argument, NULL, 'i'},
 		{"upower", required_argument, NULL, 'w'},
 		{"fcb", required_argument, NULL, 'b'},
+		{"padding", required_argument, NULL, 'G'},
 		{NULL, 0, NULL, 0}
 	};
 
@@ -903,6 +905,10 @@ int main(int argc, char **argv)
 				param_stack[p_idx].option = DUMMY_V2X;
 				param_stack[p_idx++].entry = (uint64_t) strtoll(optarg, NULL, 0);
 				break;
+			case 'G':
+				fprintf(stdout, "Padding length:\t%s bytes\n", optarg);
+				file_off = atoi(optarg);
+				break;
 			case '?':
 			default:
 				/* invalid option */
@@ -925,7 +931,7 @@ int main(int argc, char **argv)
 	}
 
 	if (parse || extract) {
-		parse_container_hdrs_qx_qm_b0(ifname, extract, soc);
+		parse_container_hdrs_qx_qm_b0(ifname, extract, soc, file_off);
 		return 0;
 	}
 

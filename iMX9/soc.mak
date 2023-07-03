@@ -50,12 +50,16 @@ M33_IMAGE_XIP_OFFSET ?= 0x31000 # 1st container offset is 0x1000 when boot devic
 ifeq ($(OEI),YES)
 OEI_IMG ?= oei.bin
 OEI_A55_LOAD_ADDR ?= 0x20498000
-OEI_M33_LOAD_ADDR ?= $(MCU_TCM_ADDR)
-OEI_OPT_A55 ?= -oei $(OEI_IMG) a55 $(OEI_A55_LOAD_ADDR)
-OEI_OPT_M33 ?= -oei $(OEI_IMG) m33 $(OEI_M33_LOAD_ADDR)
+OEI_A55_ENTR_ADDR ?= $(OEI_A55_LOAD_ADDR)
+OEI_M33_LOAD_ADDR ?= 0x1ffc0000
+OEI_M33_ENTR_ADDR ?= 0x1ffc0001	# = real entry address (0x1ffc0000) + 1
+OEI_OPT_A55 ?= -oei $(OEI_IMG) a55 $(OEI_A55_ENTR_ADDR) $(OEI_A55_LOAD_ADDR)
+OEI_OPT_M33 ?= -oei $(OEI_IMG) m33 $(OEI_M33_ENTR_ADDR) $(OEI_M33_LOAD_ADDR)
 else
 OEI_IMG ?=
+OEI_A55_ENTR_ADDR ?=
 OEI_A55_LOAD_ADDR ?=
+OEI_M33_ENTR_ADDR ?=
 OEI_M33_LOAD_ADDR ?=
 OEI_OPT_A55 ?=
 OEI_OPT_M33 ?=
@@ -161,7 +165,9 @@ clean:
 	@echo "imx9 clean done"
 
 flash_singleboot_no_ahabfw_a55_oei: $(MKIMG) u-boot-atf-container.img oei-ddr4x.bin u-boot-spl.bin
-	./$(MKIMG) -soc IMX9 -c -oei oei-ddr4x.bin a55 $(OEI_A55_LOAD_ADDR) -ap u-boot-spl.bin a55 $(SPL_LOAD_ADDR) -out flash.bin
+	./$(MKIMG) -soc IMX9 -c \
+		   -oei oei-ddr4x.bin a55 $(OEI_A55_ENTR_ADDR) $(OEI_A55_LOAD_ADDR) \
+		   -ap u-boot-spl.bin a55 $(SPL_LOAD_ADDR) -out flash.bin
 	cp flash.bin boot-spl-container.img
 	@flashbin_size=`wc -c flash.bin | awk '{print $$1}'`; \
                    pad_cnt=$$(((flashbin_size + 0x400 - 1) / 0x400)); \
@@ -170,6 +176,12 @@ flash_singleboot_no_ahabfw_a55_oei: $(MKIMG) u-boot-atf-container.img oei-ddr4x.
 
 flash_lpboot_a55_no_ahabfw: $(MKIMG) $(MCU_IMG)
 	./$(MKIMG) -soc IMX9 -c $(OEI_OPT_M33) -m33 $(MCU_IMG) 0 $(MCU_TCM_ADDR) -ap u-boot-spl.bin a55 $(SPL_LOAD_ADDR_M33_VIEW) -out flash.bin
+
+flash_lpboot_a55_no_ahabfw_m33_oei: $(MKIMG) $(MCU_IMG) oei-ddr4x.bin u-boot-spl.bin
+	./$(MKIMG) -soc IMX9 -c \
+		   -oei oei-ddr4x.bin m33 $(OEI_M33_ENTR_ADDR) $(OEI_M33_LOAD_ADDR) \
+		   -m33 $(MCU_IMG) 0 $(MCU_TCM_ADDR) \
+		   -ap u-boot-spl.bin a55 $(SPL_LOAD_ADDR_M33_VIEW) -out flash.bin
 
 flash_singleboot: $(MKIMG) $(AHAB_IMG) u-boot-spl-ddr.bin u-boot-atf-container.img
 	./$(MKIMG) -soc IMX9 -append $(AHAB_IMG) -c $(OEI_OPT_A55) -ap u-boot-spl-ddr.bin a55 $(SPL_LOAD_ADDR) -out flash.bin

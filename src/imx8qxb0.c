@@ -494,7 +494,7 @@ void set_image_array_entry(flash_header_v3_t *container, soc_type_t soc,
 			meta = CORE_IMX95_A55C0;
 		}
 		tmp_name = "OEI";
-		img->dst = entry;
+		img->dst = (dst ? dst : entry);
 		img->entry = entry;
 		img->meta = meta;
 		custom_partition = 0;

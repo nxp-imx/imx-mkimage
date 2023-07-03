@@ -757,10 +757,15 @@ int main(int argc, char **argv)
 						exit(EXIT_FAILURE);
 					}
 					fprintf(stdout, "\tcore: %s", argv[optind++]);
-
 					param_stack[p_idx].entry = (uint32_t) strtoll(argv[optind++], NULL, 0);
 					param_stack[p_idx].dst = 0;
-					fprintf(stdout, " addr: 0x%08" PRIx64 "\n", param_stack[p_idx++].entry);
+					fprintf(stdout, " entry addr: 0x%08" PRIx64, param_stack[p_idx].entry);
+					if (optind < argc && *argv[optind] != '-') {
+						param_stack[p_idx].dst = (uint32_t) strtoll(argv[optind++], NULL, 0);
+						fprintf(stdout, " load addr: 0x%08" PRIx64 , param_stack[p_idx].dst);
+					}
+					fprintf(stdout, "\n");
+					p_idx++;
 				}
 				break;
 			case 'a':

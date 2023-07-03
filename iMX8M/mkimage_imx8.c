@@ -366,6 +366,31 @@ copy_file (int ifd, const char *datafile, int pad, int offset, int datafile_offs
 	(void) close (dfd);
 }
 
+static void append_data(char *filename, uint8_t *data, int size)
+{
+	int dfd, ret;
+
+	if ((dfd = open(filename, O_RDWR|O_BINARY)) < 0) {
+		fprintf (stderr, "Can't open %s: %s\n",
+			filename, strerror(errno));
+		exit (EXIT_FAILURE);
+	}
+
+	ret = lseek(dfd, 0, SEEK_END);
+	if (ret < 0) {
+		fprintf(stderr, "%s: lseek error %s\n",
+				__func__, strerror(errno));
+		exit(EXIT_FAILURE);
+	}
+	if (write(dfd, data, size) != size) {
+		fprintf (stderr, "Write error %s\n",
+			strerror(errno));
+		exit (EXIT_FAILURE);
+	}
+	(void) close (dfd);
+}
+
+
 enum imximage_fld_types {
 	CFG_INVALID = -1,
 	CFG_COMMAND,
@@ -861,6 +886,77 @@ void generate_sld_with_ivt(char * input_file, uint32_t ep, char *out_file)
 	close(input_fd);
 }
 
+#define HASH_MAX_LEN 32
+static void calc_fitimage_hash(char* filename, uint8_t *hash)
+{
+	int sld_fd;
+	FILE *fp = NULL;
+	char sha_command[512];
+	char *digest_type = "sha256sum";
+	char hash_char[2 * HASH_MAX_LEN + 1];
+	int digest_length = 64;
+
+	uimage_header_t image_header;
+	uint32_t fit_size;
+
+	sld_fd = open(filename, O_RDONLY | O_BINARY);
+	if (sld_fd < 0) {
+		fprintf(stderr, "%s: Can't open: %s\n",
+                            filename, strerror(errno));
+		exit(EXIT_FAILURE);
+	}
+
+	if (read(sld_fd, (char *)&image_header, sizeof(uimage_header_t)) != sizeof(uimage_header_t)) {
+		fprintf (stderr, "generate_ivt_for_fit read failed: %s\n",
+			strerror(errno));
+		exit (EXIT_FAILURE);
+	}
+
+	if (be32_to_cpu(image_header.ih_magic) != FDT_MAGIC){
+		fprintf (stderr, "generate_ivt_for_fit error: not a FIT file\n");
+		exit (EXIT_FAILURE);
+	}
+
+	fit_size = fdt_totalsize(&image_header);
+
+	fprintf(stderr, "fit_size: %u\n", fit_size);
+
+	sprintf(sha_command, "dd if=\'%s\' of=tmp_pad bs=%d count=1;\
+				%s tmp_pad; rm -f tmp_pad;",
+			filename, fit_size, digest_type);
+
+	memset(hash, 0, HASH_MAX_LEN);
+
+	fp = popen(sha_command, "r");
+	if (fp == NULL) {
+		fprintf(stderr, "Failed to run command hash\n" );
+		exit(EXIT_FAILURE);
+	}
+
+	if(fgets(hash_char, digest_length + 1, fp) == NULL) {
+		fprintf(stderr, "Failed to hash file: %s\n", filename);
+		exit(EXIT_FAILURE);
+	}
+
+	for(int i = 0; i < strlen(hash_char)/2; i++){
+		sscanf(hash_char + 2*i, "%02hhx", &hash[i]);
+	}
+
+	pclose(fp);
+	(void) close (sld_fd);
+}
+
+void dump_fit_hash(uint8_t *hash, int size)
+{
+	int i;
+
+	fprintf(stderr, "FIT hash: ");
+	for (i = 0; i < size; i++) {
+		fprintf(stderr, "%x", hash[i]);
+	}
+	fprintf(stderr, "\n");
+}
+
 /* Return this IVT offset in the final output file */
 int generate_ivt_for_fit(int fd, int fit_offset, uint32_t ep, uint32_t *fit_load_addr)
 {
@@ -942,6 +1038,8 @@ int main(int argc, char **argv)
 	dcd_v2_t dcd_table;
 	uimage_header_t uimage_hdr;
 	uint32_t version = ROM_V1;
+
+	uint8_t fit_hash[HASH_MAX_LEN];
 
 	static struct option long_options[] =
 	{
@@ -1144,6 +1242,15 @@ int main(int argc, char **argv)
 	{
 		fprintf(stderr, "Can't enable DCD and PLUGIN at same time! abort\n");
 		exit(1);
+	}
+
+	if (sld_img && using_fit) {
+		calc_fitimage_hash(sld_img, fit_hash);
+
+		/* Append hash to ap_img */
+		append_data(ap_img, fit_hash, HASH_MAX_LEN);
+
+		dump_fit_hash(fit_hash, HASH_MAX_LEN);
 	}
 
 	if (version == ROM_V2) {
@@ -1638,7 +1745,7 @@ int main(int argc, char **argv)
 	}
 
 	/* The FLEXSPI configuration parameters will add to flash.bin by script, so need add 0x1000 offset to every offset prints */
-	if ((version == ROM_V2 && rom_image_offset == IVT_OFFSET_FLEXSPI) || 
+	if ((version == ROM_V2 && rom_image_offset == IVT_OFFSET_FLEXSPI) ||
         (version == ROM_V1 && ivt_offset == IVT_OFFSET_FLEXSPI)) {
 		header_image_off += IVT_OFFSET_FLEXSPI;
 		dcd_off += IVT_OFFSET_FLEXSPI;

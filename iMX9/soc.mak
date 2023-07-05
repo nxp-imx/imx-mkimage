@@ -24,8 +24,8 @@ MCU_IMG = m33_image.bin
 M7_IMG = m7_image.bin
 
 ifeq ($(SOC),iMX95)
-SPL_LOAD_ADDR ?= 0x204A8000
-SPL_LOAD_ADDR_M33_VIEW ?= 0x204A8000
+SPL_LOAD_ADDR ?= 0x4aa00000
+SPL_LOAD_ADDR_M33_VIEW ?= 0x20480000
 ATF_LOAD_ADDR ?= 0x20498000
 MCU_TCM_ADDR ?= 0x1FFC0000
 MCU_TCM_ADDR_ACORE_VIEW ?= 0x201C0000
@@ -178,14 +178,24 @@ flash_singleboot_no_ahabfw_a55_oei: $(MKIMG) u-boot-atf-container.img oei-ddr4x.
                    echo "append u-boot-atf-container.img at $$pad_cnt KB"; \
                    dd if=u-boot-atf-container.img of=flash.bin bs=1K seek=$$pad_cnt;
 
-flash_lpboot_a55_no_ahabfw: $(MKIMG) $(MCU_IMG) u-boot-spl-ddr.bin
+flash_lpboot_a55_no_ahabfw: $(MKIMG) $(MCU_IMG) u-boot-atf-container.img u-boot-spl-ddr.bin
 	./$(MKIMG) -soc IMX9 -c $(OEI_OPT_M33) -m33 $(MCU_IMG) 0 $(MCU_TCM_ADDR) -ap u-boot-spl.bin a55 $(SPL_LOAD_ADDR_M33_VIEW) -out flash.bin
+	cp flash.bin boot-spl-container.img
+	@flashbin_size=`wc -c flash.bin | awk '{print $$1}'`; \
+                   pad_cnt=$$(((flashbin_size + 0x400 - 1) / 0x400)); \
+                   echo "append u-boot-atf-container.img at $$pad_cnt KB"; \
+                   dd if=u-boot-atf-container.img of=flash.bin bs=1K seek=$$pad_cnt;
 
-flash_lpboot_a55_no_ahabfw_m33_oei: $(MKIMG) $(MCU_IMG) oei-ddr4x.bin u-boot-spl.bin
+flash_lpboot_a55_no_ahabfw_m33_oei: $(MKIMG) $(MCU_IMG) u-boot-atf-container.img imx9_ddr.bin u-boot-spl.bin
 	./$(MKIMG) -soc IMX9 -c \
-		   -oei oei-ddr4x.bin m33 $(OEI_M33_ENTR_ADDR) $(OEI_M33_LOAD_ADDR) \
+		   -oei imx9_ddr.bin m33 $(OEI_M33_ENTR_ADDR) $(OEI_M33_LOAD_ADDR) \
 		   -m33 $(MCU_IMG) 0 $(MCU_TCM_ADDR) \
 		   -ap u-boot-spl.bin a55 $(SPL_LOAD_ADDR_M33_VIEW) -out flash.bin
+	cp flash.bin boot-spl-container.img
+	@flashbin_size=`wc -c flash.bin | awk '{print $$1}'`; \
+                   pad_cnt=$$(((flashbin_size + 0x400 - 1) / 0x400)); \
+                   echo "append u-boot-atf-container.img at $$pad_cnt KB"; \
+                   dd if=u-boot-atf-container.img of=flash.bin bs=1K seek=$$pad_cnt;
 
 flash_singleboot: $(MKIMG) $(AHAB_IMG) u-boot-spl-ddr.bin u-boot-atf-container.img
 	./$(MKIMG) -soc IMX9 -append $(AHAB_IMG) -c $(OEI_OPT_A55) -ap u-boot-spl-ddr.bin a55 $(SPL_LOAD_ADDR) -out flash.bin

@@ -1,0 +1,2 @@
+make clean; make SOC=iMX9 flash_singleboot_no_ahabfw
+make clean; make SOC=iMX9 ATF_LOAD_ADDR=0x204A0000 OEI_IMG=imx9_ddr.bin OEI_M33_LOAD_ADDR=0x1ffe0000 OEI_M33_ENTR_ADDR=0x1ffe0001 OEI=YES flash_lpboot_a55_no_ahabfw_m33_oei

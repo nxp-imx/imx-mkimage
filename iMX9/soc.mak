@@ -100,8 +100,23 @@ u-boot-atf-container.img: bl31.bin u-boot-hash.bin
 		./$(MKIMG) -soc IMX9 -c -ap bl31.bin a35 $(ATF_LOAD_ADDR) -ap u-boot-hash.bin a35 $(UBOOT_LOAD_ADDR) -out u-boot-atf-container.img; \
 	fi
 
+u-boot-atf-container-spinand.img: bl31.bin u-boot-hash.bin
+	if [ -f tee.bin ]; then \
+		if [ $(shell echo $(ROLLBACK_INDEX_IN_CONTAINER)) ]; then \
+			./$(MKIMG) -soc IMX9 -sw_version $(ROLLBACK_INDEX_IN_CONTAINER)  -dev nand 4K -c -ap bl31.bin a35 $(ATF_LOAD_ADDR) -ap u-boot-hash.bin a35 $(UBOOT_LOAD_ADDR) -ap tee.bin a35 $(TEE_LOAD_ADDR) -out u-boot-atf-container-spinand.img; \
+		else \
+			./$(MKIMG) -soc IMX9 -dev nand 4K -c -ap bl31.bin a35 $(ATF_LOAD_ADDR) -ap u-boot-hash.bin a35 $(UBOOT_LOAD_ADDR) -ap tee.bin a35 $(TEE_LOAD_ADDR) -out u-boot-atf-container-spinand.img; \
+		fi; \
+	else \
+		./$(MKIMG) -soc IMX9 -dev nand 4K -c -ap bl31.bin a35 $(ATF_LOAD_ADDR) -ap u-boot-hash.bin a35 $(UBOOT_LOAD_ADDR) -out u-boot-atf-container-spinand.img; \
+	fi
+
 fcb.bin: FORCE
 	./$(QSPI_FCB_GEN) $(QSPI_HEADER)
+
+flash_fw.bin: FORCE
+	@$(MAKE) --no-print-directory -f soc.mak flash_singleboot
+	cp -f flash.bin $@
 
 .PHONY: clean nightly
 clean:
@@ -116,6 +131,14 @@ flash_singleboot: $(MKIMG) $(AHAB_IMG) u-boot-spl-ddr.bin u-boot-atf-container.i
                    pad_cnt=$$(((flashbin_size + 0x400 - 1) / 0x400)); \
                    echo "append u-boot-atf-container.img at $$pad_cnt KB"; \
                    dd if=u-boot-atf-container.img of=flash.bin bs=1K seek=$$pad_cnt;
+
+flash_singleboot_spinand: $(MKIMG) $(AHAB_IMG) u-boot-spl-ddr.bin u-boot-atf-container-spinand.img flash_fw.bin
+	./$(MKIMG) -soc IMX9 -dev nand 4K -append $(AHAB_IMG) -c -ap u-boot-spl-ddr.bin a35 $(SPL_LOAD_ADDR) -out flash.bin
+	cp flash.bin boot-spl-container.img
+	@flashbin_size=`wc -c flash.bin | awk '{print $$1}'`; \
+                   pad_cnt=$$(((flashbin_size + 0x1000 - 1) / 0x1000)); page=4;\
+                   echo "append u-boot-atf-container-spinand.img at $$((pad_cnt * page)) KB"; \
+                   dd if=u-boot-atf-container-spinand.img of=flash.bin bs=1K seek=$$((pad_cnt * page))
 
 flash_singleboot_qb: $(MKIMG) $(AHAB_IMG) u-boot-spl-ddr-qb.bin u-boot-atf-container.img
 	./$(MKIMG) -soc IMX9 -append $(AHAB_IMG) -c -ap u-boot-spl-ddr-qb.bin a35 $(SPL_LOAD_ADDR) -out flash.bin

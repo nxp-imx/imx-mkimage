@@ -811,7 +811,7 @@ int main(int argc, char **argv)
 					ivt_offset = IVT_OFFSET_SD;
 				} else if (!strcmp(optarg, "nand")) {
 					sector_size = 0x8000;/* sector size for NAND */
-					if ((rev == B0) || (soc == DXL)) {
+					if ((rev == B0) || (soc == DXL) || (soc == IMX9)) {
 						if (optind < argc && *argv[optind] != '-') {
 							if (!strcmp(argv[optind], "4K")) {
 								sector_size = 0x1000;

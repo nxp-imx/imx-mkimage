@@ -140,6 +140,14 @@ flash_singleboot_spinand: $(MKIMG) $(AHAB_IMG) u-boot-spl-ddr.bin u-boot-atf-con
                    echo "append u-boot-atf-container-spinand.img at $$((pad_cnt * page)) KB"; \
                    dd if=u-boot-atf-container-spinand.img of=flash.bin bs=1K seek=$$((pad_cnt * page))
 
+flash_singleboot_no_ahabfw: $(MKIMG) u-boot-spl-ddr.bin u-boot-atf-container.img
+	./$(MKIMG) -soc IMX9 -c -ap u-boot-spl-ddr.bin a35 $(SPL_LOAD_ADDR) -out flash.bin
+	cp flash.bin boot-spl-container.img
+	@flashbin_size=`wc -c flash.bin | awk '{print $$1}'`; \
+                   pad_cnt=$$(((flashbin_size + 0x400 - 1) / 0x400)); \
+                   echo "append u-boot-atf-container.img at $$pad_cnt KB"; \
+                   dd if=u-boot-atf-container.img of=flash.bin bs=1K seek=$$pad_cnt;
+
 flash_singleboot_qb: $(MKIMG) $(AHAB_IMG) u-boot-spl-ddr-qb.bin u-boot-atf-container.img
 	./$(MKIMG) -soc IMX9 -append $(AHAB_IMG) -c -ap u-boot-spl-ddr-qb.bin a35 $(SPL_LOAD_ADDR) -out flash.bin
 	cp flash.bin boot-spl-container.img

@@ -27,10 +27,10 @@ fi
 
 if [ "$BOOT_DEV" = "flexspi" ] || [ ${fit_off} == 0 ]; then
 	# We dd flash.bin to 0 offset for flexspi
-	let uboot_sign_off=$((fit_off + 0x3000))
+	let uboot_sign_off=$((fit_off + $FIT_DATA_POS))
 else
 	# We dd flash.bin to 33KB "0x8400" offset, so need minus 0x8400
-	let uboot_sign_off=$((fit_off - 0x8000 - ivt_off + 0x3000))
+	let uboot_sign_off=$((fit_off - 0x8000 - ivt_off + $FIT_DATA_POS))
 fi
 
 let uboot_size=$(stat --printf="%s" $BL33)

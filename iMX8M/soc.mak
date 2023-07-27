@@ -85,6 +85,7 @@ VERSION = v1
 CAPSULE_GUID = 296119cf-dd70-43de-8ac8-a7051f312577
 endif
 
+FIT_EXTERNAL_POSITION = 0x5000
 
 FW_DIR = imx-boot/imx-boot-tools/$(PLAT)
 
@@ -159,7 +160,7 @@ u-boot.itb: $(dtb) $(supp_dtbs)
 	./$(PAD_IMAGE) bl31.bin
 	./$(PAD_IMAGE) u-boot-nodtb.bin $(dtb) $(supp_dtbs)
 	BL32=$(TEE) DEK_BLOB_LOAD_ADDR=$(DEK_BLOB_LOAD_ADDR) TEE_LOAD_ADDR=$(TEE_LOAD_ADDR) ATF_LOAD_ADDR=$(ATF_LOAD_ADDR) ../$(SOC_DIR)/mkimage_fit_atf.sh $(dtb) $(supp_dtbs) > u-boot.its
-	./mkimage_uboot -E -p 0x3000 -f u-boot.its u-boot.itb
+	./mkimage_uboot -E -p $(FIT_EXTERNAL_POSITION) -f u-boot.its u-boot.itb
 	@rm -f u-boot.its $(dtb)
 
 dtb_ddr3l = valddr3l.dtb
@@ -171,7 +172,7 @@ u-boot-ddr3l.itb: $(dtb_ddr3l) $(supp_dtbs)
 	./$(PAD_IMAGE) bl31.bin
 	./$(PAD_IMAGE) u-boot-nodtb.bin $(dtb_ddr3l) $(supp_dtbs)
 	DEK_BLOB_LOAD_ADDR=$(DEK_BLOB_LOAD_ADDR) TEE_LOAD_ADDR=$(TEE_LOAD_ADDR) ATF_LOAD_ADDR=$(ATF_LOAD_ADDR) ../$(SOC_DIR)/mkimage_fit_atf.sh $(dtb_ddr3l) $(supp_dtbs) > u-boot-ddr3l.its
-	./mkimage_uboot -E -p 0x3000 -f u-boot-ddr3l.its u-boot-ddr3l.itb
+	./mkimage_uboot -E -p $(FIT_EXTERNAL_POSITION) -f u-boot-ddr3l.its u-boot-ddr3l.itb
 	@rm -f u-boot.its $(dtb_ddr3l)
 
 dtb_ddr3l_evk = evkddr3l.dtb
@@ -183,7 +184,7 @@ u-boot-ddr3l-evk.itb: $(dtb_ddr3l_evk) $(supp_dtbs)
 	./$(PAD_IMAGE) bl31.bin
 	./$(PAD_IMAGE) u-boot-nodtb.bin $(dtb_ddr3l_evk) $(supp_dtbs)
 	DEK_BLOB_LOAD_ADDR=$(DEK_BLOB_LOAD_ADDR) TEE_LOAD_ADDR=$(TEE_LOAD_ADDR) ATF_LOAD_ADDR=$(ATF_LOAD_ADDR) ../$(SOC_DIR)/mkimage_fit_atf.sh $(dtb_ddr3l_evk) $(supp_dtbs) > u-boot-ddr3l-evk.its
-	./mkimage_uboot -E -p 0x3000 -f u-boot-ddr3l-evk.its u-boot-ddr3l-evk.itb
+	./mkimage_uboot -E -p $(FIT_EXTERNAL_POSITION) -f u-boot-ddr3l-evk.its u-boot-ddr3l-evk.itb
 	@rm -f u-boot.its $(dtb_ddr3l_evk)
 
 dtb_ddr4 = valddr4.dtb
@@ -195,7 +196,7 @@ u-boot-ddr4.itb: $(dtb_ddr4) $(supp_dtbs)
 	./$(PAD_IMAGE) bl31.bin
 	./$(PAD_IMAGE) u-boot-nodtb.bin $(dtb_ddr4) $(supp_dtbs)
 	DEK_BLOB_LOAD_ADDR=$(DEK_BLOB_LOAD_ADDR) TEE_LOAD_ADDR=$(TEE_LOAD_ADDR) ATF_LOAD_ADDR=$(ATF_LOAD_ADDR) ../$(SOC_DIR)/mkimage_fit_atf.sh $(dtb_ddr4) $(supp_dtbs) > u-boot-ddr4.its
-	./mkimage_uboot -E -p 0x3000 -f u-boot-ddr4.its u-boot-ddr4.itb
+	./mkimage_uboot -E -p $(FIT_EXTERNAL_POSITION) -f u-boot-ddr4.its u-boot-ddr4.itb
 	@rm -f u-boot.its $(dtb_ddr4)
 
 dtb_ddr4_evk = evkddr4.dtb
@@ -207,7 +208,7 @@ u-boot-ddr4-evk.itb: $(dtb_ddr4_evk) $(supp_dtbs)
 	./$(PAD_IMAGE) bl31.bin
 	./$(PAD_IMAGE) u-boot-nodtb.bin $(dtb_ddr4_evk) $(supp_dtbs)
 	DEK_BLOB_LOAD_ADDR=$(DEK_BLOB_LOAD_ADDR) TEE_LOAD_ADDR=$(TEE_LOAD_ADDR) ATF_LOAD_ADDR=$(ATF_LOAD_ADDR) ../$(SOC_DIR)/mkimage_fit_atf.sh $(dtb_ddr4_evk) $(supp_dtbs) > u-boot-ddr4-evk.its
-	./mkimage_uboot -E -p 0x3000 -f u-boot-ddr4-evk.its u-boot-ddr4-evk.itb
+	./mkimage_uboot -E -p $(FIT_EXTERNAL_POSITION) -f u-boot-ddr4-evk.its u-boot-ddr4-evk.itb
 	@rm -f u-boot.its $(dtb_ddr4_evk)
 
 ifeq ($(HDMI),yes)
@@ -327,21 +328,21 @@ print_fit_hab: u-boot-nodtb.bin bl31.bin $(dtb) $(supp_dtbs)
 	./$(PAD_IMAGE) $(TEE)
 	./$(PAD_IMAGE) bl31.bin
 	./$(PAD_IMAGE) u-boot-nodtb.bin $(dtb) $(supp_dtbs)
-	TEE_LOAD_ADDR=$(TEE_LOAD_ADDR) ATF_LOAD_ADDR=$(ATF_LOAD_ADDR) VERSION=$(VERSION) ../$(SOC_DIR)/print_fit_hab.sh $(PRINT_FIT_HAB_OFFSET) $(dtb) $(supp_dtbs)
+	FIT_DATA_POS=$(FIT_EXTERNAL_POSITION) TEE_LOAD_ADDR=$(TEE_LOAD_ADDR) ATF_LOAD_ADDR=$(ATF_LOAD_ADDR) VERSION=$(VERSION) ../$(SOC_DIR)/print_fit_hab.sh $(PRINT_FIT_HAB_OFFSET) $(dtb) $(supp_dtbs)
 	@rm -f $(dtb)
 
 print_fit_hab_ddr4: u-boot-nodtb.bin bl31.bin $(dtb_ddr4_evk) $(supp_dtbs)
 	./$(PAD_IMAGE) $(TEE)
 	./$(PAD_IMAGE) bl31.bin
 	./$(PAD_IMAGE) u-boot-nodtb.bin $(dtb_ddr4_evk) $(supp_dtbs)
-	TEE_LOAD_ADDR=$(TEE_LOAD_ADDR) ATF_LOAD_ADDR=$(ATF_LOAD_ADDR) VERSION=$(VERSION) ../$(SOC_DIR)/print_fit_hab.sh $(PRINT_FIT_HAB_OFFSET) $(dtb_ddr4_evk) $(supp_dtbs)
+	FIT_DATA_POS=$(FIT_EXTERNAL_POSITION) TEE_LOAD_ADDR=$(TEE_LOAD_ADDR) ATF_LOAD_ADDR=$(ATF_LOAD_ADDR) VERSION=$(VERSION) ../$(SOC_DIR)/print_fit_hab.sh $(PRINT_FIT_HAB_OFFSET) $(dtb_ddr4_evk) $(supp_dtbs)
 	@rm -f $(dtb_ddr4_evk)
 
 print_fit_hab_flexspi: u-boot-nodtb.bin bl31.bin $(dtb) $(supp_dtbs)
 	./$(PAD_IMAGE) $(TEE)
 	./$(PAD_IMAGE) bl31.bin
 	./$(PAD_IMAGE) u-boot-nodtb.bin $(dtb) $(supp_dtbs)
-	TEE_LOAD_ADDR=$(TEE_LOAD_ADDR) ATF_LOAD_ADDR=$(ATF_LOAD_ADDR) VERSION=$(VERSION) BOOT_DEV="flexspi" ../$(SOC_DIR)/print_fit_hab.sh $(PRINT_FIT_HAB_OFFSET) $(dtb) $(supp_dtbs)
+	FIT_DATA_POS=$(FIT_EXTERNAL_POSITION) TEE_LOAD_ADDR=$(TEE_LOAD_ADDR) ATF_LOAD_ADDR=$(ATF_LOAD_ADDR) VERSION=$(VERSION) BOOT_DEV="flexspi" ../$(SOC_DIR)/print_fit_hab.sh $(PRINT_FIT_HAB_OFFSET) $(dtb) $(supp_dtbs)
 	@rm -f $(dtb)
 
 nightly :

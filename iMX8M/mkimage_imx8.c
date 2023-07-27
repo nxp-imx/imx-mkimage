@@ -999,7 +999,7 @@ int generate_ivt_for_fit(int fd, int fit_offset, uint32_t ep, uint32_t *fit_load
 	}
 
 	/* ep is the u-boot entry. SPL loads the FIT before the u-boot address. 0x2000 is for CSF_SIZE */
-	load_addr = (ep - (fit_size + CSF_SIZE) - 512 -
+	load_addr = (ep - (fit_size + 2 * CSF_SIZE) - 512 -
 			align_len) & ~align_len;
 
 	flash_header_v2_t ivt_header = { { 0xd1, 0x2000, 0x40 },
@@ -1010,6 +1010,24 @@ int generate_ivt_for_fit(int fd, int fit_offset, uint32_t ep, uint32_t *fit_load
 
 	if (write(fd, &ivt_header, sizeof(flash_header_v2_t)) != sizeof(flash_header_v2_t)) {
 		fprintf(stderr, "IVT writing error on fit image\n");
+		exit(EXIT_FAILURE);
+	}
+
+	ret = lseek(fd, fit_offset + fit_size + CSF_SIZE, SEEK_SET);
+	if (ret < 0) {
+		fprintf(stderr, "%s: lseek error %s\n",
+				__func__, strerror(errno));
+		exit(EXIT_FAILURE);
+	}
+
+	flash_header_v2_t fdt_ivt_header = { { 0xd1, 0x2000, 0x40 },
+		load_addr, 0, 0, 0,
+		(load_addr + fit_size + CSF_SIZE ),
+		(load_addr + fit_size + CSF_SIZE + 0x20),
+		0 };
+
+	if (write(fd, &fdt_ivt_header, sizeof(flash_header_v2_t)) != sizeof(flash_header_v2_t)) {
+		fprintf(stderr, "FIT FDT IVT writing error on fit image\n");
 		exit(EXIT_FAILURE);
 	}
 
@@ -1228,6 +1246,11 @@ int main(int argc, char **argv)
 			sld_csf_off);
 		fprintf(stderr, " fit hab block: \t0x%x 0x%x 0x%x\n",
 			sld_load_addr, sld_src_off, sld_csf_off - sld_src_off);
+
+		fprintf(stderr, " fit-fdt_csf_off \t0x%x\n",
+			sld_csf_off + CSF_SIZE);
+		fprintf(stderr, " fit-fdt hab block: \t0x%x 0x%x 0x%x\n",
+			sld_load_addr, sld_src_off, sld_csf_off + CSF_SIZE - sld_src_off);
 
 		exit(0);
 	}
@@ -1769,6 +1792,11 @@ int main(int argc, char **argv)
 	fprintf(stderr, " sld hab block: \t0x%x 0x%x 0x%x\n",
 		sld_load_addr, sld_header_off, sld_csf_off - sld_header_off);
 
+	fprintf(stderr, " fit-fdt csf_off \t0x%x\n",
+		sld_csf_off + CSF_SIZE);
+	fprintf(stderr, " fit-fdt hab block: \t0x%x 0x%x 0x%x\n",
+		sld_load_addr, sld_header_off, sld_csf_off + CSF_SIZE - sld_header_off);
+
 	fprintf(stderr, "SPL CSF block:\n");
 	fprintf(stderr, "\tBlocks = \t0x%x 0x%x 0x%x \"flash.bin\"\n",
 		imx_header[IMAGE_IVT_ID].fhdr.self, header_image_off, csf_off - header_image_off);
@@ -1776,6 +1804,10 @@ int main(int argc, char **argv)
 	fprintf(stderr, "SLD CSF block:\n");
 	fprintf(stderr, "\tBlocks = \t0x%x 0x%x 0x%x \"flash.bin\",\\\n",
 		sld_load_addr, sld_header_off, sld_csf_off - sld_header_off);
+
+	fprintf(stderr, "SLD FIT-FDT CSF block:\n");
+	fprintf(stderr, "\tBlocks = \t0x%x 0x%x 0x%x \"flash.bin\"\n",
+		sld_load_addr, sld_header_off, sld_csf_off + CSF_SIZE - sld_header_off);
 
 	return 0;
 }

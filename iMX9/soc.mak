@@ -116,7 +116,7 @@ fcb.bin: FORCE
 
 flash_fw.bin: FORCE
 	@$(MAKE) --no-print-directory -f soc.mak flash_singleboot
-	cp -f flash.bin $@
+	@mv -f flash.bin $@
 
 .PHONY: clean nightly
 clean:
@@ -139,6 +139,9 @@ flash_singleboot_spinand: $(MKIMG) $(AHAB_IMG) u-boot-spl-ddr.bin u-boot-atf-con
                    pad_cnt=$$(((flashbin_size + 0x1000 - 1) / 0x1000)); page=4;\
                    echo "append u-boot-atf-container-spinand.img at $$((pad_cnt * page)) KB"; \
                    dd if=u-boot-atf-container-spinand.img of=flash.bin bs=1K seek=$$((pad_cnt * page))
+
+flash_singleboot_spinand_fw: flash_fw.bin
+	@mv -f flash_fw.bin flash.bin
 
 flash_singleboot_no_ahabfw: $(MKIMG) u-boot-spl-ddr.bin u-boot-atf-container.img
 	./$(MKIMG) -soc IMX9 -c -ap u-boot-spl-ddr.bin a35 $(SPL_LOAD_ADDR) -out flash.bin

@@ -59,6 +59,8 @@ OEI_M33_LOAD_ADDR ?= 0x1ffc0000
 OEI_M33_ENTR_ADDR ?= 0x1ffc0001	# = real entry address (0x1ffc0000) + 1
 OEI_OPT_A55 ?= -oei $(OEI_IMG) a55 $(OEI_A55_ENTR_ADDR) $(OEI_A55_LOAD_ADDR)
 OEI_OPT_M33 ?= -oei $(OEI_IMG) m33 $(OEI_M33_ENTR_ADDR) $(OEI_M33_LOAD_ADDR)
+LPDDR_FW_PREFIX  ?= lpddr5
+LPDDR_FW_VERSION ?= _v202210
 else
 OEI_IMG ?=
 OEI_A55_ENTR_ADDR ?=
@@ -67,9 +69,12 @@ OEI_M33_ENTR_ADDR ?=
 OEI_M33_LOAD_ADDR ?=
 OEI_OPT_A55 ?=
 OEI_OPT_M33 ?=
+LPDDR_FW_PREFIX  ?=
+LPDDR_FW_VERSION ?=
 endif
 
-LPDDR_FW_VERSION = _v202201
+LPDDR_FW_PREFIX  ?= lpddr4
+LPDDR_FW_VERSION ?= _v202201
 
 define append_fcb
 	@mv flash.bin flash.tmp
@@ -89,8 +94,8 @@ lpddr4_imem_qb = lpddr4_imem_qb$(LPDDR_FW_VERSION).bin
 lpddr4_dmem_qb = lpddr4_dmem_qb$(LPDDR_FW_VERSION).bin
 lpddr4_qb_data = lpddr4_qb_data.bin
 
-lpddr4x_imem = lpddr4x_imem_v202210.bin
-lpddr4x_dmem = lpddr4x_dmem_v202210.bin
+lpddr_imem = $(LPDDR_FW_PREFIX)_imem$(LPDDR_FW_VERSION).bin
+lpddr_dmem = $(LPDDR_FW_PREFIX)_dmem$(LPDDR_FW_VERSION).bin
 
 u-boot-spl-ddr.bin: u-boot-spl.bin $(lpddr4_imem_1d) $(lpddr4_dmem_1d) $(lpddr4_imem_2d) $(lpddr4_dmem_2d)
 	@objcopy -I binary -O binary --pad-to 0x8000 --gap-fill=0x0 $(lpddr4_imem_1d) lpddr4_pmu_train_1d_imem_pad.bin
@@ -110,13 +115,13 @@ u-boot-spl-ddr-qb.bin: u-boot-spl.bin $(lpddr4_imem_qb) $(lpddr4_dmem_qb) $(lpdd
 	@cat u-boot-spl-pad.bin lpddr4_pmu_qb_fw.bin $(lpddr4_qb_data) > u-boot-spl-ddr-qb.bin
 	@rm -f u-boot-spl-pad.bin lpddr4_pmu_qb_imem_pad.bin lpddr4_pmu_qb_dmem_pad.bin lpddr4_pmu_qb_fw.bin
 
-oei-ddr4x.bin: $(OEI_IMG) $(lpddr4x_imem) $(lpddr4x_dmem)
-	@objcopy -I binary -O binary --pad-to 0x10000 --gap-fill=0x0 $(lpddr4x_imem) lpddr4x_pmu_train_imem_pad.bin
-	@objcopy -I binary -O binary --pad-to 0x10000 --gap-fill=0x0 $(lpddr4x_dmem) lpddr4x_pmu_train_dmem_pad.bin
-	@cat lpddr4x_pmu_train_imem_pad.bin lpddr4x_pmu_train_dmem_pad.bin > lpddr4x_pmu_train_fw.bin
+oei-ddr.bin: $(OEI_IMG) $(lpddr_imem) $(lpddr_dmem)
+	@objcopy -I binary -O binary --pad-to 0x10000 --gap-fill=0x0 $(lpddr_imem) lpddr_pmu_train_imem_pad.bin
+	@objcopy -I binary -O binary --pad-to 0x10000 --gap-fill=0x0 $(lpddr_dmem) lpddr_pmu_train_dmem_pad.bin
+	@cat lpddr_pmu_train_imem_pad.bin lpddr_pmu_train_dmem_pad.bin > lpddr_pmu_train_fw.bin
 	@dd if=$(OEI_IMG) of=oei-pad.bin bs=4 conv=sync
-	@cat oei-pad.bin lpddr4x_pmu_train_fw.bin > oei-ddr4x.bin
-	@rm -f oei-pad.bin lpddr4x_pmu_train_fw.bin lpddr4x_pmu_train_imem_pad.bin lpddr4x_pmu_train_dmem_pad.bin
+	@cat oei-pad.bin lpddr_pmu_train_fw.bin > oei-ddr.bin
+	@rm -f oei-pad.bin lpddr_pmu_train_fw.bin lpddr_pmu_train_imem_pad.bin lpddr_pmu_train_dmem_pad.bin
 
 u-boot-hash.bin: u-boot.bin
 	./$(MKIMG) -commit > head.hash
@@ -168,9 +173,9 @@ clean:
 	@rm -rf extracted_imgs
 	@echo "imx9 clean done"
 
-flash_singleboot_no_ahabfw_a55_oei: $(MKIMG) u-boot-atf-container.img oei-ddr4x.bin u-boot-spl.bin
+flash_singleboot_no_ahabfw_a55_oei: $(MKIMG) u-boot-atf-container.img oei-ddr.bin u-boot-spl.bin
 	./$(MKIMG) -soc IMX9 -c \
-		   -oei oei-ddr4x.bin a55 $(OEI_A55_ENTR_ADDR) $(OEI_A55_LOAD_ADDR) \
+		   -oei oei-ddr.bin a55 $(OEI_A55_ENTR_ADDR) $(OEI_A55_LOAD_ADDR) \
 		   -ap u-boot-spl.bin a55 $(SPL_LOAD_ADDR) -out flash.bin
 	cp flash.bin boot-spl-container.img
 	@flashbin_size=`wc -c flash.bin | awk '{print $$1}'`; \

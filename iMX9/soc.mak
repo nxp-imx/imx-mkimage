@@ -191,6 +191,9 @@ flash_lpboot_a55_no_ahabfw: $(MKIMG) $(MCU_IMG) u-boot-atf-container.img u-boot-
                    echo "append u-boot-atf-container.img at $$pad_cnt KB"; \
                    dd if=u-boot-atf-container.img of=flash.bin bs=1K seek=$$pad_cnt;
 
+flash_lpboot_sm_no_ahabfw: $(MKIMG) $(MCU_IMG)
+	./$(MKIMG) -soc IMX9 -c $(OEI_OPT_M33) -m33 $(MCU_IMG) 0 $(MCU_TCM_ADDR) -out flash.bin
+
 flash_lpboot_a55_no_ahabfw_m33_oei: $(MKIMG) $(MCU_IMG) u-boot-atf-container.img imx9_ddr.bin u-boot-spl.bin
 	./$(MKIMG) -soc IMX9 -c \
 		   -oei imx9_ddr.bin m33 $(OEI_M33_ENTR_ADDR) $(OEI_M33_LOAD_ADDR) \

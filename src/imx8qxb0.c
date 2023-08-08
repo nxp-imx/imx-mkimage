@@ -531,13 +531,14 @@ void set_image_array_entry(flash_header_v3_t *container, soc_type_t soc,
 			exit(EXIT_FAILURE);
 		}
 		core = CORE_M7_0;
-		meta = 0;
+        /* TODO:  meta setting may change for SoCs other than MX95 */
+		meta = CORE_IMX95_M7P;
 		img->hab_flags |= IMG_TYPE_EXEC;
 		img->hab_flags |= core << BOOT_IMG_FLAGS_CORE_SHIFT;
 		tmp_name = "M7";
 		if ((entry & 0x7) != 0)
 		{
-			fprintf(stderr, "\n\nWarning: M4 Destination address is not 8 byte aligned\n\n");
+			fprintf(stderr, "\n\nWarning: M7 Destination address is not 8 byte aligned\n\n");
 		}
 		if (dst)
 			img->dst = dst;

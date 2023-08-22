@@ -210,6 +210,18 @@ flash_lpboot_sm_m7_ddr_no_ahabfw: $(MKIMG) $(MCU_IMG) $(M7_IMG) oei-ddr.bin
 flash_lpboot_sm_m7_ddr: $(MKIMG) $(MCU_IMG) $(M7_IMG) oei-ddr.bin $(AHAB_IMG)
 	./$(MKIMG) -soc IMX9 -append $(AHAB_IMG) -c $(OEI_OPT_M33) -m33 $(MCU_IMG) 0 $(MCU_TCM_ADDR) -m7 $(M7_IMG) 0 $(M7_DDR_ADDR) $(M7_DDR_ADDR) -out flash.bin
 
+flash_lpboot_sm_all_no_ahabfw: $(MKIMG) $(MCU_IMG) $(M7_IMG) u-boot-atf-container.img oei-ddr.bin u-boot-spl.bin
+	./$(MKIMG) -soc IMX9 -c \
+		   -oei oei-ddr.bin m33 $(OEI_M33_ENTR_ADDR) $(OEI_M33_LOAD_ADDR) \
+		   -m33 $(MCU_IMG) 0 $(MCU_TCM_ADDR) \
+		   -m7 $(M7_IMG) 0 $(M7_TCM_ADDR) $(M7_TCM_ADDR_ALIAS)  \
+		   -ap u-boot-spl.bin a55 $(SPL_LOAD_ADDR_M33_VIEW) -out flash.bin
+	cp flash.bin boot-spl-container.img
+	@flashbin_size=`wc -c flash.bin | awk '{print $$1}'`; \
+                   pad_cnt=$$(((flashbin_size + 0x400 - 1) / 0x400)); \
+                   echo "append u-boot-atf-container.img at $$pad_cnt KB"; \
+                   dd if=u-boot-atf-container.img of=flash.bin bs=1K seek=$$pad_cnt;
+
 flash_lpboot_a55_no_ahabfw_m33_oei: $(MKIMG) $(MCU_IMG) u-boot-atf-container.img oei-ddr.bin u-boot-spl.bin
 	./$(MKIMG) -soc IMX9 -c \
 		   -oei oei-ddr.bin m33 $(OEI_M33_ENTR_ADDR) $(OEI_M33_LOAD_ADDR) \

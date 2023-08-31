@@ -1,3 +1,7 @@
+# For pulling archives internally. Example usage:
+# $ export SERVER=https://us-nxrm.sw.nxp.com
+# $ make SOC=iMX8QM nightly_mek
+
 WGET = /usr/bin/wget
 N ?= latest
 ROOTDIR ?= repository/IMX-raw_Linux_Internal_Daily_Build

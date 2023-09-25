@@ -131,22 +131,25 @@ lpddr4_qb_data = lpddr4_qb_data.bin
 lpddr_imem = $(LPDDR_TYPE)_imem$(LPDDR_FW_VERSION).bin
 lpddr_dmem = $(LPDDR_TYPE)_dmem$(LPDDR_FW_VERSION).bin
 
+fw-header.bin: $(lpddr_imem) $(lpddr_dmem)
+	@imem_size=`wc -c $(lpddr_imem) | awk '{printf "%.8x", $$1}' | sed -e 's/\(..\)\(..\)\(..\)\(..\)/\4\3\2\1/'`; \
+		echo $$imem_size | xxd -r -p >  fw-header.bin
+	@dmem_size=`wc -c $(lpddr_dmem) | awk '{printf "%.8x", $$1}' | sed -e 's/\(..\)\(..\)\(..\)\(..\)/\4\3\2\1/'`; \
+		echo $$dmem_size | xxd -r -p >> fw-header.bin
+
 define append_ddrfw_v2
-	@objcopy -I binary -O binary --pad-to 0x10000 --gap-fill=0x0 $(lpddr_imem) lpddr_pmu_train_imem_pad.bin
-	@objcopy -I binary -O binary --pad-to 0x10000 --gap-fill=0x0 $(lpddr_dmem) lpddr_pmu_train_dmem_pad.bin
-	@cat lpddr_pmu_train_imem_pad.bin lpddr_pmu_train_dmem_pad.bin > lpddr_pmu_train_fw.bin
 	@dd if=$(1) of=$(1)-pad bs=4 conv=sync
-	@cat $(1)-pad lpddr_pmu_train_fw.bin > $(2)
-	@rm -f $(1)-pad lpddr_pmu_train_fw.bin lpddr_pmu_train_imem_pad.bin lpddr_pmu_train_dmem_pad.bin
+	@cat $(1)-pad fw-header.bin $(lpddr_imem) $(lpddr_dmem) > $(2)
+	@rm -f $(1)-pad fw-header.bin
 endef
 
-oei-a55-ddr.bin: $(OEI_A55_IMG) $(lpddr_imem) $(lpddr_dmem)
+oei-a55-ddr.bin: $(OEI_A55_IMG) $(lpddr_imem) $(lpddr_dmem) fw-header.bin
 	$(call append_ddrfw_v2,$(OEI_A55_IMG),oei-a55-ddr.bin)
 
-oei-m33-ddr.bin: $(OEI_M33_IMG) $(lpddr_imem) $(lpddr_dmem)
+oei-m33-ddr.bin: $(OEI_M33_IMG) $(lpddr_imem) $(lpddr_dmem) fw-header.bin
 	$(call append_ddrfw_v2,$(OEI_M33_IMG),oei-m33-ddr.bin)
 
-u-boot-spl-ddr-v2.bin: u-boot-spl.bin $(lpddr_imem) $(lpddr_dmem)
+u-boot-spl-ddr-v2.bin: u-boot-spl.bin $(lpddr_imem) $(lpddr_dmem) fw-header.bin
 	$(call append_ddrfw_v2,u-boot-spl.bin,u-boot-spl-ddr-v2.bin)
 
 u-boot-spl-ddr.bin: u-boot-spl.bin $(lpddr4_imem_1d) $(lpddr4_dmem_1d) $(lpddr4_imem_2d) $(lpddr4_dmem_2d)

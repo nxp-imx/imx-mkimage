@@ -535,6 +535,7 @@ int main(int argc, char **argv)
 		{"dcd", required_argument, NULL, 'd'},
 		{"out", required_argument, NULL, 'o'},
 		{"flags", required_argument, NULL, 'l'},
+		{"msel", required_argument, NULL, 'L'},
 		{"scd", required_argument, NULL, 'x'},
 		{"csf", required_argument, NULL, 'z'},
 		{"dev", required_argument, NULL, 'e'},
@@ -560,7 +561,6 @@ int main(int argc, char **argv)
 		{"oei", required_argument, NULL, 'E'},
 		{NULL, 0, NULL, 0}
 	};
-
 
 	/* scan in parameters in order */
 	while(1)
@@ -634,7 +634,7 @@ int main(int argc, char **argv)
 				} else {
 					fprintf(stderr, "\n-fcb option require Two arguments: filename, load address in hex\n\n");
 					exit(EXIT_FAILURE);
-                }
+				}
 				break;
 			case 'i':
 				fprintf(stdout, "SENTINEL:\t%s\n", optarg);
@@ -827,6 +827,11 @@ int main(int argc, char **argv)
 			case 'l':
 				fprintf(stdout, "FLAG:\t%s\n", optarg);
 				param_stack[p_idx].option = FLAG;
+				param_stack[p_idx++].entry = (uint32_t) strtoll(optarg, NULL, 0);
+				break;
+			case 'L':
+				fprintf(stdout, "MSEL:\t%s\n", optarg);
+				param_stack[p_idx].option = MSEL;
 				param_stack[p_idx++].entry = (uint32_t) strtoll(optarg, NULL, 0);
 				break;
 			case 'o':

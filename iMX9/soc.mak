@@ -3,6 +3,7 @@ MKIMG = ../mkimage_imx8
 CC ?= gcc
 REV ?= A0
 OEI ?= NO
+MSEL ?= 0
 CFLAGS ?= -O2 -Wall -std=c99 -static
 INCLUDE = ./lib
 
@@ -363,14 +364,20 @@ flash_lpboot_flexspi_xip: $(MKIMG) $(AHAB_IMG) $(MCU_IMG) $(OEI_M33_DDR)
 		   -c $(OEI_OPT_M33) -m33 $(MCU_IMG) 0 $(MCU_XIP_ADDR) -out flash.bin
 	./$(QSPI_PACKER) $(QSPI_HEADER)
 
-flash_lpboot_sm_a55: flash_lpboot_a55 u-boot-atf-container.img
+flash_lpboot_sm_a55: $(MKIMG) $(AHAB_IMG) $(MCU_IMG) u-boot-atf-container.img $(SPL_A55_IMG) $(OEI_M33_DDR)
+	./$(MKIMG) -soc IMX9 -append $(AHAB_IMG) -c $(OEI_OPT_M33) -msel $(MSEL) \
+		   -m33 $(MCU_IMG) 0 $(MCU_TCM_ADDR) \
+		   -ap $(SPL_A55_IMG) a55 $(SPL_LOAD_ADDR_M33_VIEW) -out flash.bin
 	$(call append_container,u-boot-atf-container.img,1)
 
-flash_lpboot_sm_a55_no_ahabfw: flash_lpboot_a55_no_ahabfw u-boot-atf-container.img
+flash_lpboot_sm_a55_no_ahabfw: $(MKIMG) $(MCU_IMG) u-boot-atf-container.img $(SPL_A55_IMG) $(OEI_M33_DDR)
+	./$(MKIMG) -soc IMX9 -c $(OEI_OPT_M33) -msel $(MSEL) \
+		   -m33 $(MCU_IMG) 0 $(MCU_TCM_ADDR) \
+		   -ap $(SPL_A55_IMG) a55 $(SPL_LOAD_ADDR_M33_VIEW) -out flash.bin
 	$(call append_container,u-boot-atf-container.img,1)
 
 flash_lpboot_sm_a55_flexspi: $(MKIMG) $(AHAB_IMG) $(MCU_IMG) $(SPL_A55_IMG) $(OEI_M33_DDR)
-	./$(MKIMG) -soc IMX9 -dev flexspi -append $(AHAB_IMG) -c $(OEI_OPT_M33) \
+	./$(MKIMG) -soc IMX9 -dev flexspi -append $(AHAB_IMG) -c $(OEI_OPT_M33) -msel $(MSEL) \
 		   -m33 $(MCU_IMG) 0 $(MCU_TCM_ADDR) \
 		   -ap $(SPL_A55_IMG) a55 $(SPL_LOAD_ADDR_M33_VIEW) -out flash.bin
 	$(call append_container,u-boot-atf-container.img,1)
@@ -381,31 +388,39 @@ flash_lpboot_sm: flash_lpboot
 flash_lpboot_sm_no_ahabfw: flash_lpboot_no_ahabfw
 
 flash_lpboot_sm_m7_no_ahabfw: $(MKIMG) $(MCU_IMG) $(M7_IMG) $(OEI_M33_DDR)
-	./$(MKIMG) -soc IMX9 -c $(OEI_OPT_M33) \
+	./$(MKIMG) -soc IMX9 -c $(OEI_OPT_M33) -msel $(MSEL) \
 		   -m33 $(MCU_IMG) 0 $(MCU_TCM_ADDR) \
 		   -m7 $(M7_IMG) 0 $(M7_TCM_ADDR) $(M7_TCM_ADDR_ALIAS) -out flash.bin
 
 flash_lpboot_sm_m7: $(MKIMG) $(MCU_IMG) $(M7_IMG) $(AHAB_IMG) $(OEI_M33_DDR)
-	./$(MKIMG) -soc IMX9 -append $(AHAB_IMG) -c $(OEI_OPT_M33) \
+	./$(MKIMG) -soc IMX9 -append $(AHAB_IMG) -c $(OEI_OPT_M33) -msel $(MSEL) \
 		   -m33 $(MCU_IMG) 0 $(MCU_TCM_ADDR) \
 		   -m7 $(M7_IMG) 0 $(M7_TCM_ADDR) $(M7_TCM_ADDR_ALIAS) -out flash.bin
 
 # The diff with "flash_lpboot_sm_m7_no_ahabfw" is M7_TCM_ADDR vs M7_DDR_ADDR in -m7 option
 flash_lpboot_sm_m7_ddr_no_ahabfw: $(MKIMG) $(MCU_IMG) $(M7_IMG) $(OEI_M33_DDR)
-	./$(MKIMG) -soc IMX9 -c $(OEI_OPT_M33) \
+	./$(MKIMG) -soc IMX9 -c $(OEI_OPT_M33) -msel $(MSEL) \
 		   -m33 $(MCU_IMG) 0 $(MCU_TCM_ADDR) \
 		   -m7 $(M7_IMG) 0 $(M7_DDR_ADDR) $(M7_DDR_ADDR) -out flash.bin
 
 # The diff with "flash_lpboot_sm_m7" is M7_TCM_ADDR vs M7_DDR_ADDR in -m7 option
 flash_lpboot_sm_m7_ddr: $(MKIMG) $(MCU_IMG) $(M7_IMG) $(OEI_M33_DDR) $(AHAB_IMG)
-	./$(MKIMG) -soc IMX9 -append $(AHAB_IMG) -c $(OEI_OPT_M33) \
+	./$(MKIMG) -soc IMX9 -append $(AHAB_IMG) -c $(OEI_OPT_M33) -msel $(MSEL) \
 		   -m33 $(MCU_IMG) 0 $(MCU_TCM_ADDR) \
 		   -m7 $(M7_IMG) 0 $(M7_DDR_ADDR) $(M7_DDR_ADDR) -out flash.bin
 
-flash_lpboot_sm_all: flash_lpboot_all u-boot-atf-container.img
+flash_lpboot_sm_all: $(MKIMG) $(AHAB_IMG) $(MCU_IMG) $(M7_IMG) u-boot-atf-container.img $(SPL_A55_IMG) $(OEI_M33_DDR)
+	./$(MKIMG) -soc IMX9 -append $(AHAB_IMG) -c $(OEI_OPT_M33) -msel $(MSEL) \
+		   -m33 $(MCU_IMG) 0 $(MCU_TCM_ADDR) \
+		   -m7 $(M7_IMG) 0 $(M7_TCM_ADDR) $(M7_TCM_ADDR_ALIAS)  \
+		   -ap $(SPL_A55_IMG) a55 $(SPL_LOAD_ADDR_M33_VIEW) -out flash.bin
 	$(call append_container,u-boot-atf-container.img,1)
 
-flash_lpboot_sm_all_no_ahabfw: flash_lpboot_all_no_ahabfw u-boot-atf-container.img
+flash_lpboot_sm_all_no_ahabfw: $(MKIMG) $(MCU_IMG) $(M7_IMG) u-boot-atf-container.img $(SPL_A55_IMG) $(OEI_M33_DDR)
+	./$(MKIMG) -soc IMX9 -c $(OEI_OPT_M33) -msel $(MSEL) \
+		   -m33 $(MCU_IMG) 0 $(MCU_TCM_ADDR) \
+		   -m7 $(M7_IMG) 0 $(M7_TCM_ADDR) $(M7_TCM_ADDR_ALIAS)  \
+		   -ap $(SPL_A55_IMG) a55 $(SPL_LOAD_ADDR_M33_VIEW) -out flash.bin
 	$(call append_container,u-boot-atf-container.img,1)
 
 flash_sentinel: $(MKIMG) ahabfw.bin

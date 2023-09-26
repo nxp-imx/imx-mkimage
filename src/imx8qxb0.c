@@ -98,6 +98,7 @@
 #define CONTAINER_IMAGE_ARRAY_START_OFFSET	0x2000
 
 uint32_t scfw_flags = 0;
+uint32_t msel = 0;
 
 typedef struct {
 	char type;
@@ -531,7 +532,7 @@ void set_image_array_entry(flash_header_v3_t *container, soc_type_t soc,
 			exit(EXIT_FAILURE);
 		}
 		core = CORE_M7_0;
-        /* TODO:  meta setting may change for SoCs other than MX95 */
+		/* TODO:  meta setting may change for SoCs other than MX95 */
 		meta = CORE_IMX95_M7P;
 		img->hab_flags |= IMG_TYPE_EXEC;
 		img->hab_flags |= core << BOOT_IMG_FLAGS_CORE_SHIFT;
@@ -563,6 +564,9 @@ void set_image_array_entry(flash_header_v3_t *container, soc_type_t soc,
 				fprintf(stderr, "Error: invalid m4 core id: %" PRIi64 "\n", core);
 				exit(EXIT_FAILURE);
 			}
+		}
+		if (soc == IMX9) {
+			meta = CORE_IMX95_M33P | (msel << 16) | (scfw_flags << 24);
 		}
 		img->hab_flags |= IMG_TYPE_EXEC;
 		img->hab_flags |= core << BOOT_IMG_FLAGS_CORE_SHIFT;
@@ -845,6 +849,7 @@ int build_container_qx_qm_b0(soc_type_t soc, uint32_t sector_size, uint32_t ivt_
 					fuse_version);
 			cont_img_count = 0; /* reset img count when moving to new container */
 			scfw_flags = 0;
+			msel = 0;
 			break;
 
 		case APPEND:
@@ -853,6 +858,9 @@ int build_container_qx_qm_b0(soc_type_t soc, uint32_t sector_size, uint32_t ivt_
 		case FLAG:
 			/* override the flags for scfw in current container */
 			scfw_flags = img_sp->entry & 0xFFFF0000;/* mask off bottom 16 bits */
+			break;
+		case MSEL:
+			msel = img_sp->entry;
 			break;
 		case FILEOFF:
 			if (file_off > img_sp->dst)

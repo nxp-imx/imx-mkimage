@@ -53,7 +53,8 @@ typedef enum option_type {
     SENTINEL,
     UPOWER,
     FCB,
-    OEI
+    OEI,
+    MSEL
 } option_type_t;
 
 

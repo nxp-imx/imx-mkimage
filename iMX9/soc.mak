@@ -49,7 +49,7 @@ M33_IMAGE_XIP_OFFSET ?= 0x31000 # 1st container offset is 0x1000 when boot devic
 
 ifeq ($(OEI),YES)
 OEI_IMG ?= oei.bin
-OEI_A55_LOAD_ADDR ?= $(SPL_LOAD_ADDR)
+OEI_A55_LOAD_ADDR ?= 0x20498000
 OEI_M33_LOAD_ADDR ?= $(MCU_TCM_ADDR)
 OEI_OPT_A55 ?= -oei $(OEI_IMG) a55 $(OEI_A55_LOAD_ADDR)
 OEI_OPT_M33 ?= -oei $(OEI_IMG) m33 $(OEI_M33_LOAD_ADDR)
@@ -81,6 +81,9 @@ lpddr4_imem_qb = lpddr4_imem_qb$(LPDDR_FW_VERSION).bin
 lpddr4_dmem_qb = lpddr4_dmem_qb$(LPDDR_FW_VERSION).bin
 lpddr4_qb_data = lpddr4_qb_data.bin
 
+lpddr4x_imem = lpddr4x_imem_v202210.bin
+lpddr4x_dmem = lpddr4x_dmem_v202210.bin
+
 u-boot-spl-ddr.bin: u-boot-spl.bin $(lpddr4_imem_1d) $(lpddr4_dmem_1d) $(lpddr4_imem_2d) $(lpddr4_dmem_2d)
 	@objcopy -I binary -O binary --pad-to 0x8000 --gap-fill=0x0 $(lpddr4_imem_1d) lpddr4_pmu_train_1d_imem_pad.bin
 	@objcopy -I binary -O binary --pad-to 0x4000 --gap-fill=0x0 $(lpddr4_dmem_1d) lpddr4_pmu_train_1d_dmem_pad.bin
@@ -98,6 +101,14 @@ u-boot-spl-ddr-qb.bin: u-boot-spl.bin $(lpddr4_imem_qb) $(lpddr4_dmem_qb) $(lpdd
 	@dd if=u-boot-spl.bin of=u-boot-spl-pad.bin bs=4 conv=sync
 	@cat u-boot-spl-pad.bin lpddr4_pmu_qb_fw.bin $(lpddr4_qb_data) > u-boot-spl-ddr-qb.bin
 	@rm -f u-boot-spl-pad.bin lpddr4_pmu_qb_imem_pad.bin lpddr4_pmu_qb_dmem_pad.bin lpddr4_pmu_qb_fw.bin
+
+oei-ddr4x.bin: $(OEI_IMG) $(lpddr4x_imem) $(lpddr4x_dmem)
+	@objcopy -I binary -O binary --pad-to 0x10000 --gap-fill=0x0 $(lpddr4x_imem) lpddr4x_pmu_train_imem_pad.bin
+	@objcopy -I binary -O binary --pad-to 0x10000 --gap-fill=0x0 $(lpddr4x_dmem) lpddr4x_pmu_train_dmem_pad.bin
+	@cat lpddr4x_pmu_train_imem_pad.bin lpddr4x_pmu_train_dmem_pad.bin > lpddr4x_pmu_train_fw.bin
+	@dd if=$(OEI_IMG) of=oei-pad.bin bs=4 conv=sync
+	@cat oei-pad.bin lpddr4x_pmu_train_fw.bin > oei-ddr4x.bin
+	@rm -f oei-pad.bin lpddr4x_pmu_train_fw.bin lpddr4x_pmu_train_imem_pad.bin lpddr4x_pmu_train_dmem_pad.bin
 
 u-boot-hash.bin: u-boot.bin
 	./$(MKIMG) -commit > head.hash
@@ -148,6 +159,14 @@ clean:
 	@rm -f $(MKIMG) u-boot-atf-container.img u-boot-spl-ddr.bin u-boot-spl-ddr-qb.bin u-boot-hash.bin
 	@rm -rf extracted_imgs
 	@echo "imx9 clean done"
+
+flash_singleboot_no_ahabfw_a55_oei: $(MKIMG) u-boot-atf-container.img oei-ddr4x.bin u-boot-spl.bin
+	./$(MKIMG) -soc IMX9 -c -oei oei-ddr4x.bin a55 $(OEI_A55_LOAD_ADDR) -ap u-boot-spl.bin a55 $(SPL_LOAD_ADDR) -out flash.bin
+	cp flash.bin boot-spl-container.img
+	@flashbin_size=`wc -c flash.bin | awk '{print $$1}'`; \
+                   pad_cnt=$$(((flashbin_size + 0x400 - 1) / 0x400)); \
+                   echo "append u-boot-atf-container.img at $$pad_cnt KB"; \
+                   dd if=u-boot-atf-container.img of=flash.bin bs=1K seek=$$pad_cnt;
 
 flash_lpboot_a55_no_ahabfw: $(MKIMG) $(MCU_IMG)
 	./$(MKIMG) -soc IMX9 -c $(OEI_OPT_M33) -m33 $(MCU_IMG) 0 $(MCU_TCM_ADDR) -ap u-boot-spl.bin a55 $(SPL_LOAD_ADDR_M33_VIEW) -out flash.bin

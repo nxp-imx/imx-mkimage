@@ -62,12 +62,15 @@ SPL_A55_IMG ?= u-boot-spl-ddr.bin
 KERNEL_DTB ?= imx93-11x11-evk.dtb   # Used by kernel authentication
 KERNEL_DTB_ADDR ?= 0x83000000
 KERNEL_ADDR ?= 0x80400000
+# This Capsule_GUID is reserved by NXP
+CAPSULE_GUID = bc550d86-da26-4b70-ac05-2a448eda6f21
 
 endif
 
 FCB_LOAD_ADDR ?= $(ATF_LOAD_ADDR)
 MCU_IMG = m33_image.bin
 M7_IMG = m7_image.bin
+TEE ?= tee.bin
 TEE_LOAD_ADDR ?= 0x96000000
 MCU_XIP_ADDR ?= 0x28032000 # Point entry of m33 in flexspi0 nor flash
 M33_IMAGE_XIP_OFFSET ?= 0x31000 # 1st container offset is 0x1000 when boot device is flexspi0 nor
@@ -188,18 +191,18 @@ u-boot-atf.itb: u-boot-hash.bin bl31.bin
 	@rm -f u-boot.its
 
 u-boot-atf-container.img: bl31.bin u-boot-hash.bin
-	if [ -f tee.bin ]; then \
+	if [ -f $(TEE) ]; then \
 		if [ $(shell echo $(ROLLBACK_INDEX_IN_CONTAINER)) ]; then \
 			./$(MKIMG) -soc IMX9 -sw_version $(ROLLBACK_INDEX_IN_CONTAINER) -c \
 				   -ap bl31.bin a55 $(ATF_LOAD_ADDR) \
 				   -ap u-boot-hash.bin a55 $(UBOOT_LOAD_ADDR) \
-				   -ap tee.bin a55 $(TEE_LOAD_ADDR) \
+				   -ap $(TEE) a55 $(TEE_LOAD_ADDR) \
 				   -out u-boot-atf-container.img; \
 		else \
 			./$(MKIMG) -soc IMX9 -c \
 				   -ap bl31.bin a55 $(ATF_LOAD_ADDR) \
 				   -ap u-boot-hash.bin a55 $(UBOOT_LOAD_ADDR) \
-				   -ap tee.bin a55 $(TEE_LOAD_ADDR) -out u-boot-atf-container.img; \
+				   -ap $(TEE) a55 $(TEE_LOAD_ADDR) -out u-boot-atf-container.img; \
 		fi; \
 	else \
 		./$(MKIMG) -soc IMX9 -c \
@@ -209,19 +212,19 @@ u-boot-atf-container.img: bl31.bin u-boot-hash.bin
 	fi
 
 u-boot-atf-container-spinand.img: bl31.bin u-boot-hash.bin
-	if [ -f tee.bin ]; then \
+	if [ -f $(TEE) ]; then \
 		if [ $(shell echo $(ROLLBACK_INDEX_IN_CONTAINER)) ]; then \
 			./$(MKIMG) -soc IMX9 -sw_version $(ROLLBACK_INDEX_IN_CONTAINER) \
 				   -dev nand 4K -c \
 				   -ap bl31.bin a55 $(ATF_LOAD_ADDR) \
 				   -ap u-boot-hash.bin a55 $(UBOOT_LOAD_ADDR) \
-				   -ap tee.bin a55 $(TEE_LOAD_ADDR) \
+				   -ap $(TEE) a55 $(TEE_LOAD_ADDR) \
 				   -out u-boot-atf-container-spinand.img; \
 		else \
 			./$(MKIMG) -soc IMX9 -dev nand 4K -c \
 				   -ap bl31.bin a55 $(ATF_LOAD_ADDR) \
 				   -ap u-boot-hash.bin a55 $(UBOOT_LOAD_ADDR) \
-				   -ap tee.bin a55 $(TEE_LOAD_ADDR) \
+				   -ap $(TEE) a55 $(TEE_LOAD_ADDR) \
 				   -out u-boot-atf-container-spinand.img; \
 		fi; \
 	else \
@@ -243,6 +246,43 @@ clean:
 	@rm -f $(MKIMG) u-boot-atf-container.img u-boot-spl-ddr.bin u-boot-spl-ddr-qb.bin u-boot-hash.bin
 	@rm -rf extracted_imgs
 	@echo "imx9 clean done"
+
+# Add for System ready
+ifeq ($(TEE),tee.bin-stmm)
+KEY_EXISTS = $(shell if ls *CRT.* &> /dev/null 2>&1; then echo "exist"; else echo "noexist"; fi)
+capsule_key:
+ifeq ($(KEY_EXISTS),exist)
+	@echo "****************************************************************"
+	@echo "Key $(shell ls CRT.*) already existed"
+	@echo "If you not wanna use new Key, please not run target: capsule_key"
+	@echo "Otherwise, please delete CRT.* and re-run capsule_key"
+	@echo "****************************************************************"
+	@exit 1
+endif
+	openssl req -x509 -sha256 -newkey rsa:2048 -subj /CN=CRT/ -keyout CRT.key -out CRT.crt -nodes -days 365
+	cert-to-efi-sig-list CRT.crt CRT.esl
+
+delete_capsule_key:
+	@rm -rf CRT.*
+
+overlay: u-boot.bin
+	./$(MKIMG) -soc IMX9 -split u-boot.bin
+	dtc -@ -I dts -O dtb -o signature.dtbo signature.dts
+	fdtoverlay -i gen-uboot.dtb -o gen-uboot.dtb signature.dtbo
+	@cat gen-u-boot-nodtb.bin gen-uboot.dtb > gen-u-boot.bin
+	@mv -f gen-u-boot.bin u-boot.bin
+
+flash_singleboot_stmm_capsule: overlay flash_singleboot
+	./mkeficapsule flash.bin --monotonic-count 1 \
+		--guid $(CAPSULE_GUID) \
+		--private-key CRT.key \
+		--certificate CRT.crt \
+		--index 1 --instance 0 \
+		capsule1.bin
+
+flash_singleboot_stmm: flash_singleboot_stmm_capsule
+endif
+
 
 flash_singleboot: $(MKIMG) $(AHAB_IMG) $(SPL_A55_IMG) u-boot-atf-container.img $(OEI_A55_DDR)
 	./$(MKIMG) -soc IMX9 -append $(AHAB_IMG) -c $(OEI_OPT_A55) \

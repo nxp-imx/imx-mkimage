@@ -491,6 +491,91 @@ uint32_t parse_cfg_file(dcd_v2_t *dcd_v2, char *name)
 	return dcd_len;
 }
 
+#define FDT_MAGIC 0xd00dfeed
+
+int split_dtb_from_uboot(char *ifname)
+{
+	struct stat sbuf;
+	void *file_ptr;
+	unsigned int *hdr;
+	unsigned int fdt_len = 0;
+	int input_fd, i, uboot_fd, dtb_fd;
+
+	input_fd = open(ifname, O_RDONLY | O_BINARY);
+	if (input_fd < 0) {
+		fprintf(stderr, "%s: Can't open: %s\n",
+                            ifname, strerror(errno));
+		exit(EXIT_FAILURE);
+	}
+
+	if (fstat(input_fd, &sbuf) < 0) {
+		fprintf(stderr, "generate_sld_with_ivt error: %s\n",
+			strerror(errno));
+		exit(EXIT_FAILURE);
+	}
+
+	file_ptr = mmap(0, sbuf.st_size, PROT_READ, MAP_SHARED, input_fd, 0);
+	if (file_ptr == MAP_FAILED) {
+		fprintf (stderr, "generate_sld_with_ivt, File can't read %s\n",
+			strerror(errno));
+		exit (EXIT_FAILURE);
+	}
+
+	i = (ALIGN_DOWN(sbuf.st_size, 4) - 4);
+	for (; i >= 0; i-= 4) {
+		hdr = (unsigned int *)(file_ptr + i);
+		if (be32_to_cpu(*hdr) == FDT_MAGIC) {
+			fdt_len = be32_to_cpu(*(hdr + 1));
+			break;
+		}
+	}
+
+	if (i < 0) {
+		fprintf(stderr, "Error, no DTB found in %s\n",
+			ifname);
+		exit(EXIT_FAILURE);
+	}
+
+	printf("DTB locates at offset 0x%x, size 0x%x\n", i, fdt_len);
+
+	uboot_fd = open ("gen-u-boot-nodtb.bin", O_RDWR|O_CREAT|O_TRUNC|O_BINARY, 0666);
+	if (uboot_fd < 0) {
+		fprintf(stderr, "%s: Can't open: %s\n",
+                                "gen-u-boot-nodtb.bin", strerror(errno));
+		exit(EXIT_FAILURE);
+	}
+
+	if (write(uboot_fd, file_ptr, i) != i) {
+		fprintf(stderr, "error writing gen-u-boot-nodtb.bin image\n");
+		exit(EXIT_FAILURE);
+	}
+
+	close(uboot_fd);
+
+	printf("Generated gen-u-boot-nodtb.bin\n");
+
+	dtb_fd = open ("gen-uboot.dtb", O_RDWR|O_CREAT|O_TRUNC|O_BINARY, 0666);
+	if (dtb_fd < 0) {
+		fprintf(stderr, "%s: Can't open: %s\n",
+                                "gen-uboot.dtb", strerror(errno));
+		exit(EXIT_FAILURE);
+	}
+
+	if (write(dtb_fd, file_ptr + i, fdt_len) != fdt_len) {
+		fprintf(stderr, "error writing gen-uboot.dtb\n");
+		exit(EXIT_FAILURE);
+	}
+
+	close(dtb_fd);
+
+	printf("Generated gen-uboot.dtb\n");
+
+	munmap((void *)file_ptr, sbuf.st_size);
+	close(input_fd);
+
+	return 0;
+}
+
 /*
  * Read commandline parameters and construct the header in order
  *
@@ -509,6 +594,7 @@ int main(int argc, char **argv)
 	bool emmc_fastboot = false;
 	bool extract = false;
 	bool parse = false;
+	bool split = false;
 
 	int container = -1;
 	image_t param_stack[IMG_STACK_SIZE];/* stack of input images */
@@ -559,6 +645,7 @@ int main(int argc, char **argv)
 		{"fcb", required_argument, NULL, 'b'},
 		{"padding", required_argument, NULL, 'G'},
 		{"oei", required_argument, NULL, 'E'},
+		{"split", required_argument, NULL, 'S'},
 		{NULL, 0, NULL, 0}
 	};
 
@@ -955,6 +1042,11 @@ int main(int argc, char **argv)
 				fprintf(stdout, "Padding length:\t%s bytes\n", optarg);
 				file_off = atoi(optarg);
 				break;
+			case 'S':
+				fprintf(stdout, "Input u-boot.bin binary to be splitted DTB: %s\n", optarg);
+				ifname = optarg;
+				split = true;
+				break;
 			case '?':
 			default:
 				/* invalid option */
@@ -978,6 +1070,11 @@ int main(int argc, char **argv)
 
 	if (parse || extract) {
 		parse_container_hdrs_qx_qm_b0(ifname, extract, soc, file_off);
+		return 0;
+	}
+
+	if (split) {
+		split_dtb_from_uboot(ifname);
 		return 0;
 	}
 

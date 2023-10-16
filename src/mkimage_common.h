@@ -236,6 +236,7 @@ typedef struct {
 
 #define ALIGN(x,a)              __ALIGN_MASK((x),(__typeof__(x))(a)-1)
 #define __ALIGN_MASK(x,mask)    (((x)+(mask))&~(mask))
+#define ALIGN_DOWN(x, a)    ALIGN((x) - ((a) - 1), (a))
 
 #define uswap_16(x) \
         ((((x) & 0xff00) >> 8) | \

@@ -143,8 +143,9 @@ fw-header.bin: $(lpddr_imem) $(lpddr_dmem)
 
 define append_ddrfw_v2
 	@dd if=$(1) of=$(1)-pad bs=4 conv=sync
-	@cat $(1)-pad fw-header.bin $(lpddr_imem) $(lpddr_dmem) > $(2)
-	@rm -f $(1)-pad fw-header.bin
+	@cat $(1)-pad fw-header.bin $(lpddr_imem) $(lpddr_dmem) > $(2).unaligned
+	@dd if=$(2).unaligned of=$(2) bs=8 conv=sync
+	@rm -f $(1)-pad $(2).unaligned fw-header.bin
 endef
 
 oei-a55-ddr.bin: $(OEI_A55_IMG) $(lpddr_imem) $(lpddr_dmem) fw-header.bin

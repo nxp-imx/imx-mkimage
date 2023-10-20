@@ -110,8 +110,8 @@ define append_container
 	@flashbin_size=`wc -c flash.bin | awk '{print $$1}'`; \
                    psize=$$((0x400 * $(2))); \
                    pad_cnt=$$(((flashbin_size + psize - 1) / psize)); \
-                   echo "append $(1) at $$pad_cnt KB, psize=$$psize"; \
-                   dd if=$(1) of=flash.bin bs=1K seek=$$pad_cnt;
+                   echo "append $(1) at $$((pad_cnt * $(2))) KB, psize=$$psize"; \
+                   dd if=$(1) of=flash.bin bs=1K seek=$$((pad_cnt * $(2)));
 endef
 
 define append_fcb

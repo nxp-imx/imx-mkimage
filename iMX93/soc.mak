@@ -1,7 +1,7 @@
 MKIMG = ../mkimage_imx8
 
 CC ?= gcc
-REV ?= A0
+REV ?= A1
 OEI ?= NO
 MSEL ?= 0
 CFLAGS ?= -O2 -Wall -std=c99 -static

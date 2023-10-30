@@ -72,6 +72,10 @@ OEI_A55_DDR =
 OEI_M33_DDR =
 OEI_OPT_A55 ?=
 OEI_OPT_M33 ?=
+
+ifeq ($(V2X),YES)
+$(error "V2X without OEI is not allowed as V2X FW resides in DDR")
+endif
 endif
 
 ###########################

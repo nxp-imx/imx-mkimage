@@ -706,7 +706,8 @@ int get_container_image_start_pos(image_t *image_stack, uint32_t align, soc_type
 				} else {
 					file_off = header.img[header.num_images - 1].offset + header.img[header.num_images - 1].size;
 					*scu_cont_hdr_off = i * CONTAINER_ALIGNMENT + ALIGN(header.length, CONTAINER_ALIGNMENT);
-					file_off = i * CONTAINER_ALIGNMENT + ALIGN(file_off, align);
+					file_off += i * CONTAINER_ALIGNMENT;
+					file_off = ALIGN(file_off, align);
 				}
 
 				i++;

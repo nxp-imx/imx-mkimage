@@ -315,12 +315,12 @@ flash_lpboot_sm_a55_no_ahabfw: $(MKIMG) $(MCU_IMG) u-boot-atf-container.img $(SP
 		   -ap $(SPL_A55_IMG) a55 $(SPL_LOAD_ADDR_M33_VIEW) -out flash.bin
 	$(call append_container,u-boot-atf-container.img,1)
 
-flash_lpboot_sm_a55_flexspi: $(MKIMG) $(AHAB_IMG) $(MCU_IMG) $(SPL_A55_IMG) $(OEI_IMG_M33)
+flash_lpboot_sm_a55_flexspi: $(MKIMG) $(AHAB_IMG) $(MCU_IMG) $(SPL_A55_IMG) $(OEI_IMG_M33) fcb.bin u-boot-atf-container.img
 	./$(MKIMG) -soc IMX9 -dev flexspi -append $(AHAB_IMG) -c $(OEI_OPT_M33) -msel $(MSEL) \
 		   -m33 $(MCU_IMG) 0 $(MCU_TCM_ADDR) \
-		   -ap $(SPL_A55_IMG) a55 $(SPL_LOAD_ADDR_M33_VIEW) $(V2X_DUMMY) -out flash.bin
+		   -ap $(SPL_A55_IMG) a55 $(SPL_LOAD_ADDR_M33_VIEW) $(V2X_DUMMY) -fcb fcb.bin $(FCB_LOAD_ADDR) -out flash.bin
 	$(call append_container,u-boot-atf-container.img,1)
-	./$(QSPI_PACKER) $(QSPI_HEADER)
+	$(call append_fcb)
 
 flash_lpboot_sm: flash_lpboot
 

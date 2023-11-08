@@ -28,7 +28,8 @@ ATF_LOAD_ADDR ?= 0x204A0000
 UBOOT_LOAD_ADDR ?= 0x90200000
 MCU_TCM_ADDR ?= 0x1FFC0000		# 256KB TCM
 MCU_TCM_ADDR_ACORE_VIEW ?= 0x201C0000
-LPDDR_TYPE  ?= lpddr5
+LPDDR_TYPE ?= lpddr5
+LPDDR_FUNC ?= train
 LPDDR_FW_VERSION ?= _v202306
 SPL_A55_IMG ?= u-boot-spl-ddr-v2.bin
 KERNEL_DTB ?= imx95-19x19-evk.dtb   # Used by kernel authentication
@@ -59,6 +60,16 @@ OEI_OPT_M33 ?=
 
 OEI_IMG_A55 ?=
 OEI_IMG_M33 ?=
+
+ifeq ($(LPDDR_FUNC),qboot)
+lpddr_imem = $(LPDDR_TYPE)_qb_imem$(LPDDR_FW_VERSION).bin
+lpddr_dmem = $(LPDDR_TYPE)_qb_dmem$(LPDDR_FW_VERSION).bin
+OEI_DDR_QB_DATA = qb_data.bin
+else
+lpddr_imem = $(LPDDR_TYPE)_imem$(LPDDR_FW_VERSION).bin
+lpddr_dmem = $(LPDDR_TYPE)_dmem$(LPDDR_FW_VERSION).bin
+OEI_DDR_QB_DATA =
+endif
 
 ifeq ($(OEI),YES)
 # build command: ./build.sh imx95 ca55 ddr in imx-oei repo
@@ -124,9 +135,6 @@ endef
 
 FORCE:
 
-lpddr_imem = $(LPDDR_TYPE)_imem$(LPDDR_FW_VERSION).bin
-lpddr_dmem = $(LPDDR_TYPE)_dmem$(LPDDR_FW_VERSION).bin
-
 fw-header.bin: $(lpddr_imem) $(lpddr_dmem)
 	@imem_size=`wc -c $(lpddr_imem) | awk '{printf "%.8x", $$1}' | sed -e 's/\(..\)\(..\)\(..\)\(..\)/\4\3\2\1/'`; \
 		echo $$imem_size | xxd -r -p >  fw-header.bin
@@ -135,16 +143,16 @@ fw-header.bin: $(lpddr_imem) $(lpddr_dmem)
 
 define append_ddrfw_v2
 	@dd if=$(1) of=$(1)-pad bs=4 conv=sync
-	@cat $(1)-pad fw-header.bin $(lpddr_imem) $(lpddr_dmem) > $(2).unaligned
+	@cat $(1)-pad fw-header.bin $(lpddr_imem) $(lpddr_dmem) $(3) > $(2).unaligned
 	@dd if=$(2).unaligned of=$(2) bs=8 conv=sync
 	@rm -f $(1)-pad $(2).unaligned fw-header.bin
 endef
 
-oei-a55-ddr.bin: $(OEI_A55_DDR_IMG) $(lpddr_imem) $(lpddr_dmem) fw-header.bin
-	$(call append_ddrfw_v2,$(OEI_A55_DDR_IMG),oei-a55-ddr.bin)
+oei-a55-ddr.bin: $(OEI_A55_DDR_IMG) $(lpddr_imem) $(lpddr_dmem) fw-header.bin $(OEI_DDR_QB_DATA)
+	$(call append_ddrfw_v2,$(OEI_A55_DDR_IMG),oei-a55-ddr.bin,$(OEI_DDR_QB_DATA))
 
-oei-m33-ddr.bin: $(OEI_M33_DDR_IMG) $(lpddr_imem) $(lpddr_dmem) fw-header.bin
-	$(call append_ddrfw_v2,$(OEI_M33_DDR_IMG),oei-m33-ddr.bin)
+oei-m33-ddr.bin: $(OEI_M33_DDR_IMG) $(lpddr_imem) $(lpddr_dmem) fw-header.bin $(OEI_DDR_QB_DATA)
+	$(call append_ddrfw_v2,$(OEI_M33_DDR_IMG),oei-m33-ddr.bin,$(OEI_DDR_QB_DATA))
 
 u-boot-spl-ddr-v2.bin: u-boot-spl.bin $(lpddr_imem) $(lpddr_dmem) fw-header.bin
 	$(call append_ddrfw_v2,u-boot-spl.bin,u-boot-spl-ddr-v2.bin)

@@ -47,7 +47,7 @@ M33_IMAGE_XIP_OFFSET ?= 0x31000 # 1st container offset is 0x1000 when boot devic
 				# flash, actually the m33_image.bin is in 0x31000 + 0x1000 = 0x32000.
 M7_TCM_ADDR ?= 0x0
 M7_TCM_ADDR_ALIAS ?= 0x303C0000
-M7_DDR_ADDR ?= 0x88000000
+M7_DDR_ADDR ?= 0x80000000
 
 OEI_A55_LOAD_ADDR ?= 0x20498000
 OEI_A55_ENTR_ADDR ?= $(OEI_A55_LOAD_ADDR)

@@ -73,8 +73,8 @@ OEI_DDR_QB_DATA =
 endif
 
 ifeq ($(OEI),YES)
-OEI_A55_DDR_IMG ?= oei.bin.ca55
-OEI_M33_DDR_IMG ?= oei.bin.cm33
+OEI_A55_DDR_IMG ?= oei-a55-ddr.bin
+OEI_M33_DDR_IMG ?= oei-m33-ddr.bin
 OEI_A55_TCM_IMG ?= oei-a55-tcm.bin
 OEI_M33_TCM_IMG ?= oei-m33-tcm.bin
 
@@ -97,6 +97,15 @@ ifneq (,$(wildcard $(OEI_M33_TCM_IMG)))
 OEI_OPT_M33 += -oei $(OEI_M33_TCM_IMG) m33 $(OEI_M33_ENTR_ADDR) $(OEI_M33_LOAD_ADDR)
 OEI_IMG_M33 += $(OEI_M33_TCM_IMG)
 endif
+
+ifeq (,$(OEI_IMG_M33))
+$(warning "Note: There are no Cortex-M33 oei images")
+endif
+
+ifeq (,$(OEI_IMG_A55))
+$(warning "Note: There are no Cortex-A55 oei images")
+endif
+
 SPL_A55_IMG = u-boot-spl.bin	# SPL without ddrfw
 
 ifeq ($(V2X),YES)

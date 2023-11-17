@@ -32,6 +32,9 @@ OPTIONS:
 		Specifies flags for the new container.
 		The value needs to be a 32bit value in hex.
 
+	-msel [mode]
+		Specifies the mode select value. Passed to boot FW (eg. SM).
+
 	-fuse_version [value]
 		Specifies fuse version field for the new container.
 

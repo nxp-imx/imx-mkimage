@@ -2,7 +2,7 @@
 
 2. By default, OEI image is not used. To use OEI image, only need to add "OEI=YES" in command. The "OEI=YES" is pertained to all targets to enable OEI.
    The default name of OEI images are: oei.bin.ca55 (singleboot) and oei.bin.cm33 (lpboot)
-   For exmaple,
+   For example,
 	a) Non-OEI image for singleboot:
 		make SOC=iMX95 flash_singleboot
 
@@ -30,7 +30,10 @@
 	make SOC=iMX95 flash_lpboot_sm_all_no_ahabfw
 
    Note: For iMX95 "UBOOT_LOAD_ADDR is set to 0x90200000", please ensure your u-boot is latest and uses this address.
-   Otherwise set the UBOOT_LOAD_ADDR to your address
+   Otherwise set the UBOOT_LOAD_ADDR to your address.
+   
+   MSEL=m can be used to specify a mode select value to pass to the SM. Can be used to select at run-time between
+   boot configurations (which cores to boot, etc.).
 
 4. The DDR Firmware used by default is LPDDR5 (for both OEI or Non-OEI), to generate image with LPDDR4x or LPDDR4,
    set the "LPDDR_TYPE=lpddr4"

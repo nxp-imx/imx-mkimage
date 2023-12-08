@@ -38,7 +38,7 @@ KERNEL_ADDR ?= 0x90400000
 V2X ?= $(OEI)
 
 FCB_LOAD_ADDR ?= 0x204D7000 #top 4K for fcb
-V2X_DDR = 0x97fc0000
+V2X_DDR = 0x8b000000
 MCU_IMG = m33_image.bin
 M7_IMG = m7_image.bin
 TEE ?= tee.bin

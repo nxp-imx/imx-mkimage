@@ -12,6 +12,7 @@ QSPI_HEADER = ../scripts/fspi_header
 QSPI_PACKER = ../scripts/fspi_packer.sh
 QSPI_FCB_GEN = ../scripts/fspi_fcb_gen.sh
 PAD_IMAGE = ../scripts/pad_image.sh
+SPLIT_KERNEL = ../scripts/split_kernel.sh
 
 ifneq ($(wildcard /usr/bin/rename.ul),)
     RENAME = rename.ul
@@ -319,8 +320,17 @@ flash_all_no_ahabfw: $(MKIMG) $(MCU_IMG) $(M7_IMG) u-boot-atf-container.img $(SP
 flash_sentinel: $(MKIMG) ahabfw.bin
 	./$(MKIMG) -soc IMX9 -c -sentinel ahabfw.bin -out flash.bin
 
+ifeq ($(REV),A0)
+prepare_kernel_chunks: Image
+	./$(SPLIT_KERNEL) Image $(KERNEL_ADDR) 0x700000
+
+flash_kernel: $(MKIMG) prepare_kernel_chunks $(KERNEL_DTB)
+	KERNEL_CMD="$(shell cat Image_cmd)"; \
+	./$(MKIMG) -soc IMX9 -c $$KERNEL_CMD --data $(KERNEL_DTB) a55 $(KERNEL_DTB_ADDR) -out flash.bin
+else
 flash_kernel: $(MKIMG) Image $(KERNEL_DTB)
 	./$(MKIMG) -soc IMX9 -c -ap Image a55 $(KERNEL_ADDR) --data $(KERNEL_DTB) a55 $(KERNEL_DTB_ADDR) -out flash.bin
+endif
 
 flash_bootaux_cntr: $(MKIMG) $(MCU_IMG)
 	./$(MKIMG) -soc IMX9 -c -m33 $(MCU_IMG) 0 $(MCU_TCM_ADDR) $(MCU_TCM_ADDR_ACORE_VIEW) -out flash.bin

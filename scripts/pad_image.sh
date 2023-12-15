@@ -1,7 +1,7 @@
 #!/bin/bash
 #set -x
 
-# Concatenates all files passed in the command line and pad the last one,
+# Compute the sum of all files passed in the command line and pad the last one,
 # so that the sum of all files size is aligned on 16 bytes.
 
 _total_size=0

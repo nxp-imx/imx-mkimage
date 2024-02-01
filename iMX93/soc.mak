@@ -173,11 +173,11 @@ clean:
 
 # Add for System ready
 ifeq ($(TEE),tee.bin-stmm)
-KEY_EXISTS = $(shell if ls *CRT.* &> /dev/null 2>&1; then echo "exist"; else echo "noexist"; fi)
+KEY_EXISTS = $(shell find -maxdepth 1 -name "CRT.*")
 capsule_key:
-ifeq ($(KEY_EXISTS),exist)
+ifneq ($(KEY_EXISTS),)
 	@echo "****************************************************************"
-	@echo "Key $(shell ls CRT.*) already existed"
+	@echo "Key $(KEY_EXISTS) already existed"
 	@echo "If you not wanna use new Key, please not run target: capsule_key"
 	@echo "Otherwise, please delete CRT.* and re-run capsule_key"
 	@echo "****************************************************************"

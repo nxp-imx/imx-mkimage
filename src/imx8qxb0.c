@@ -20,6 +20,7 @@
 #define MAX_NUM_SRK_RECORDS		4
 
 #define IVT_HEADER_TAG_B0		0x87
+#define IVT_HEADER_TAG_V2X		0x82
 #define IVT_VERSION_B0			0x00
 
 #define IMG_FLAG_HASH_SHA256		0x000
@@ -1387,7 +1388,7 @@ static int get_container_size(flash_header_v3_t *phdr)
 	return max_offset;
 }
 
-int search_app_container(flash_header_v3_t *container_hdrs, int num_cntrs, int ifd, flash_header_v3_t *app_container_hdr)
+int search_app_container(flash_header_v3_t *container_hdrs, int num_cntrs, int ifd, flash_header_v3_t *app_container_hdr, int cnt_align)
 {
 	int off[MAX_NUM_OF_CONTAINER];
 	int end = 0, last = 0;
@@ -1403,7 +1404,7 @@ int search_app_container(flash_header_v3_t *container_hdrs, int num_cntrs, int i
 			last = end + off[i];
 
 		if ((i + 1) < num_cntrs)
-			off[i + 1] = off[i] + ALIGN(container_hdrs[i].length, CONTAINER_ALIGNMENT);
+			off[i + 1] = off[i] + ALIGN(container_hdrs[i].length, cnt_align);
 	}
 
 	/* Check app container tag at each 1KB beginning until 16KB */
@@ -1456,7 +1457,7 @@ int search_app_container(flash_header_v3_t *container_hdrs, int num_cntrs, int i
 	return 0;
 }
 
-int extract_container_images(flash_header_v3_t *container_hdr, char *ifname, int num_cntrs, int ifd, soc_type_t soc, int app_cntr_off)
+int extract_container_images(flash_header_v3_t *container_hdr, char *ifname, int num_cntrs, int ifd, soc_type_t soc, int app_cntr_off, int cnt_align)
 {
 	uint32_t img_offset = 0; /* image offset from container header */
 	uint32_t img_size = 0; /* image size */
@@ -1590,7 +1591,7 @@ int extract_container_images(flash_header_v3_t *container_hdr, char *ifname, int
 			pclose(f_ptr);
 		}
 
-		file_off += ALIGN(container_hdr->length, CONTAINER_ALIGNMENT);
+		file_off += ALIGN(container_hdr->length, cnt_align);
 		container_hdr++;
 	}
 
@@ -1609,6 +1610,7 @@ int parse_container_hdrs_qx_qm_b0(char *ifname, bool extract, soc_type_t soc, of
 	flash_header_v3_t container_headers[MAX_NUM_OF_CONTAINER];
 	flash_header_v3_t app_container_header;
 	int app_cntr_off;
+	int cnt_align = CONTAINER_ALIGNMENT;
 
 	/* initialize region of memory where flash header will be stored */
 	memset((void *)container_headers, 0, sizeof(container_headers));
@@ -1629,7 +1631,7 @@ int parse_container_hdrs_qx_qm_b0(char *ifname, bool extract, soc_type_t soc, of
 		}
 
 		/* check that the current container has a valid tag */
-		if (container_headers[cntr_num].tag != IVT_HEADER_TAG_B0)
+		if (!(container_headers[cntr_num].tag == IVT_HEADER_TAG_B0 || container_headers[cntr_num].tag == IVT_HEADER_TAG_V2X))
 			break;
 
 		if (container_headers[cntr_num].num_images > MAX_NUM_IMGS) {
@@ -1658,8 +1660,12 @@ int parse_container_hdrs_qx_qm_b0(char *ifname, bool extract, soc_type_t soc, of
 			}
 		}
 
+		/* update cnt alignment*/
+		if (container_headers[0].version == 0x2)
+			cnt_align = CONTAINER_PQC_ALIGNMENT;
+
 		/* seek to next container in binary */
-		file_off += ALIGN(container_headers[cntr_num].length, CONTAINER_ALIGNMENT);
+		file_off += ALIGN(container_headers[cntr_num].length, cnt_align);
 		lseek(ifd, file_off, SEEK_SET);
 
 		/* increment current container count */
@@ -1670,14 +1676,14 @@ int parse_container_hdrs_qx_qm_b0(char *ifname, bool extract, soc_type_t soc, of
 	print_container_hdr_fields(container_headers, cntr_num, soc, false);
 
 	if (extract)
-		extract_container_images(container_headers, ifname, cntr_num, ifd, soc, 0);
+		extract_container_images(container_headers, ifname, cntr_num, ifd, soc, 0, cnt_align);
 
-	app_cntr_off = search_app_container(container_headers, cntr_num, ifd, &app_container_header);
+	app_cntr_off = search_app_container(container_headers, cntr_num, ifd, &app_container_header, cnt_align);
 
 	if (app_cntr_off > 0) {
 		print_container_hdr_fields(&app_container_header, 1, soc, true);
 		if (extract)
-			extract_container_images(&app_container_header, ifname, 1, ifd, soc, app_cntr_off);
+			extract_container_images(&app_container_header, ifname, 1, ifd, soc, app_cntr_off, cnt_align);
 	}
 
 	close(ifd);

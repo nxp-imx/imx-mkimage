@@ -546,6 +546,12 @@ flash_jailhouse: $(MKIMG) $(AHAB_IMG) $(MCU_IMG) $(M33S_IMG) $(M70_IMG) u-boot-a
 		   -ap $(SPL_A55_IMG) a55 $(SPL_LOAD_ADDR_M33_VIEW) $(V2X_DUMMY) -out flash.bin
 	$(call append_container,u-boot-atf-container.img,1)
 
+parse_container: $(MKIMG) flash.bin
+	./$(MKIMG) -soc IMX9 -cntr_version 2 -parse flash.bin
+
+extract: $(MKIMG) flash.bin
+	./$(MKIMG) -soc IMX9 -cntr_version 2 -extract flash.bin
+
 ifneq ($(wildcard ../$(SOC_DIR)/scripts/autobuild.mak),)
 $(info include autobuild.mak)
 include ../$(SOC_DIR)/scripts/autobuild.mak

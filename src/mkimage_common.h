@@ -50,7 +50,7 @@ typedef enum option_type {
     FILEOFF,
     MSG_BLOCK,
     DUMMY_V2X,
-    SENTINEL,
+    ELE,
     UPOWER,
     FCB,
     OEI,
@@ -128,8 +128,8 @@ typedef struct {
 
 #define CORE_ULP_CM33	0x1
 #define CORE_ULP_CA35	0x2
-#define CORE_ULP_UPOWER 	0x4
-#define CORE_ULP_SENTINEL 	0x6
+#define CORE_ULP_UPOWER 0x4
+#define CORE_ULP_ELE 	0x6
 
 /* TODO_IMX95: ROM still not support this, waiting check */
 #define CORE_M7_0       0xB
@@ -165,7 +165,7 @@ typedef struct {
 #define IMG_TYPE_DCD_DDR        0x05   /* DCD/DDR image type */
 #define IMG_TYPE_OEI            0x05   /* Optional Executable image type */
 #define IMG_TYPE_SECO           0x06   /* SECO image type */
-#define IMG_TYPE_SENTINEL    0x06   /* SENTINEL image type */
+#define IMG_TYPE_ELE    	0x06   /* ELE image type */
 #define IMG_TYPE_PROV           0x07   /* Provisioning image type */
 #define IMG_TYPE_DEK            0x08   /* DEK validation type */
 #define IMG_TYPE_FCB_CHK        0x08   /* The FCB copy image */

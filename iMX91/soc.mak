@@ -237,8 +237,8 @@ flash_singleboot_flexspi: $(MKIMG) $(AHAB_IMG) $(SPL_A55_IMG) u-boot-atf-contain
 	$(call append_fcb)
 
 
-flash_sentinel: $(MKIMG) ahabfw.bin
-	./$(MKIMG) -soc IMX9 -c -sentinel ahabfw.bin -out flash.bin
+flash_ele: $(MKIMG) ahabfw.bin
+	./$(MKIMG) -soc IMX9 -c -ele ahabfw.bin -out flash.bin
 
 flash_kernel: $(MKIMG) Image $(KERNEL_DTB)
 	./$(MKIMG) -soc IMX9 -c -ap Image a55 $(KERNEL_ADDR) --data $(KERNEL_DTB) a55 $(KERNEL_DTB_ADDR) -out flash.bin

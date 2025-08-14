@@ -643,7 +643,7 @@ int main(int argc, char **argv)
 		{"images_hash", required_argument, NULL, 'h'},
 		{"extract", required_argument, NULL, 'X'},
 		{"parse", required_argument, NULL, 'R'},
-		{"sentinel", required_argument, NULL, 'i'},
+		{"ele", required_argument, NULL, 'i'},
 		{"upower", required_argument, NULL, 'w'},
 		{"fcb", required_argument, NULL, 'b'},
 		{"padding", required_argument, NULL, 'G'},
@@ -732,8 +732,8 @@ int main(int argc, char **argv)
 				}
 				break;
 			case 'i':
-				fprintf(stdout, "SENTINEL:\t%s\n", optarg);
-				param_stack[p_idx].option = SENTINEL;
+				fprintf(stdout, "ELE:\t%s\n", optarg);
+				param_stack[p_idx].option = ELE;
 				param_stack[p_idx++].filename = optarg;
 				break;
 			case 'w':

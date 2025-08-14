@@ -310,8 +310,8 @@ flash_lpboot_flexspi_xip: $(MKIMG) $(AHAB_IMG) $(MCU_IMG)
 		   -c -m33 $(MCU_IMG) 0 $(MCU_XIP_ADDR) -out flash.bin
 	./$(QSPI_PACKER) $(QSPI_HEADER)
 
-flash_sentinel: $(MKIMG) ahabfw.bin
-	./$(MKIMG) -soc IMX9 -c -sentinel ahabfw.bin -out flash.bin
+flash_ele: $(MKIMG) ahabfw.bin
+	./$(MKIMG) -soc IMX9 -c -ele ahabfw.bin -out flash.bin
 
 flash_kernel: $(MKIMG) Image $(KERNEL_DTB)
 	./$(MKIMG) -soc IMX9 -c -ap Image a55 $(KERNEL_ADDR) --data $(KERNEL_DTB) a55 $(KERNEL_DTB_ADDR) -out flash.bin

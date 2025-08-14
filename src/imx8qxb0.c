@@ -474,15 +474,15 @@ void set_image_array_entry(flash_header_v3_t *container, soc_type_t soc,
 		img->entry = 0x20000000;
 
 		break;
-	case SENTINEL:
+	case ELE:
 		if (container->num_images > 0) {
-			fprintf(stderr, "Error: SENTINEL container only allows 1 image\n");
+			fprintf(stderr, "Error: ELE container only allows 1 image\n");
 			exit(EXIT_FAILURE);
 		}
 
-		img->hab_flags |= IMG_TYPE_SENTINEL;
-		img->hab_flags |= CORE_ULP_SENTINEL << BOOT_IMG_FLAGS_CORE_SHIFT;
-		tmp_name = "SENTINEL";
+		img->hab_flags |= IMG_TYPE_ELE;
+		img->hab_flags |= CORE_ULP_ELE << BOOT_IMG_FLAGS_CORE_SHIFT;
+		tmp_name = "ELE";
 		img->dst = 0XE7FE8000; /* S400 IRAM base */
 		img->entry = 0XE7FE8000;
 		break;
@@ -839,7 +839,7 @@ int build_container_qx_qm_b0(soc_type_t soc, uint32_t sector_size, uint32_t ivt_
 		case DATA:
 		case UPOWER:
 		case MSG_BLOCK:
-		case SENTINEL:
+		case ELE:
 		case RECOVERY:
 			if (container < 0) {
 				fprintf(stderr, "No container found\n");
@@ -1016,7 +1016,7 @@ int build_container_qx_qm_b0(soc_type_t soc, uint32_t sector_size, uint32_t ivt_
 		case SECO:
 		case MSG_BLOCK:
 		case UPOWER:
-		case SENTINEL:
+		case ELE:
 		case FCB:
 		case OEI:
 		case M7:
@@ -1063,7 +1063,7 @@ img_flags_t parse_image_flags(uint32_t flags, char *flag_list, soc_type_t soc)
 		break;
 	case 0x6:
 		if ((soc == ULP) || (soc == IMX9))
-			strcat(flag_list, "SENTINEL");
+			strcat(flag_list, "ELE");
 		else
 			strcat(flag_list, "SECO");
 		break;
@@ -1104,8 +1104,8 @@ img_flags_t parse_image_flags(uint32_t flags, char *flag_list, soc_type_t soc)
 		case CORE_ULP_CM33:
 			strcat(flag_list, "CORE_CM33");
 			break;
-		case CORE_ULP_SENTINEL:
-			strcat(flag_list, "CORE_SENTINEL");
+		case CORE_ULP_ELE:
+			strcat(flag_list, "CORE_ELE");
 			break;
 		case CORE_ULP_UPOWER:
 			strcat(flag_list, "CORE_UPOWER");
@@ -1250,7 +1250,7 @@ void print_image_array_fields(flash_header_v3_t *container_hdrs, soc_type_t soc,
 			break;
 		case 0x6:
 			if ((soc == ULP) || (soc == IMX9))
-				strcpy(img_name, "SENTINEL FW");
+				strcpy(img_name, "ELE FW");
 			else
 				strcpy(img_name, "SECO FW");
 			break;

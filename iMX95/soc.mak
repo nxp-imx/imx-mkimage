@@ -436,8 +436,8 @@ flash_all_ap: $(MKIMG) $(AHAB_IMG) $(MCU_IMG) $(M7_IMG) $(AP_IMG) $(OEI_IMG_M33)
 		   -m7 $(M7_IMG) 0 $(M7_TCM_ADDR) $(M7_TCM_ADDR_ALIAS)  \
 		   -ap $(AP_IMG) a55 $(SPL_LOAD_ADDR_M33_VIEW) $(V2X_DUMMY) -out flash.bin
 
-flash_sentinel: $(MKIMG) ahabfw.bin
-	./$(MKIMG) -soc IMX9 -cntr_version $(CTNR_VERSION) $(MMC_FAST_HASH) -c -sentinel ahabfw.bin -out flash.bin
+flash_ele: $(MKIMG) ahabfw.bin
+	./$(MKIMG) -soc IMX9 -cntr_version $(CTNR_VERSION) $(MMC_FAST_HASH) -c -ele ahabfw.bin -out flash.bin
 
 ifneq ($(LC_REVISION),b0)
 prepare_kernel_chunks: Image

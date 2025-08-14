@@ -145,8 +145,8 @@ flash_singleboot_m33_flexspi: $(MKIMG) $(AHAB_IMG) $(UPOWER_IMG) u-boot-atf-cont
                    dd if=u-boot-atf-container.img of=flash.bin bs=1K seek=$$pad_cnt; \
 	./$(QSPI_PACKER) $(QSPI_HEADER)
 
-flash_sentinel: $(MKIMG) ahabfw.bin
-	./$(MKIMG) -soc ULP -c -sentinel ahabfw.bin -out flash.bin
+flash_ele: $(MKIMG) ahabfw.bin
+	./$(MKIMG) -soc ULP -c -ele ahabfw.bin -out flash.bin
 
 ifeq ($(REV),A0)
 prepare_kernel_chunks: Image

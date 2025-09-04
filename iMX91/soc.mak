@@ -96,17 +96,6 @@ u-boot-hash.bin: u-boot.bin
 	./$(MKIMG) -commit > head.hash
 	@cat u-boot.bin head.hash > u-boot-hash.bin
 
-u-boot-atf.bin: u-boot-hash.bin bl31.bin
-	@cp bl31.bin u-boot-atf.bin
-	@dd if=u-boot-hash.bin of=u-boot-atf.bin bs=1K seek=128
-
-u-boot-atf.itb: u-boot-hash.bin bl31.bin
-	./$(PAD_IMAGE) bl31.bin
-	./$(PAD_IMAGE) u-boot-hash.bin
-	TEE_LOAD_ADDR=$(TEE_LOAD_ADDR) ./mkimage_fit_atf.sh > u-boot.its;
-	./mkimage_uboot -E -p 0x3000 -f u-boot.its u-boot-atf.itb;
-	@rm -f u-boot.its
-
 u-boot-atf-container.img: bl31.bin u-boot-hash.bin
 	if [ -f $(TEE) ]; then \
 		if [ $(shell echo $(ROLLBACK_INDEX_IN_CONTAINER)) ]; then \

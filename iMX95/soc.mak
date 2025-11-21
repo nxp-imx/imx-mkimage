@@ -297,13 +297,13 @@ u-boot-atf-container.img: bl31.bin u-boot-hash.bin
 				   -ap $(TEE) a55 $(TEE_LOAD_ADDR) \
 				   -out u-boot-atf-container.img; \
 		else \
-			./$(MKIMG) -soc IMX9 -cntr_version $(CTNR_VERSION) -c \
+			./$(MKIMG) -soc IMX9 -cntr_version $(CTNR_VERSION) $(MMC_FAST_HASH) -c \
 				   -ap bl31.bin a55 $(ATF_LOAD_ADDR) \
 				   -ap u-boot-hash.bin a55 $(UBOOT_LOAD_ADDR) \
 				   -ap $(TEE) a55 $(TEE_LOAD_ADDR) -out u-boot-atf-container.img; \
 		fi; \
 	else \
-		./$(MKIMG) -soc IMX9 -cntr_version $(CTNR_VERSION) -c \
+		./$(MKIMG) -soc IMX9 -cntr_version $(CTNR_VERSION) $(MMC_FAST_HASH) -c \
 			   -ap bl31.bin a55 $(ATF_LOAD_ADDR) \
 			   -ap u-boot-hash.bin a55 $(UBOOT_LOAD_ADDR) \
 			   -out u-boot-atf-container.img; \
@@ -484,7 +484,7 @@ flash_kernel: $(MKIMG) prepare_kernel_chunks $(KERNEL_DTB)
 	./$(MKIMG) -soc IMX9 -cntr_version $(CTNR_VERSION) -c $$KERNEL_CMD --data $(KERNEL_DTB) a55 $(KERNEL_DTB_ADDR) -out flash.bin
 else
 flash_kernel: $(MKIMG) Image $(KERNEL_DTB)
-	./$(MKIMG) -soc IMX9 -cntr_version $(CTNR_VERSION) -c -ap Image a55 $(KERNEL_ADDR) --data $(KERNEL_DTB) a55 $(KERNEL_DTB_ADDR) -out flash.bin
+	./$(MKIMG) -soc IMX9 -cntr_version $(CTNR_VERSION) $(MMC_FAST_HASH) -c -ap Image a55 $(KERNEL_ADDR) --data $(KERNEL_DTB) a55 $(KERNEL_DTB_ADDR) -out flash.bin
 endif
 
 flash_bootaux_cntr: $(MKIMG) $(MCU_IMG)

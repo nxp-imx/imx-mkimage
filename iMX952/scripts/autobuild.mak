@@ -21,7 +21,7 @@ nightly_mx952-19x19-lpddr5-evk: DTB = imx952evk
 nightly_mx952-19x19-lpddr5-evk: CPU = imx952
 nightly_mx952-19x19-lpddr5-evk: DDR = lpddr5
 nightly_mx952-19x19-lpddr5-evk: DDR_FW_VER = $(LPDDR_FW_VERSION)
-nightly_mx952-19x19-lpddr5-evk: M7_FILE = $(DTB)_m7_TCM_power_mode_switch_rtos.bin
+nightly_mx952-19x19-lpddr5-evk: M7_FILE = $(DTB)_m7_TCM_power_mode_switch.bin
 nightly_mx952-19x19-lpddr5-evk: core_files
 
 # MX952 15x15 LPDDR4X EVK

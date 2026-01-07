@@ -47,7 +47,7 @@ nightly_mx943-15x15-lpddr4-evk: DDR = lpddr4x
 nightly_mx943-15x15-lpddr4-evk: DDR_FW_VER = $(LPDDR_FW_VERSION)
 nightly_mx943-15x15-lpddr4-evk: M7_FILE = imx943evk_cm7_core0_TCM_power_mode_switch.bin
 nightly_mx943-15x15-lpddr4-evk: M71_FILE = imx943evk_cm7_core1_TCM_power_mode_switch.bin
-nightly_mx943-15x15-lpddr4-evk: M33S_FILE = iimx943evk_cm33_core1_TCM_power_mode_switch.bin
+nightly_mx943-15x15-lpddr4-evk: M33S_FILE = imx943evk_cm33_core1_TCM_power_mode_switch.bin
 nightly_mx943-15x15-lpddr4-evk: core_files
 
 core_files:

@@ -1102,7 +1102,10 @@ img_flags_t parse_image_flags(uint32_t flags, char *flag_list, soc_type_t soc)
 		strcat(flag_list, "Secondary V2X FW image");
 		break;
 	case 0xD:
-		strcat(flag_list, "V2X ROM Patch image");
+		if (soc == IMX9)
+			strcat(flag_list, "DDR QB Dummy image");
+		else
+			strcat(flag_list, "V2X ROM Patch image");
 		break;
 	case 0xE:
 		strcat(flag_list, "V2X Dummy image");

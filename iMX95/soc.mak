@@ -85,28 +85,34 @@ GDET ?= 0
 VDET ?= 0
 AGDET ?= 0
 FDET ?= 0
+TMPSNS ?= 0
 
 ifeq ($(shell test $(GDET) -gt 2 && echo true), true)
-$(error "GDET value should be 0 to 2, 0 is enabled, 1 is disabled, 2 is enabled in ELE call")
+$(error "GDET value should be 0 to 2, 0 is disabled, 1 is enabled but not in suspend, 2 is enabled in ELE call")
 endif
 
 ifeq ($(shell test $(VDET) -gt 3 && echo true), true)
-$(error "VDET value should be 0 to 3, 0 is enabled, 1 is disabled, 2 is enabled in ELE call, 3 is enabled and kept enabled in suspend")
+$(error "VDET value should be 0 to 3, 0 is disabled, 1 is enabled but not in suspend, 2 is enabled in ELE call, 3 is enabled and kept enabled in suspend")
 endif
 
 ifeq ($(shell test $(AGDET) -gt 3 && echo true), true)
-$(error "AGDET value should be 0 to 3, 0 is enabled, 1 is disabled, 2 is enabled in ELE call, 3 is enabled and kept enabled in suspend")
+$(error "AGDET value should be 0 to 3, 0 is disabled, 1 is enabled but not in suspend, 2 is enabled in ELE call, 3 is enabled and kept enabled in suspend")
 endif
 
 ifeq ($(shell test $(FDET) -gt 1 && echo true), true)
-$(error "FDET value should be 0 to 1, 0 is enabled, 1 is disabled")
+$(error "FDET value should be 0 to 1, 0 is disabled, 1 is enabled but not in suspend")
+endif
+
+ifeq ($(shell test $(TMPSNS) -gt 1 && echo true), true)
+$(error "TMPSNS value should be 0 to 1, 0 is disabled in suspend, 1 is enabled in suspend")
 endif
 
 FLAG_GDET = $(shell echo $$(( $(GDET) << 20 )))
 FLAG_VDET = $(shell echo $$(( $(VDET) << 22 )))
 FLAG_AGDET = $(shell echo $$(( $(AGDET) << 24 )))
 FLAG_FDET = $(shell echo $$(( $(FDET) << 26 )))
-FLAG_DET_ALL = $(shell echo $$(( $(FLAG_GDET) + $(FLAG_VDET) + $(FLAG_AGDET) + $(FLAG_FDET) )))
+FLAG_TMPSNS = $(shell echo $$(( $(TMPSNS) << 27 )))
+FLAG_DET_ALL = $(shell echo $$(( $(FLAG_GDET) + $(FLAG_VDET) + $(FLAG_AGDET) + $(FLAG_FDET) + $(FLAG_TMPSNS) )))
 
 ifneq ($(FLAG_DET_ALL),0)
 FLAG_DEF = 0x10

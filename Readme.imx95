@@ -38,6 +38,26 @@
 4. The DDR Firmware used by default is LPDDR5 (for both OEI or Non-OEI), to generate image with LPDDR4x or LPDDR4,
    set the "LPDDR_TYPE=lpddr4"
 
-5. Options "GDET", "VDET", "AGDET", "FDET" are used for container flag values. For example:
+5. Options "GDET", "VDET", "AGDET", "FDET", "TMPSNS" are used for container flag values. For example:
    set "GDET=2" will set the flag bits 20-21 to 0b10: GDET is enabled only when ELE receives a command
-   set "VDET=1" will set the flag bits 22-23 to 0b01: AGDET is always disabled
+   set "VDET=1" will set the flag bits 22-23 to 0b01: AGDET is enabled after boot but not in suspend
+
+    GDET=0: Disable.
+    GDET=1: Enable after boot (not enabled in suspend mode).
+    GDET=2: Enable whenever a security relevant command is received. (not enabled in suspend mode).
+
+    VDET=0: Disable.
+    VDET=1: Enable after boot (not enabled in suspend mode).
+    VDET=2: Enable whenever a security relevant command is received. (not enabled in suspend mode).
+    VDET=3: Same as 1 but enabled in suspend mode.
+
+    AGDET=0: Disable.
+    AGDET=1: Enable after boot (not enabled in suspend mode).
+    AGDET=2: Enable whenever a security relevant command is received. (not enabled in suspend mode).
+    AGDET=3: Same as 1 but enabled in suspend mode.
+
+    FDET=0: Disable.
+    FDET=1: Enable after boot (not enabled in suspend mode).
+
+    TMPSNS=0: Disable.
+    TMPSNS=1: Keep enabled during suspend mode.

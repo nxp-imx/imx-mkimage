@@ -363,6 +363,13 @@ flash_a55_m70_ddr: $(MKIMG) $(AHAB_IMG) $(MCU_IMG) u-boot-atf-container.img $(SP
 		   $(V2X_DUMMY) -ap $(SPL_A55_IMG) a55 $(SPL_LOAD_ADDR_M33_VIEW) -out flash.bin
 	$(call append_container,u-boot-atf-container.img,1)
 
+flash_a55_m70: $(MKIMG) $(AHAB_IMG) $(MCU_IMG) u-boot-atf-container.img $(SPL_A55_IMG) $(OEI_IMG_M33)
+	./$(MKIMG) -soc IMX9 -cntr_version 2 $(CNTR_FLAG) -append $(AHAB_IMG) -c $(OEI_OPT_M33) -msel $(MSEL) \
+		   -m33 $(MCU_IMG) 0 $(MCU_TCM_ADDR) \
+		   -m7 $(M70_IMG) 0 $(M70_TCM_ADDR) $(M70_TCM_ADDR_ALIAS) \
+		   $(V2X_DUMMY) -ap $(SPL_A55_IMG) a55 $(SPL_LOAD_ADDR_M33_VIEW) -out flash.bin
+	$(call append_container,u-boot-atf-container.img,1)
+
 flash_a55_no_ahabfw_flexspi: $(MKIMG) $(MCU_IMG) $(SPL_A55_IMG) $(OEI_IMG_M33) fcb.bin u-boot-atf-container.img
 	./$(MKIMG) -soc IMX9 -cntr_version 2 $(CNTR_FLAG) -dev flexspi -c $(OEI_OPT_M33) -msel $(MSEL) \
 		   -m33 $(MCU_IMG) 0 $(MCU_TCM_ADDR) \

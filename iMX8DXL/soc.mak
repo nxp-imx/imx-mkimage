@@ -31,6 +31,9 @@ endif
 
 TEE_LOAD_ADDR ?= 0x96000000
 
+KERNEL_DTB ?= imx8dxl-evk.dtb
+KERNEL_DTB_ADDR ?= 0x83000000
+
 FORCE:
 
 u-boot-hash.bin: u-boot.bin
@@ -154,8 +157,8 @@ flash_scfw: $(MKIMG) $(SECO_FW_NAME) scfw_tcm.bin
 flash_patch: $(MKIMG) $(SECO_FW_NAME) scfw_tcm.bin message_signed.bin
 	./$(MKIMG) -soc DXL -rev A0 -append $(SECO_FW_NAME) -c -scfw scfw_tcm.bin -msg_blk message_signed.bin patch 0x80000000 $(V2X_DUMMY_OCRAM) --out flash.bin
 
-flash_kernel: $(MKIMG) Image imx8dxl-evk.dtb
-	./$(MKIMG) -soc DXL -rev A0 -h sha256 -c -ap Image a35 0x80200000 --data imx8dxl-evk.dtb a35 0x83000000 -out flash.bin
+flash_kernel: $(MKIMG) Image $(KERNEL_DTB)
+	./$(MKIMG) -soc DXL -rev A0 -h sha256 -c -ap Image a35 0x80200000 --data $(KERNEL_DTB) a35 $(KERNEL_DTB_ADDR) -out flash.bin
 
 parse_container: $(MKIMG) flash.bin
 	./$(MKIMG) -soc DXL -rev A0 -parse flash.bin

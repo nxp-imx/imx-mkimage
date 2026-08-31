@@ -25,6 +25,9 @@ UPOWER_IMG = upower.bin
 MCU_IMG = m33_image.bin
 ROM_PATCH_IMG = ahab-container-patch.bin
 
+KERNEL_DTB ?= imx8ulp-evk.dtb
+KERNEL_DTB_ADDR ?= 0x83000000
+
 SPL_LOAD_ADDR ?= 0x22020000
 ATF_LOAD_ADDR ?= 0x20040000
 TEE_LOAD_ADDR ?= 0xa6000000
@@ -32,7 +35,6 @@ UBOOT_LOAD_ADDR ?= 0x80200000
 MCU_SSRAM_ADDR ?= 0x1ffc2000
 MCU_XIP_ADDR ?= 0x4032000 # Point entry of m33 in flexspi0 nor flash
 M33_IMAGE_XIP_OFFSET ?= 0x31000 # 1st container offset is 0x1000 when boot device is flexspi0 nor flash, actually the m33_image.bin is in 0x31000 + 0x1000 = 0x32000.
-
 
 FORCE:
 
@@ -152,12 +154,12 @@ ifeq ($(REV),A0)
 prepare_kernel_chunks: Image
 	./$(SPLIT_KERNEL) Image 0x80400000 0x700000
 
-flash_kernel: $(MKIMG) prepare_kernel_chunks imx8ulp-evk.dtb
+flash_kernel: $(MKIMG) prepare_kernel_chunks $(KERNEL_DTB)
 	KERNEL_CMD="$(shell cat Image_cmd)"; \
-	./$(MKIMG) -soc ULP -c $$KERNEL_CMD --data imx8ulp-evk.dtb a35 0x83000000 -out flash.bin
+	./$(MKIMG) -soc ULP -c $$KERNEL_CMD --data $(KERNEL_DTB) a35 $(KERNEL_DTB_ADDR) -out flash.bin
 else
-flash_kernel: $(MKIMG) Image imx8ulp-evk.dtb
-	./$(MKIMG) -soc ULP -c -ap Image a35 0x80400000 --data imx8ulp-evk.dtb a35 0x83000000 -out flash.bin
+flash_kernel: $(MKIMG) Image $(KERNEL_DTB)
+	./$(MKIMG) -soc ULP -c -ap Image a35 0x80400000 --data $(KERNEL_DTB) a35 $(KERNEL_DTB_ADDR) -out flash.bin
 endif
 
 parse_container: $(MKIMG) flash.bin

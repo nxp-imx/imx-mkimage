@@ -30,6 +30,9 @@ else ifeq ($(SOC),iMX8QX)
 TEE_LOAD_ADDR ?=  0xFE000000
 endif
 
+KERNEL_DTB ?= imx8qxp-mek.dtb
+KERNEL_DTB_ADDR ?= 0x83000000
+
 FORCE:
 
 u-boot-hash.bin: u-boot.bin
@@ -145,8 +148,8 @@ flash_regression_linux_m4_xip : $(MKIMG) $(AHAB_IMG) scfw_tcm.bin u-boot-atf.bin
 flash_scfw: $(MKIMG) $(AHAB_IMG) scfw_tcm.bin
 	./$(MKIMG) -soc QX -rev B0 -dcd skip -append $(AHAB_IMG) -c -scfw scfw_tcm.bin -out flash.bin
 
-flash_kernel: $(MKIMG) Image imx8qxp-mek.dtb
-	./$(MKIMG) -soc QX -rev B0 -c -ap Image a35 0x80200000 --data imx8qxp-mek.dtb a35 0x83000000 -out flash.bin
+flash_kernel: $(MKIMG) Image $(KERNEL_DTB)
+	./$(MKIMG) -soc QX -rev B0 -c -ap Image a35 0x80200000 --data $(KERNEL_DTB) a35 $(KERNEL_DTB_ADDR) -out flash.bin
 
 parse_container: $(MKIMG) flash.bin
 	./$(MKIMG) -soc QX -rev B0 -parse flash.bin
